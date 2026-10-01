@@ -170,7 +170,8 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .product-img img { width: 100%; height: 100%; object-fit: contain; }
 .product-img.photo img { object-fit: cover; }
 .product-img .alt { position: absolute; inset: 0; opacity: 0; transition: opacity .4s ease; }
-.product:hover .product-img .alt, .product-img.show-alt .alt { opacity: 1; }
+.product-img.show-alt .alt { opacity: 1; }
+.product-img.photo { cursor: pointer; }
 .photo-hint {
   position: absolute; right: 10px; bottom: 10px; background: rgba(17,17,17,.78); color: var(--off-white);
   font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px;
@@ -587,7 +588,7 @@ function renderStore() {
       <div class="cat-head"><h2>${esc(c.title)}</h2><span class="count">${c.items.length} ${c.items.length === 1 ? "producto" : "productos"}</span></div>
       <div class="products">${c.items.map(p => `
         <article class="product${p.out ? " is-out" : ""}">
-          <div class="product-img${p.img2 ? " photo" : ""}">${p.img ? `<img src="${imgSrc(p.img)}" alt="${esc(p.name)}" loading="lazy" width="560" height="560">` : `<div class="no-photo">Foto próximamente</div>`}${p.img2 ? `<img class="alt" src="${imgSrc(p.img2)}" alt="${esc(p.name)}, otra foto" loading="lazy" width="560" height="560"><span class="photo-hint">2 fotos</span>` : ""}${p.out ? '<span class="out-badge">Sin stock</span>' : ""}</div>
+          <div class="product-img${p.img2 ? " photo" : ""}">${p.img ? `<img src="${imgSrc(p.img)}" alt="${esc(p.name)}" loading="lazy" width="560" height="560">` : `<div class="no-photo">Foto próximamente</div>`}${p.img2 ? `<img class="alt" src="${imgSrc(p.img2)}" alt="${esc(p.name)}, otra foto" loading="lazy" width="560" height="560"><span class="photo-hint">Foto 1/2 · tocá</span>` : ""}${p.out ? '<span class="out-badge">Sin stock</span>' : ""}</div>
           <h3>${esc(p.name)}</h3>
           <div class="product-foot">
             <span class="price">${fmt(p.price)}</span>
@@ -638,7 +639,12 @@ function renderCart() {
 }
 document.addEventListener("click", ev => {
   const ph = ev.target.closest(".product-img.photo");
-  if (ph) { ph.classList.toggle("show-alt"); return; }
+  if (ph) {
+    const on = ph.classList.toggle("show-alt");
+    const hint = ph.querySelector(".photo-hint");
+    if (hint) hint.textContent = on ? "Foto 2/2 · tocá" : "Foto 1/2 · tocá";
+    return;
+  }
   const add = ev.target.closest(".add-btn");
   if (add) {
     const id = add.dataset.id; cart[id] = (cart[id] || 0) + 1; renderCart();
