@@ -1367,8 +1367,9 @@
   .hero > *:not(.fx-float){ position:relative; z-index:1; }
 
   /* Cinta que se desliza con los beneficios */
-  .fx-marquee{ overflow:hidden; background:var(--forest); color:#fff; padding:13px 0; margin:6px 0 18px;
-    transform:rotate(-1.2deg); box-shadow:0 10px 24px rgba(70,10,64,.18); }
+  .fx-marquee-wrap{ overflow:hidden; padding:10px 0 22px; margin-top:-4px; }
+  .fx-marquee{ overflow:hidden; background:var(--forest); color:#fff; padding:13px 0;
+    width:104%; margin-left:-2%; transform:rotate(-1.2deg); box-shadow:0 10px 24px rgba(70,10,64,.18); }
   .fx-marquee-track{ display:flex; width:max-content; animation:fxSlide 32s linear infinite; }
   .fx-marquee span{ font-family:'Fredoka', sans-serif; font-weight:600; font-size:18px; letter-spacing:.04em;
     text-transform:uppercase; white-space:nowrap; padding:0 22px; display:inline-flex; align-items:center; gap:22px; }
@@ -1393,7 +1394,7 @@
 
   /* Título CATÁLOGO: entra deslizando */
   .catalog-head h2{ transition:transform .8s cubic-bezier(.2,.8,.2,1), opacity .8s ease; }
-  .fx-on .catalog-head h2:not(.fx-in){ opacity:0; transform:translateX(-40px); }
+  .fx-on .catalog-head h2:not(.fx-in){ opacity:0; transform:translateY(28px); }
 
   /* Botón de categorías: brillo que pasa */
   .cats-trigger{ position:relative; overflow:hidden; }
@@ -1409,6 +1410,10 @@
     .fx-float{ display:none; }
     .fx-on .grid .card, .fx-on .catalog-head h2{ opacity:1 !important; transform:none !important; }
   }
+
+  /* La página nunca se corre hacia los costados (sobre todo en celular) */
+  html, body{ max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
+  @supports (overflow-x:clip){ html, body{ overflow-x:clip; } }
 
   .hero{ overflow:hidden; }
 </style>
@@ -1452,7 +1457,7 @@
   </div>
 </section>
 
-<div class="fx-marquee" aria-hidden="true"><div class="fx-marquee-track"><span>Calidad, variedad y los mejores precios</span><span>Pedidos por WhatsApp</span><span>Por menor y por mayor</span><span>Envíos por Correo Argentino y Vía Cargo</span><span>Ropa importada · Shampoo · Accesorios</span><span>Calidad, variedad y los mejores precios</span><span>Pedidos por WhatsApp</span><span>Por menor y por mayor</span><span>Envíos por Correo Argentino y Vía Cargo</span><span>Ropa importada · Shampoo · Accesorios</span></div></div>
+<div class="fx-marquee-wrap" aria-hidden="true"><div class="fx-marquee"><div class="fx-marquee-track"><span>Calidad, variedad y los mejores precios</span><span>Pedidos por WhatsApp</span><span>Por menor y por mayor</span><span>Envíos por Correo Argentino y Vía Cargo</span><span>Ropa importada · Shampoo · Accesorios</span><span>Calidad, variedad y los mejores precios</span><span>Pedidos por WhatsApp</span><span>Por menor y por mayor</span><span>Envíos por Correo Argentino y Vía Cargo</span><span>Ropa importada · Shampoo · Accesorios</span></div></div></div>
 
 <a class="promo-banner" id="promoBanner" style="display:none;" target="_blank">
   <span class="promo-text" id="promoText"></span>
@@ -4296,7 +4301,7 @@ fetch('catalogo.json', {cache:'no-store'})
       el.className = 'fx-float';
       el.setAttribute('aria-hidden','true');
       const size = 16 + Math.round(Math.random()*22);
-      el.style.cssText = `left:${Math.round(Math.random()*95)}%;width:${size}px;height:${size}px;`+
+      el.style.cssText = `left:${Math.round(4+Math.random()*80)}%;width:${size}px;height:${size}px;`+
         `animation-duration:${9+Math.random()*9}s;animation-delay:${-Math.random()*14}s;`+
         `color:${i%3===0 ? 'var(--forest)' : 'var(--coral)'};--rot:${Math.round(Math.random()*80-40)}deg;`;
       el.innerHTML = i%2 ? HEART : PAW;
