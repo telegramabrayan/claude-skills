@@ -1423,6 +1423,53 @@
   .di-media > div[style*="background"]{ background:var(--btn-bg) !important; }
   .di-media svg path, .di-media svg circle{ fill:var(--coral) !important; fill-opacity:.5 !important; }
 
+  /* ---------- Inicio con categorías ---------- */
+  .grid.grid-cats{ grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
+  .cat-tile{ position:relative; display:grid; grid-template-rows:auto 1fr; text-align:left; cursor:pointer; padding:0; overflow:hidden;
+    background:var(--surface); border:2px solid var(--line); border-radius:24px; color:var(--ink); font:inherit;
+    transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease, border-color .3s ease; }
+  .cat-tile:hover{ transform:translateY(-5px); border-color:var(--coral); box-shadow:0 16px 34px rgba(70,10,64,.14); }
+  .cat-tile:active{ transform:scale(.98); }
+  .cat-tile-media{ aspect-ratio:4/3; display:grid; place-items:center; background:var(--btn-bg); overflow:hidden; }
+  .cat-tile-media img{ width:100%; height:100%; object-fit:cover; background:#fff; transition:transform .5s ease; }
+  .cat-tile:hover .cat-tile-media img{ transform:scale(1.06); }
+  .cat-tile-media svg{ width:42%; }
+  .cat-tile-media svg path, .cat-tile-media svg circle{ fill:var(--coral) !important; fill-opacity:.5 !important; }
+  .cat-tile-body{ display:grid; gap:2px; padding:14px 46px 16px 16px; }
+  .cat-tile-body b{ font-family:'Fredoka', sans-serif; font-weight:600; font-size:18px; line-height:1.15; text-transform:uppercase; }
+  .cat-tile-body small{ color:var(--ink-soft); font-weight:700; font-size:13px; }
+  .cat-tile-go{ position:absolute; right:14px; bottom:16px; width:28px; height:28px; border-radius:50%; display:grid; place-items:center;
+    background:var(--forest); color:#fff; font-weight:800; font-size:15px; transition:transform .25s ease; }
+  .cat-tile:hover .cat-tile-go{ transform:translateX(3px); }
+  .cat-tile-all{ grid-template-rows:1fr; align-content:center; min-height:110px;
+    background:linear-gradient(100deg, var(--forest) 0%, var(--coral) 100%); border-color:transparent; color:#fff; }
+  .cat-tile-all .cat-tile-body small{ color:rgba(255,255,255,.8); }
+  .cat-tile-all .cat-tile-go{ background:#fff; color:var(--forest); }
+
+  /* Botón para volver a las categorías */
+  .back-cats{ cursor:pointer; margin:0 0 16px; padding:10px 16px; border-radius:999px; border:2px solid var(--line);
+    background:var(--surface); color:var(--forest); font:800 14px 'Nunito', sans-serif; }
+  .back-cats:hover{ border-color:var(--forest); }
+  .back-cats[hidden]{ display:none !important; }
+
+  /* Ver más productos */
+  .ver-mas-wrap{ grid-column:1 / -1; display:flex; justify-content:center; padding-top:8px; }
+  .ver-mas{ cursor:pointer; border:0; background:var(--forest); color:#fff; font:800 16px 'Nunito', sans-serif;
+    padding:15px 28px; border-radius:999px; box-shadow:0 10px 24px rgba(70,10,64,.22); transition:transform .2s ease, background .2s ease; }
+  .ver-mas:hover{ transform:translateY(-2px); background:var(--forest-deep); }
+  .ver-mas small{ font-weight:700; opacity:.8; }
+
+  @media (max-width:600px){
+    .grid.grid-cats{ grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px; }
+    .cat-tile{ border-radius:18px; }
+    .cat-tile-body{ padding:10px 34px 12px 12px; }
+    .cat-tile-body b{ font-size:14px; }
+    .cat-tile-body small{ font-size:12px; }
+    .cat-tile-go{ width:24px; height:24px; right:9px; bottom:12px; font-size:13px; }
+    .cat-tile-all{ grid-column:1 / -1; min-height:84px; }
+  }
+  .catalog{ scroll-margin-top:80px; }
+
   .hero{ overflow:hidden; }
 </style>
 </head>
@@ -1521,6 +1568,7 @@
     <button class="quick-filter" data-qf="destacado">★ Destacados</button>
     <button class="quick-filter" data-qf="nuevo">🆕 Nuevos</button>
   </div>
+  <button type="button" class="back-cats" id="backCats" hidden>← Todas las categorías</button>
   <div class="grid" id="grid"></div>
 </main>
 
@@ -2295,12 +2343,74 @@ function resolveKey(key){
   return { p, variantName:vName||null, price, label: vName ? `${p.name} (${vName})` : p.name };
 }
 
+
+/* ---------- Inicio con categorías y "Ver más" ---------- */
+const GRID_STEP = 12;
+let GRID_LIMIT = GRID_STEP, GRID_KEY = '', VER_TODO = false;
+function esInicio(){
+  return activeCat==='todos' && !VER_TODO && !searchTerm && !quickFilter;
+}
+function irACategoria(id){
+  activeCat = id; VER_TODO = (id==='todos');
+  renderCategories(); renderGrid();
+  const cat = document.getElementById('catalogo');
+  if(cat) cat.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function volverAlInicio(){
+  activeCat = 'todos'; VER_TODO = false; quickFilter = null; searchTerm = '';
+  const si = document.getElementById('searchInput'); if(si) si.value = '';
+  document.querySelectorAll('.quick-filter.on').forEach(b=>b.classList.remove('on'));
+  renderCategories(); renderGrid();
+  const cat = document.getElementById('catalogo');
+  if(cat) cat.scrollIntoView({behavior:'smooth', block:'start'});
+}
+{ const bc = document.getElementById('backCats'); if(bc) bc.addEventListener('click', volverAlInicio); }
+function renderInicio(grid){
+  const base = mode==='mayor' ? PRODUCTS.filter(hasMayor) : PRODUCTS;
+  const tiles = CATEGORIES.filter(c=>c.id!=='todos').map(c=>{
+    const prods = base.filter(p=>catsOf(p).includes(c.id));
+    const conFoto = prods.find(p=>p.img || (p.imgs && p.imgs.length));
+    return {c, n: prods.length, foto: conFoto ? (conFoto.img || conFoto.imgs[0]) : null};
+  }).filter(x=>x.n>0);
+  document.getElementById('catalogCount').textContent = tiles.length + ' categorías';
+  grid.classList.add('grid-cats');
+  grid.innerHTML = tiles.map(x=>`
+    <button type="button" class="cat-tile" data-ir-cat="${escaparHtml(x.c.id)}">
+      <span class="cat-tile-media">${x.foto
+        ? `<img src="${x.foto}" alt="" loading="lazy" onerror="this.outerHTML=pawSVG">`
+        : pawSVG}</span>
+      <span class="cat-tile-body"><b>${escaparHtml(x.c.label)}</b><small>${x.n} ${x.n===1?'producto':'productos'}</small></span>
+      <span class="cat-tile-go" aria-hidden="true">→</span>
+    </button>`).join('') + `
+    <button type="button" class="cat-tile cat-tile-all" data-ir-cat="todos">
+      <span class="cat-tile-body"><b>Ver todos los productos</b><small>${base.length} productos</small></span>
+      <span class="cat-tile-go" aria-hidden="true">→</span>
+    </button>`;
+  grid.querySelectorAll('[data-ir-cat]').forEach(b=>b.addEventListener('click', ()=>irACategoria(b.dataset.irCat)));
+}
+
 function renderGrid(){
   const grid = document.getElementById('grid');
-  const list = visibleProducts();
-  document.getElementById('catalogCount').textContent = list.length + (list.length===1?' producto':' productos');
+  const allList = visibleProducts();
+  const gridKey = [activeCat, searchTerm, mode, sortBy, quickFilter, VER_TODO].join('|');
+  if(gridKey !== GRID_KEY){ GRID_KEY = gridKey; GRID_LIMIT = GRID_STEP; }
+  const back = document.getElementById('backCats');
+  const titulo = document.querySelector('.catalog-head h2');
+  if(esInicio()){
+    renderInicio(grid);
+    if(back) back.hidden = true;
+    if(titulo) titulo.textContent = 'Categorías';
+    return;
+  }
+  grid.classList.remove('grid-cats');
+  if(back) back.hidden = (activeCat==='todos' && !VER_TODO && !searchTerm && !quickFilter);
+  if(titulo) titulo.textContent = activeCat!=='todos'
+    ? (CATEGORIES.find(c=>c.id===activeCat)?.label || 'Catálogo')
+    : (searchTerm ? 'Resultados' : 'Catálogo');
+  const list = allList.slice(0, GRID_LIMIT);
+  document.getElementById('catalogCount').textContent = allList.length + (allList.length===1?' producto':' productos');
 
-  if(list.length===0){
+  if(allList.length===0){
     grid.innerHTML = `<div class="empty-state">${
       searchTerm
         ? `No encontramos nada con “${searchTerm}”. Probá con otra palabra.`
@@ -2344,7 +2454,12 @@ function renderGrid(){
         </button>
       </div>
     </div>
-  `;}).join('');
+  `;}).join('') + (allList.length > list.length
+      ? `<div class="ver-mas-wrap"><button type="button" class="ver-mas" id="verMas">Ver más productos <small>(${allList.length - list.length} más)</small></button></div>`
+      : '');
+
+  const vm = document.getElementById('verMas');
+  if(vm) vm.addEventListener('click', ()=>{ GRID_LIMIT += GRID_STEP; renderGrid(); });
 
   grid.querySelectorAll('[data-detail]').forEach(el=>{
     el.addEventListener('click', ()=>openDetail(Number(el.dataset.detail)));
@@ -4340,6 +4455,7 @@ fetch('catalogo.json', {cache:'no-store'})
     entries.forEach(en=>{
       if(!en.isIntersecting) return;
       const el = en.target;
+      if(!el.isConnected || !el.parentNode){ io.unobserve(el); return; }
       const sibs = [...el.parentNode.children].filter(c=>!c.classList.contains('fx-in'));
       const delay = Math.min(sibs.indexOf(el), 5) * 70;
       setTimeout(()=>el.classList.add('fx-in'), Math.max(0, delay));
