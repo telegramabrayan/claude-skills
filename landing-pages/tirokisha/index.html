@@ -2129,7 +2129,7 @@ let quickFilter = null;
 
 function visibleProducts(){
   let base = mode==='mayor' ? PRODUCTS.filter(hasMayor) : PRODUCTS.slice();
-  if(activeCat!=='todos') base = base.filter(p=>catsOf(p).includes(activeCat));
+  if(activeCat!=='todos' && !searchTerm) base = base.filter(p=>catsOf(p).includes(activeCat));  // al buscar, busca en toda la tienda
 
   if(quickFilter==='oferta')    base = base.filter(p=>ofertaLabel(p));
   if(quickFilter==='destacado') base = base.filter(p=>p.featured);
