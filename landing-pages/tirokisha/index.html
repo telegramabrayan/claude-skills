@@ -1415,6 +1415,14 @@
   html, body{ max-width:100%; overflow-x:hidden; overscroll-behavior-x:none; }
   @supports (overflow-x:clip){ html, body{ overflow-x:clip; } }
 
+  /* Botón de respaldo de WhatsApp */
+  .wa-fallback{ margin-top:10px; text-decoration:none; animation:fxBump .5s ease 2; }
+  .wa-fallback[hidden]{ display:none !important; }
+  /* Miniaturas del carrito sin foto, en violeta suave */
+  .di-media{ background:var(--btn-bg) !important; }
+  .di-media > div[style*="background"]{ background:var(--btn-bg) !important; }
+  .di-media svg path, .di-media svg circle{ fill:var(--coral) !important; fill-opacity:.5 !important; }
+
   .hero{ overflow:hidden; }
 </style>
 </head>
@@ -1746,6 +1754,7 @@
       Enviar pedido por WhatsApp
     </button>
     <p class="drawer-note">Se abrirá WhatsApp con el detalle de tu pedido listo para enviar.</p>
+    <a class="whatsapp-btn wa-fallback" id="waFallback" target="_blank" rel="noopener" hidden>Abrir WhatsApp con tu pedido</a>
   </div>
 </aside>
 
@@ -2969,7 +2978,9 @@ document.getElementById('sendWhatsapp').addEventListener('click', async ()=>{
       try{ win.opener = null; }catch(e){}
       win.location.href = url;
     }else{
-      window.location.href = url;
+      try{ if(win) win.close(); }catch(e){}
+      mostrarLinkWhatsapp(url);
+      try{ window.location.href = url; }catch(e){}
     }
   }finally{
     btn.disabled = false;
@@ -4017,6 +4028,19 @@ document.querySelectorAll('.quick-filter').forEach(btn=>{
 });
 
 /* ---- WhatsApp: armado y apertura del link ---- */
+// Plan B: algunos navegadores (Instagram, vistas previas, bloqueadores) no dejan abrir la pestaña sola.
+// Mostramos un botón con el link para que el cliente lo toque.
+function mostrarLinkWhatsapp(url){
+  const a = document.getElementById('waFallback');
+  if(!a) return;
+  a.href = url;
+  a.hidden = false;
+  a.scrollIntoView({block:'nearest'});
+}
+document.addEventListener('click', e=>{
+  if(e.target.closest('#waFallback')) setTimeout(()=>{ const a=document.getElementById('waFallback'); if(a) a.hidden = true; }, 400);
+});
+
 
 // Deja solo los dígitos: tolera espacios, guiones, paréntesis y el +
 function numeroLimpio(){
@@ -4037,7 +4061,8 @@ function abrirWhatsapp(url){
   }
   const win = window.open(url, '_blank');
   if(!win || win.closed || typeof win.closed === 'undefined'){
-    window.location.href = url;
+    mostrarLinkWhatsapp(url);
+    try{ window.location.href = url; }catch(e){}
   }
 }
 
