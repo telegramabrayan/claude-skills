@@ -19,7 +19,7 @@
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="Todo lo que tu mascota necesita. Armá tu pedido y lo recibís por WhatsApp en un momento.">
-<meta name="theme-color" content="#FDF6EE">
+<meta name="theme-color" content="#FACFFF">
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%237B3FF2'/%3E%3Cpath d='M12 14.5c-3.2 0-6 2.1-6 4.8 0 1 .8 1.7 1.9 1.5 1.2-.2 2.6-.6 4.1-.6s2.9.4 4.1.6c1.1.2 1.9-.5 1.9-1.5 0-2.7-2.8-4.8-6-4.8z' fill='white'/%3E%3Ccircle cx='6.5' cy='9.5' r='2.2' fill='white'/%3E%3Ccircle cx='17.5' cy='9.5' r='2.2' fill='white'/%3E%3Ccircle cx='9.5' cy='6' r='2' fill='white'/%3E%3Ccircle cx='14.5' cy='6' r='2' fill='white'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1235,38 +1235,39 @@
   }
   .hero::before{
     width:34px; height:34px; left:2%; top:14%; opacity:.7;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23F6B9CD' d='M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23B374AF' d='M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z'/%3E%3C/svg%3E");
   }
   .hero::after{
     width:44px; height:44px; left:44%; bottom:8%; opacity:.45; animation-duration:12s;
-    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23D9467A'%3E%3Cpath d='M12 13.5c-3.2 0-6 2.3-6 5 0 1.1.9 1.8 2 1.6 1.3-.2 2.6-.6 4-.6s2.7.4 4 .6c1.1.2 2-.5 2-1.6 0-2.7-2.8-5-6-5z'/%3E%3Ccircle cx='6' cy='9' r='2.2'/%3E%3Ccircle cx='18' cy='9' r='2.2'/%3E%3Ccircle cx='9.3' cy='5.3' r='2'/%3E%3Ccircle cx='14.7' cy='5.3' r='2'/%3E%3C/svg%3E");
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23870071'%3E%3Cpath d='M12 13.5c-3.2 0-6 2.3-6 5 0 1.1.9 1.8 2 1.6 1.3-.2 2.6-.6 4-.6s2.7.4 4 .6c1.1.2 2-.5 2-1.6 0-2.7-2.8-5-6-5z'/%3E%3Ccircle cx='6' cy='9' r='2.2'/%3E%3Ccircle cx='18' cy='9' r='2.2'/%3E%3Ccircle cx='9.3' cy='5.3' r='2'/%3E%3Ccircle cx='14.7' cy='5.3' r='2'/%3E%3C/svg%3E");
   }
   @keyframes skinFloat{ 0%,100%{transform:translate(0,0) rotate(0deg);} 50%{transform:translate(10px,-14px) rotate(8deg);} }
-  .hero-eyebrow{ font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--coral); background:none; padding:0; }
+  .hero-eyebrow{ font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--forest); background:none; padding:0; }
   .hero h1{
     font-weight:700; text-transform:uppercase; color:var(--ink);
     font-size:clamp(44px, 7vw, 92px); line-height:.95; letter-spacing:-.01em; overflow-wrap:anywhere;
   }
-  .hero h1 em{ font-style:normal; color:var(--coral); }
+  .hero h1 em{ font-style:normal; color:var(--forest); }
   .hero p{ font-size:18px; font-weight:600; }
-  .btn-primary{ font-weight:800; padding:16px 26px; box-shadow:0 8px 20px rgba(217,70,122,.22); }
+  .btn-primary{ background:var(--forest); font-weight:800; padding:16px 26px; box-shadow:0 8px 20px rgba(135,0,113,.22); }
   .btn-ghost{ font-weight:800; background:var(--surface); border:2px solid var(--line); color:var(--ink); }
-  .btn-ghost:hover{ border-color:var(--coral); }
+  .btn-primary:hover{ background:var(--forest-deep); }
+  .btn-ghost:hover{ border-color:var(--forest); }
   .hero-blob{ background:var(--mustard); opacity:.45; }
-  #heroSlot img{ width:86%; border:0; box-shadow:0 18px 40px rgba(58,30,36,.16); }
+  #heroSlot img{ width:86%; border:0; box-shadow:0 18px 40px rgba(70,10,64,.16); }
 
   /* Botón de rubros */
   .cat-nav{ max-width:1240px; }
-  .cats-trigger{ background:linear-gradient(100deg, var(--forest) 0%, var(--coral) 100%); box-shadow:0 12px 28px rgba(217,70,122,.28); border-radius:24px; }
+  .cats-trigger{ background:linear-gradient(100deg, var(--forest) 0%, var(--coral) 100%); box-shadow:0 12px 28px rgba(135,0,113,.28); border-radius:24px; }
 
-  .cats-panel{ background:#2B1519 !important; }
+  .cats-panel{ background:#3B0F38 !important; }
   .cats-all.active{ background:var(--coral) !important; }
 
   /* Modo menor / mayor */
   .mode-wrap{ max-width:1240px; }
   .mode-switch{ background:var(--surface); border:2px solid var(--line); border-radius:999px; }
   .mode-switch button{ font-weight:800; border-radius:999px; }
-  .mode-switch button.on{ background:var(--coral); color:#fff; }
+  .mode-switch button.on{ background:var(--forest); color:#fff; }
 
   /* Catálogo: título enorme y fichas redondeadas */
   .catalog{ max-width:1240px; }
@@ -1277,7 +1278,7 @@
   }
   .catalog-count{ font-weight:800; letter-spacing:.1em; text-transform:uppercase; font-size:13px; padding-bottom:8px; }
   .search-box input, .sort-box select{ border:2px solid var(--line); border-radius:999px; font-weight:700; background:var(--surface); }
-  .search-box input:focus{ border-color:var(--coral); }
+  .search-box input:focus{ border-color:var(--forest); }
   .quick-filter{ border:2px solid var(--line); background:var(--surface); font-weight:800; border-radius:999px; }
   .quick-filter.on{ background:var(--forest); border-color:var(--forest); color:#fff; }
 
@@ -1288,7 +1289,7 @@
     background:var(--surface); border:2px solid var(--line); border-radius:24px; overflow:hidden;
     transition:transform .3s ease, box-shadow .3s ease;
   }
-  @media (hover:hover){ .card:hover .card-media{ transform:translateY(-5px); box-shadow:0 16px 34px rgba(58,30,36,.14); } }
+  @media (hover:hover){ .card:hover .card-media{ transform:translateY(-5px); box-shadow:0 16px 34px rgba(70,10,64,.14); } }
   .card-body{ padding:12px 2px 0; gap:6px; }
   .card-cat{ background:var(--tag-bg); color:var(--tag-text); }
   .card-name{ font-family:'Fredoka', sans-serif; font-weight:600; font-size:17px; line-height:1.2; text-transform:uppercase; letter-spacing:.01em; }
@@ -1296,11 +1297,11 @@
   .card-desc{ font-weight:600; }
   .card-variant select{ border:2px solid var(--line); border-radius:12px; font-weight:700; }
   .card-add{ border-radius:999px; font-weight:800; padding:11px; }
-  .card-add:hover{ background:var(--coral); color:#fff; }
+  .card-add:hover{ background:var(--forest); color:#fff; }
   .tag-badge, .out-tag, .sale-tag, .low-tag{ border-radius:999px; font-weight:800; }
 
   /* Carrito */
-  .overlay{ background:rgba(58,30,36,.45); }
+  .overlay{ background:rgba(70,10,64,.45); }
   .drawer-head h3{ text-transform:uppercase; font-weight:700; font-size:26px; }
   .di-media{ border-radius:12px; }
   .qty-btn{ border-radius:999px; }
@@ -1334,6 +1335,82 @@
   @media (prefers-reduced-motion: reduce){
     .hero::before, .hero::after{ animation:none; }
   }
+
+  /* ---------- EFECTOS DE MOVIMIENTO ---------- */
+  /* Entrada de la portada */
+  @keyframes fxUp{ from{opacity:0; transform:translateY(26px);} to{opacity:1; transform:none;} }
+  @keyframes fxPop{ 0%{opacity:0; transform:scale(.85) rotate(-6deg);} 70%{opacity:1; transform:scale(1.03) rotate(1deg);} 100%{opacity:1; transform:none;} }
+  .hero-eyebrow{ animation:fxUp .6s ease-out both; }
+  .hero h1{ animation:fxUp .8s .12s ease-out both; }
+  .hero p{ animation:fxUp .7s .28s ease-out both; }
+  .hero-actions{ animation:fxUp .7s .4s ease-out both; }
+  .hero-art{ animation:fxPop 1s .2s cubic-bezier(.2,.8,.2,1) both; }
+
+  /* Aro punteado que gira alrededor del logo */
+  .hero-art::after{
+    content:""; position:absolute; inset:2%; border-radius:50%;
+    border:3px dashed var(--coral); opacity:.45; pointer-events:none;
+    animation:fxSpin 40s linear infinite;
+  }
+  @keyframes fxSpin{ to{ transform:rotate(360deg); } }
+
+  /* Corazones y huellitas que suben en la portada */
+  .fx-float{ position:absolute; bottom:-40px; pointer-events:none; opacity:0; z-index:0;
+    animation:fxRise linear infinite; }
+  .fx-float svg{ width:100%; height:100%; display:block; }
+  @keyframes fxRise{
+    0%{ transform:translateY(0) rotate(0deg); opacity:0; }
+    12%{ opacity:.55; }
+    85%{ opacity:.35; }
+    100%{ transform:translateY(-560px) rotate(var(--rot, 25deg)); opacity:0; }
+  }
+  .hero > *:not(.fx-float){ position:relative; z-index:1; }
+
+  /* Cinta que se desliza con los beneficios */
+  .fx-marquee{ overflow:hidden; background:var(--forest); color:#fff; padding:13px 0; margin:6px 0 18px;
+    transform:rotate(-1.2deg); box-shadow:0 10px 24px rgba(70,10,64,.18); }
+  .fx-marquee-track{ display:flex; width:max-content; animation:fxSlide 32s linear infinite; }
+  .fx-marquee span{ font-family:'Fredoka', sans-serif; font-weight:600; font-size:18px; letter-spacing:.04em;
+    text-transform:uppercase; white-space:nowrap; padding:0 22px; display:inline-flex; align-items:center; gap:22px; }
+  .fx-marquee span::after{ content:"🐾"; font-size:16px; }
+  .fx-marquee:hover .fx-marquee-track{ animation-play-state:paused; }
+  @keyframes fxSlide{ to{ transform:translateX(-50%); } }
+
+  /* Productos: aparecen al bajar */
+  .fx-on .grid .card{ opacity:0; transform:translateY(34px) scale(.97);
+    transition:opacity .55s ease, transform .55s cubic-bezier(.2,.8,.2,1); }
+  .fx-on .grid .card.fx-in{ opacity:1; transform:none; }
+  /* Foto que se acerca un poco al pasar el mouse */
+  .card-media img{ transition:transform .5s cubic-bezier(.2,.8,.2,1); }
+  @media (hover:hover){ .card:hover .card-media img{ transform:scale(1.06); } }
+  /* Huellita que salta en los productos sin foto */
+  @media (hover:hover){ .card:hover .card-media svg{ animation:fxHop .6s ease; } }
+  @keyframes fxHop{ 0%,100%{transform:none;} 40%{transform:translateY(-10px) rotate(-8deg);} }
+  /* Botón Agregar: rebote al tocar */
+  .card-add:active{ transform:scale(.94); }
+  .card-add.fx-added{ animation:fxBump .45s ease; }
+  @keyframes fxBump{ 0%{transform:scale(1);} 40%{transform:scale(1.08);} 100%{transform:scale(1);} }
+
+  /* Título CATÁLOGO: entra deslizando */
+  .catalog-head h2{ transition:transform .8s cubic-bezier(.2,.8,.2,1), opacity .8s ease; }
+  .fx-on .catalog-head h2:not(.fx-in){ opacity:0; transform:translateX(-40px); }
+
+  /* Botón de categorías: brillo que pasa */
+  .cats-trigger{ position:relative; overflow:hidden; }
+  .cats-trigger::after{ content:""; position:absolute; top:0; left:-60%; width:40%; height:100%;
+    background:linear-gradient(100deg, transparent, rgba(255,255,255,.28), transparent);
+    animation:fxShine 4.5s ease-in-out infinite; pointer-events:none; }
+  @keyframes fxShine{ 0%,60%{ left:-60%; } 100%{ left:130%; } }
+
+  @media (max-width:600px){ .fx-marquee span{ font-size:15px; padding:0 16px; gap:16px; } }
+  @media (prefers-reduced-motion: reduce){
+    .hero-eyebrow, .hero h1, .hero p, .hero-actions, .hero-art, .hero-art::after,
+    .fx-marquee-track, .cats-trigger::after, .fx-float{ animation:none !important; }
+    .fx-float{ display:none; }
+    .fx-on .grid .card, .fx-on .catalog-head h2{ opacity:1 !important; transform:none !important; }
+  }
+
+  .hero{ overflow:hidden; }
 </style>
 </head>
 <body>
@@ -1374,6 +1451,8 @@
     <div id="heroSlot"></div>
   </div>
 </section>
+
+<div class="fx-marquee" aria-hidden="true"><div class="fx-marquee-track"><span>Calidad, variedad y los mejores precios</span><span>Pedidos por WhatsApp</span><span>Por menor y por mayor</span><span>Envíos por Correo Argentino y Vía Cargo</span><span>Ropa importada · Shampoo · Accesorios</span><span>Calidad, variedad y los mejores precios</span><span>Pedidos por WhatsApp</span><span>Por menor y por mayor</span><span>Envíos por Correo Argentino y Vía Cargo</span><span>Ropa importada · Shampoo · Accesorios</span></div></div>
 
 <a class="promo-banner" id="promoBanner" style="display:none;" target="_blank">
   <span class="promo-text" id="promoText"></span>
@@ -2921,11 +3000,11 @@ const DEFAULTS = {
   pdfPropio: '',
   guiaTalles: 'Talle | Largo de lomo | Contorno de pecho\n1 | 20 cm | 28 cm\n2 | 25 cm | 34 cm\n3 | 30 cm | 40 cm\n4 | 35 cm | 46 cm\n5 | 40 cm | 52 cm\n6 | 45 cm | 58 cm\n7 | 50 cm | 64 cm\n8 | 55 cm | 70 cm\n9 | 60 cm | 76 cm\n10 | 65 cm | 82 cm\n11 | 70 cm | 88 cm\n12 | 75 cm | 94 cm',
   guiaNota: 'Medí a tu mascota desde la base del cuello hasta el nacimiento de la cola. Ante la duda, elegí el talle más grande.',
-  colForest: '#3A1E24',
-  colCoral: '#D9467A',
-  colMustard: '#F6B9CD',
+  colForest: '#870071',
+  colCoral: '#B374AF',
+  colMustard: '#E9B3F2',
   colTurq: '#17BEBB',
-  colCream: '#FDF6EE',
+  colCream: '#FACFFF',
   adv: {},
   bannerOn: false,
   bannerTexto: '',
@@ -4200,6 +4279,63 @@ fetch('catalogo.json', {cache:'no-store'})
     if(hayCambiosLocales()) aplicarLocalSobre(null);
   })
   .finally(iniciar);
+</script>
+
+<script id="efectos">
+/* ========== EFECTOS DE MOVIMIENTO (solo visual, no toca la tienda) ========== */
+(function(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+  // Corazones y huellitas que suben en la portada
+  const hero = document.querySelector('.hero');
+  const HEART = '<svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/></svg>';
+  const PAW = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 13.5c-3.2 0-6 2.3-6 5 0 1.1.9 1.8 2 1.6 1.3-.2 2.6-.6 4-.6s2.7.4 4 .6c1.1.2 2-.5 2-1.6 0-2.7-2.8-5-6-5z"/><circle cx="6" cy="9" r="2.2"/><circle cx="18" cy="9" r="2.2"/><circle cx="9.3" cy="5.3" r="2"/><circle cx="14.7" cy="5.3" r="2"/></svg>';
+  if(hero){
+    for(let i=0;i<10;i++){
+      const el = document.createElement('span');
+      el.className = 'fx-float';
+      el.setAttribute('aria-hidden','true');
+      const size = 16 + Math.round(Math.random()*22);
+      el.style.cssText = `left:${Math.round(Math.random()*95)}%;width:${size}px;height:${size}px;`+
+        `animation-duration:${9+Math.random()*9}s;animation-delay:${-Math.random()*14}s;`+
+        `color:${i%3===0 ? 'var(--forest)' : 'var(--coral)'};--rot:${Math.round(Math.random()*80-40)}deg;`;
+      el.innerHTML = i%2 ? HEART : PAW;
+      hero.appendChild(el);
+    }
+  }
+
+  // Productos y título que aparecen al bajar
+  document.documentElement.classList.add('fx-on');
+  const io = ('IntersectionObserver' in window) ? new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(!en.isIntersecting) return;
+      const el = en.target;
+      const sibs = [...el.parentNode.children].filter(c=>!c.classList.contains('fx-in'));
+      const delay = Math.min(sibs.indexOf(el), 5) * 70;
+      setTimeout(()=>el.classList.add('fx-in'), Math.max(0, delay));
+      io.unobserve(el);
+    });
+  }, {rootMargin:'0px 0px -8% 0px'}) : null;
+
+  function watch(){
+    document.querySelectorAll('.grid .card:not(.fx-in), .catalog-head h2:not(.fx-in)').forEach(el=>{
+      if(io) io.observe(el); else el.classList.add('fx-in');
+    });
+  }
+  watch();
+  // La tienda vuelve a dibujar los productos al filtrar o buscar: se animan los nuevos
+  const grid = document.getElementById('grid');
+  if(grid) new MutationObserver(watch).observe(grid, {childList:true});
+  // Por si algo falla, a los 4 segundos todo queda visible
+  setTimeout(()=>document.querySelectorAll('.grid .card, .catalog-head h2').forEach(el=>el.classList.add('fx-in')), 4000);
+
+  // Rebote del botón Agregar
+  document.addEventListener('click', e=>{
+    const b = e.target.closest('.card-add');
+    if(!b || b.disabled) return;
+    b.classList.remove('fx-added'); void b.offsetWidth; b.classList.add('fx-added');
+  });
+})();
 </script>
 
 </body>
