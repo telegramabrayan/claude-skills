@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es-AR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mate y Pampa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Generado con marketing/landing (skill "landing"). Paleta validada con brand_palette_validator.py: PASS 7/0/0.
+     Precios, combos y contacto son de ejemplo (inferred): reemplazalos por los reales antes de publicar. -->
+<style>
+/* Layout: almacén de campo de noche — fondo verde yerba, letras de filete dorado, catálogo como mostrador */
+:root {
+  --navy:       #1B3A24;   /* verde yerba (primary) */
+  --navy-mid:   #13261A;   /* monte de noche (bg) */
+  --navy-deep:  #0E1D14;
+  --teal:       #E3B04B;   /* dorado alpaca (accent / CTA) */
+  --teal-glow:  rgba(227, 176, 75, 0.14);
+  --amber:      #C8643B;   /* cuero curtido */
+  --off-white:  #F6EEDC;   /* papel de almacén */
+  --text-muted: rgba(246, 238, 220, 0.70);
+  --card-bg:    rgba(227, 176, 75, 0.06);
+  --card-border:rgba(227, 176, 75, 0.18);
+  --font-display: "Alfa Slab One", "Rockwell", Georgia, serif;
+  --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--navy-mid); color: var(--off-white);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+img, svg { max-width: 100%; }
+a { color: var(--teal); }
+:focus-visible { outline: 2px solid var(--teal); outline-offset: 3px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+.container { max-width: 1200px; margin: 0 auto; padding-inline: 24px; position: relative; }
+.eyebrow {
+  display: inline-block; font-size: 13px; font-weight: 600; letter-spacing: .2em;
+  text-transform: uppercase; color: var(--teal);
+}
+.section { padding-block: 112px; }
+.section-head { display: grid; gap: 14px; max-width: 680px; margin-bottom: 48px; }
+.section-head h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(36px, 5vw, 56px); line-height: 1.05; }
+.section-head p { margin: 0; color: var(--text-muted); }
+
+/* Botones */
+.btn-primary, .btn-ghost {
+  display: inline-flex; align-items: center; gap: 10px; border: 0; cursor: pointer;
+  font: 600 18px/1 var(--font-body); padding: 18px 28px; border-radius: 999px; text-decoration: none;
+  transition: transform .25s ease, filter .25s ease, background .25s ease;
+}
+.btn-primary { background: var(--teal); color: var(--navy-deep); }
+.btn-primary:hover { transform: translateY(-2px); filter: brightness(1.08); }
+.btn-ghost { background: transparent; color: var(--off-white); box-shadow: inset 0 0 0 1.5px var(--card-border); }
+.btn-ghost:hover { box-shadow: inset 0 0 0 1.5px var(--teal); }
+
+/* Barra superior */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 40;
+  background: rgba(19, 38, 26, .86); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--card-border);
+}
+.topbar .container { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 14px; }
+.brand { font-family: var(--font-display); font-size: 22px; color: var(--off-white); text-decoration: none; letter-spacing: .01em; }
+.brand span { color: var(--teal); }
+.nav { display: flex; gap: 22px; align-items: center; }
+.nav a { color: var(--text-muted); text-decoration: none; font-weight: 500; font-size: 15px; }
+.nav a:hover { color: var(--off-white); }
+.cart-btn {
+  position: relative; display: inline-flex; align-items: center; gap: 8px; cursor: pointer;
+  background: var(--card-bg); color: var(--off-white); border: 1px solid var(--card-border);
+  padding: 10px 16px; border-radius: 999px; font: 600 15px var(--font-body);
+}
+.cart-count {
+  min-width: 22px; height: 22px; border-radius: 11px; background: var(--teal); color: var(--navy-deep);
+  font-size: 12px; font-weight: 800; display: inline-grid; place-items: center; padding-inline: 6px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* HERO */
+.hero {
+  position: relative; overflow: hidden; display: flex; align-items: center;
+  min-height: min(100vh, 860px); padding-block: 96px 120px;
+  background:
+    radial-gradient(1200px 600px at 80% 20%, rgba(227,176,75,.10), transparent 60%),
+    linear-gradient(180deg, var(--navy) 0%, var(--navy-mid) 100%);
+}
+.hero-shapes-back, .hero-shapes-mid { position: absolute; inset: 0; pointer-events: none; }
+.shape { position: absolute; border-radius: 50%; }
+.hero-shapes-back .shape-a { width: 520px; height: 520px; left: -160px; top: -120px; background: rgba(227,176,75,.08); filter: blur(60px); animation: floatA 14s ease-in-out infinite; }
+.hero-shapes-back .shape-b { width: 420px; height: 420px; right: -120px; bottom: -160px; background: rgba(200,100,59,.14); filter: blur(70px); animation: floatB 18s ease-in-out infinite; }
+/* hojas de yerba flotando */
+.leaf { position: absolute; width: 26px; height: 12px; border-radius: 0 100% 0 100%; background: #6E8F4E; opacity: .5; }
+.hero-shapes-mid .l1 { left: 8%;  top: 22%; transform: rotate(-20deg); animation: floatC 9s ease-in-out infinite; }
+.hero-shapes-mid .l2 { left: 46%; top: 12%; transform: rotate(35deg);  animation: floatA 11s ease-in-out infinite; }
+.hero-shapes-mid .l3 { left: 14%; bottom: 18%; transform: rotate(60deg); animation: floatB 13s ease-in-out infinite; }
+.hero-shapes-mid .l4 { right: 6%; top: 30%; transform: rotate(-50deg); animation: floatC 10s ease-in-out infinite; }
+.hero-grid { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+.hero-copy { display: grid; gap: 22px; min-width: 0; }
+.hero h1 {
+  font-family: var(--font-display); font-weight: 400; font-size: clamp(48px, 7vw, 82px); line-height: 1;
+  letter-spacing: -.01em;
+}
+.hero h1 em { font-style: normal; color: var(--teal); }
+.hero .subtitle { font-size: 19px; color: var(--text-muted); max-width: 52ch; margin: 0; }
+.hero-actions { display: flex; flex-wrap: wrap; gap: 14px; }
+.hero-facts { display: flex; flex-wrap: wrap; gap: 10px 26px; color: var(--text-muted); font-size: 14px; }
+.hero-facts b { color: var(--off-white); font-weight: 700; }
+.hero-art { justify-self: center; width: min(100%, 400px); }
+.hero-art svg { display: block; width: 100%; height: auto; filter: drop-shadow(0 30px 40px rgba(0,0,0,.35)); }
+.steam path { stroke: var(--off-white); stroke-width: 3; fill: none; stroke-linecap: round; opacity: .35; animation: steam 3.5s ease-in-out infinite; }
+.steam path:nth-child(2) { animation-delay: .8s; }
+.steam path:nth-child(3) { animation-delay: 1.6s; }
+.scroll-down {
+  position: absolute; left: 50%; bottom: 28px; margin-left: -18px; width: 36px; height: 36px;
+  color: var(--teal); animation: bounce 2s ease-in-out infinite;
+}
+
+/* Filete porteño: cinta separadora */
+.filete { height: 14px; background:
+  repeating-linear-gradient(90deg, var(--teal) 0 18px, transparent 18px 26px, var(--amber) 26px 32px, transparent 32px 40px);
+  opacity: .55; }
+
+/* FEATURES */
+.features { background: var(--navy-mid); }
+.features-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; perspective: 1000px; }
+.feature-card {
+  background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 18px;
+  padding: 28px 24px; display: grid; gap: 12px; align-content: start;
+  transition: transform .3s ease, border-color .3s ease;
+}
+.feature-card:hover { transform: translateY(-6px); border-color: var(--teal); }
+.feature-card svg { width: 28px; height: 28px; stroke: var(--teal); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.feature-card h3 { font-size: 21px; font-weight: 700; }
+.feature-card p { margin: 0; color: var(--text-muted); font-size: 15.5px; }
+
+/* CATÁLOGO */
+.catalog { background: linear-gradient(180deg, var(--navy-mid), var(--navy-deep)); }
+.filters { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 32px; }
+.chip {
+  cursor: pointer; border: 1px solid var(--card-border); background: transparent; color: var(--text-muted);
+  font: 600 14px var(--font-body); padding: 9px 16px; border-radius: 999px; transition: all .2s ease;
+}
+.chip:hover { color: var(--off-white); border-color: var(--teal); }
+.chip[aria-pressed="true"] { background: var(--teal); color: var(--navy-deep); border-color: var(--teal); }
+.products { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 22px; }
+.product {
+  display: grid; grid-template-rows: auto 1fr; border-radius: 18px; overflow: hidden;
+  background: rgba(246,238,220,.035); border: 1px solid rgba(246,238,220,.09);
+  transition: transform .3s ease, border-color .3s ease;
+}
+.product:hover { transform: translateY(-4px); border-color: var(--card-border); }
+.product-img { aspect-ratio: 4 / 3; display: grid; place-items: center; position: relative; }
+.product-img svg { width: 62%; height: 78%; }
+.badge {
+  position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  text-transform: uppercase; background: var(--navy-deep); color: var(--teal); padding: 6px 10px; border-radius: 999px;
+}
+.product-body { padding: 18px 20px 20px; display: grid; gap: 8px; align-content: start; }
+.product-cat { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--teal); font-weight: 600; }
+.product h3 { font-size: 19px; font-weight: 700; line-height: 1.25; }
+.product p { margin: 0; color: var(--text-muted); font-size: 14.5px; }
+.product-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 8px; }
+.price { font-family: var(--font-display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.add-btn {
+  cursor: pointer; border: 0; background: var(--teal); color: var(--navy-deep); font: 700 14px var(--font-body);
+  padding: 10px 16px; border-radius: 999px; transition: filter .2s ease, transform .2s ease;
+}
+.add-btn:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.add-btn.added { background: var(--off-white); }
+
+/* GUÍA */
+.guide { background: var(--navy); }
+.guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+.guide-card { border: 1px solid var(--card-border); border-radius: 20px; padding: 32px; background: rgba(14,29,20,.35); min-width: 0; }
+.guide-card h3 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin-bottom: 6px; }
+.guide-card .lead { color: var(--text-muted); margin: 0 0 18px; font-size: 15.5px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; counter-reset: s; }
+.steps li { display: grid; grid-template-columns: 34px 1fr; gap: 14px; align-items: start; counter-increment: s; }
+.steps li::before {
+  content: counter(s); width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--teal-glow); color: var(--teal); font-weight: 800; font-size: 15px; border: 1px solid var(--card-border);
+}
+.steps li span { padding-top: 5px; }
+.temp { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.temp div { flex: 1 1 120px; border-radius: 14px; padding: 12px 14px; background: var(--card-bg); border: 1px solid var(--card-border); }
+.temp b { display: block; font-family: var(--font-display); font-weight: 400; font-size: 24px; color: var(--teal); font-variant-numeric: tabular-nums; }
+.temp small { color: var(--text-muted); font-size: 13px; }
+
+/* CLOSING CTA */
+.closing-cta { background: var(--navy-mid); padding: 120px 24px; text-align: center; position: relative; overflow: hidden; }
+.closing-cta h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(38px, 6vw, 62px); line-height: 1.05; max-width: 820px; margin: 0 auto 18px; }
+.closing-cta p { color: var(--text-muted); max-width: 560px; margin: 0 auto 36px; }
+.cta-glow { position: relative; display: inline-block; }
+.cta-glow::before {
+  content: ""; position: absolute; inset: -90px -140px; z-index: 0;
+  background: radial-gradient(circle, var(--teal-glow) 0%, transparent 70%);
+}
+.cta-glow .btn-primary { position: relative; z-index: 1; }
+
+footer { background: var(--navy-deep); color: var(--text-muted); font-size: 14px; padding-block: 36px; border-top: 1px solid var(--card-border); }
+footer .container { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
+
+/* CARRITO */
+.drawer-backdrop { position: fixed; inset: 0; background: rgba(5,10,7,.6); z-index: 60; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; width: min(420px, 100%); z-index: 70;
+  background: var(--navy-mid); border-left: 1px solid var(--card-border);
+  display: grid; grid-template-rows: auto 1fr auto;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  transform: translateX(100%); transition: transform .35s ease;
+}
+.drawer.open { transform: translateX(0); }
+.drawer-head { display: flex; align-items: center; justify-content: space-between; padding: 20px 22px; border-bottom: 1px solid var(--card-border); }
+.drawer-head h3 { font-family: var(--font-display); font-weight: 400; font-size: 24px; }
+.icon-btn { cursor: pointer; background: transparent; border: 1px solid var(--card-border); color: var(--off-white); width: 38px; height: 38px; border-radius: 50%; font-size: 20px; line-height: 1; }
+.drawer-items { overflow-y: auto; padding: 8px 22px; }
+.cart-item { display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; padding-block: 14px; border-bottom: 1px solid rgba(246,238,220,.08); }
+.cart-item h4 { margin: 0; font-size: 15.5px; font-weight: 600; }
+.cart-item .ci-price { font-variant-numeric: tabular-nums; font-weight: 700; }
+.qty { display: inline-flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 14px; }
+.qty button { cursor: pointer; width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--card-border); background: transparent; color: var(--off-white); font-size: 16px; }
+.empty { color: var(--text-muted); padding-block: 28px; text-align: center; }
+.drawer-foot { padding: 18px 22px 22px; border-top: 1px solid var(--card-border); display: grid; gap: 12px; }
+.total { display: flex; justify-content: space-between; font-size: 18px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ship-note { font-size: 13px; color: var(--text-muted); margin: 0; }
+.drawer-foot .btn-primary, .drawer-foot .btn-ghost { justify-content: center; width: 100%; font-size: 16px; padding: 15px 20px; }
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); z-index: 80;
+  transform: translate(-50%, 140%); background: var(--off-white); color: var(--navy-deep);
+  padding: 12px 20px; border-radius: 999px; font-weight: 700; font-size: 15px; transition: transform .3s ease;
+  max-width: calc(100% - 32px);
+}
+.toast.show { transform: translate(-50%, 0); }
+
+/* Animaciones ambientales (CSS, no GSAP) */
+@keyframes floatA { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(20px,-30px) rotate(8deg); } }
+@keyframes floatB { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(-25px,20px) rotate(-10deg); } }
+@keyframes floatC { 0%,100% { transform: translate(0,0) rotate(0deg); } 50% { transform: translate(12px,18px) rotate(14deg); } }
+@keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(8px); } }
+@keyframes steam { 0% { opacity: 0; transform: translateY(8px); } 40% { opacity: .4; } 100% { opacity: 0; transform: translateY(-16px); } }
+
+@media (max-width: 900px) {
+  .features-grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-grid { grid-template-columns: 1fr; }
+  .hero-art { width: min(70%, 300px); order: -1; }
+  .guide-grid { grid-template-columns: 1fr; }
+  .nav a { display: none; }
+}
+@media (max-width: 580px) {
+  .features-grid { grid-template-columns: 1fr; }
+  .products { grid-template-columns: 1fr; }
+  .hero h1 { font-size: 46px; }
+  .section { padding-block: 80px; }
+  .closing-cta { padding: 88px 16px; }
+  .container { padding-inline: 16px; }
+  .guide-card { padding: 24px 20px; }
+  .hero { padding-block: 64px 96px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  html { scroll-behavior: auto; }
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="container">
+    <a class="brand" href="#inicio">Mate <span>y</span> Pampa</a>
+    <nav class="nav" aria-label="Secciones">
+      <a href="#catalogo">Catálogo</a>
+      <a href="#combos">Combos</a>
+      <a href="#guia">Curar y cebar</a>
+    </nav>
+    <button class="cart-btn" id="open-cart" type="button" aria-label="Abrir carrito">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6"/><circle cx="10" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/></svg>
+      Carrito <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</header>
+
+<!-- SECTION 1: HERO -->
+<section class="hero" id="inicio">
+  <div class="hero-shapes-back" aria-hidden="true">
+    <div class="shape shape-a"></div>
+    <div class="shape shape-b"></div>
+  </div>
+  <div class="hero-shapes-mid" aria-hidden="true">
+    <span class="leaf l1"></span><span class="leaf l2"></span><span class="leaf l3"></span><span class="leaf l4"></span>
+  </div>
+  <div class="container">
+    <div class="hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow">Matería artesanal · Hecho en Argentina</span>
+        <h1>El mate de siempre, <em>bien cebado.</em></h1>
+        <p class="subtitle">Mates de calabaza y algarrobo, bombillas de alpaca, materos de cuero y todo lo que hace falta para la ronda. Elegidos uno por uno y listos para curar en casa.</p>
+        <div class="hero-actions">
+          <a class="btn-primary" href="#catalogo">Ver el catálogo
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+          </a>
+          <a class="btn-ghost" href="#combos">Armá tu combo</a>
+        </div>
+        <div class="hero-facts">
+          <span><b>Envíos</b> a todo el país</span>
+          <span><b>3 cuotas</b> sin interés</span>
+          <span><b>Guía de curado</b> en cada mate</span>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 400 440">
+          <g class="steam">
+            <path d="M170 92c-10-14 10-22 0-38"/>
+            <path d="M200 86c-10-14 10-22 0-38"/>
+            <path d="M230 92c-10-14 10-22 0-38"/>
+          </g>
+          <!-- bombilla -->
+          <rect x="246" y="20" width="12" height="190" rx="6" transform="rotate(14 252 115)" fill="#D9D3C2"/>
+          <rect x="238" y="16" width="24" height="16" rx="5" transform="rotate(14 250 24)" fill="#E3B04B"/>
+          <!-- yerba -->
+          <ellipse cx="200" cy="140" rx="96" ry="26" fill="#5E7F3E"/>
+          <ellipse cx="190" cy="136" rx="60" ry="12" fill="#7C9C55"/>
+          <!-- calabaza -->
+          <path d="M104 142c-8 60-30 110 10 170 28 42 70 58 86 58s58-16 86-58c40-60 18-110 10-170z" fill="#8A4B27"/>
+          <path d="M120 150c-4 50-18 96 12 146" stroke="#A9653A" stroke-width="10" fill="none" stroke-linecap="round" opacity=".7"/>
+          <!-- virola de alpaca -->
+          <ellipse cx="200" cy="142" rx="100" ry="28" fill="none" stroke="#E3B04B" stroke-width="12"/>
+          <path d="M104 160c30 14 162 14 192 0" stroke="#B88C35" stroke-width="3" fill="none" opacity=".8"/>
+          <!-- pie -->
+          <path d="M150 360h100l14 40H136z" fill="#E3B04B"/>
+          <rect x="128" y="398" width="144" height="12" rx="6" fill="#B88C35"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <svg class="scroll-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+</section>
+
+<div class="filete" aria-hidden="true"></div>
+
+<!-- SECTION 2: FEATURES -->
+<section class="features section" id="por-que">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Por qué comprar acá</span>
+      <h2>Lo elegimos como si fuera para nuestra ronda</h2>
+    </div>
+    <div class="features-grid">
+      <article class="feature-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c4 3 6 6 6 10a6 6 0 0 1-12 0c0-4 2-7 6-10z"/><path d="M12 9v8"/></svg>
+        <h3>Calabazas seleccionadas</h3>
+        <p>Revisamos grosor, fondo y boca de cada mate. Si tiene una fisura, no sale del taller.</p>
+      </article>
+      <article class="feature-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 21l10-18"/><path d="M5 19l4 2"/><circle cx="17.5" cy="3.5" r="1.5"/></svg>
+        <h3>Alpaca y acero de verdad</h3>
+        <p>Bombillas de alpaca cincelada y acero quirúrgico 316L. Nada de pintura que se salta.</p>
+      </article>
+      <article class="feature-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M8 7V5a4 4 0 0 1 8 0v2"/></svg>
+        <h3>Cuero vacuno curtido</h3>
+        <p>Materos cosidos a mano con compartimentos para termo de 1 L, yerbera y azucarera.</p>
+      </article>
+      <article class="feature-card">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h11v9H3z"/><path d="M14 10h4l3 3v3h-7z"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        <h3>Envíos a todo el país</h3>
+        <p>Despachamos en 48 h hábiles por correo o moto en CABA. Gratis desde $60.000.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- CATÁLOGO -->
+<section class="catalog section" id="catalogo">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Catálogo</span>
+      <h2>Todo para la ronda</h2>
+      <p>Filtrá por categoría y sumá al carrito. Cuando termines, te armamos el pedido para mandarlo por WhatsApp.</p>
+    </div>
+    <div class="filters" role="group" aria-label="Filtrar por categoría" id="filters"></div>
+    <div class="products" id="products"></div>
+  </div>
+</section>
+
+<!-- COMBOS -->
+<section class="catalog section" id="combos" style="padding-top: 0;">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Combos</span>
+      <h2>Para arrancar o para regalar</h2>
+      <p>Armados para que no falte nada. Salen más baratos que por separado.</p>
+    </div>
+    <div class="products" id="combos-grid"></div>
+  </div>
+</section>
+
+<!-- GUÍA -->
+<section class="guide section" id="guia">
+  <div class="container">
+    <div class="section-head">
+      <span class="eyebrow">Guía de la casa</span>
+      <h2>Curar y cebar sin errores</h2>
+      <p>Un mate bien curado dura años. Uno bien cebado se termina rápido.</p>
+    </div>
+    <div class="guide-grid">
+      <article class="guide-card">
+        <h3>Cómo curar tu mate</h3>
+        <p class="lead">Para mates de calabaza y madera. Los de vidrio, acero o cerámica no se curan.</p>
+        <ol class="steps">
+          <li><span>Llenalo con yerba usada y humedecela con agua tibia hasta el borde.</span></li>
+          <li><span>Dejalo reposar 24 horas en un lugar fresco, sin tapar.</span></li>
+          <li><span>Vacialo y raspá suavemente las paredes internas con una cuchara para sacar la piel suelta.</span></li>
+          <li><span>Repetí el proceso una vez más y dejalo secar boca abajo antes del primer mate.</span></li>
+        </ol>
+      </article>
+      <article class="guide-card">
+        <h3>Cómo cebar el primero</h3>
+        <p class="lead">El primero es del cebador. Siempre.</p>
+        <ol class="steps">
+          <li><span>Llená el mate hasta tres cuartos con yerba.</span></li>
+          <li><span>Tapá la boca con la mano, sacudí boca abajo y dejalo inclinado para formar la montañita.</span></li>
+          <li><span>Mojá el hueco con un chorrito de agua tibia y esperá unos segundos.</span></li>
+          <li><span>Clavá la bombilla tapando la punta con el pulgar, apoyada contra la pared.</span></li>
+          <li><span>Cebá siempre en el mismo lugar, sin mojar la montañita.</span></li>
+        </ol>
+        <div class="temp">
+          <div><b>75–80 °C</b><small>agua para cebar</small></div>
+          <div><b>Nunca</b><small>agua hervida: quema la yerba</small></div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 3: CLOSING CTA -->
+<section class="closing-cta" id="contacto">
+  <span class="eyebrow">¿Pasás a buscar o te lo mandamos?</span>
+  <h2>Poné la pava. Del resto nos encargamos.</h2>
+  <p>Armá tu pedido en el carrito y mandalo por WhatsApp. Te respondemos con el costo de envío y los medios de pago.</p>
+  <div class="cta-glow">
+    <button class="btn-primary" type="button" id="cta-cart">Ver mi pedido</button>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <span>© 2026 Mate y Pampa · Matería artesanal</span>
+    <span>Atención: lunes a sábado de 9 a 19 h</span>
+  </div>
+</footer>
+
+<!-- CARRITO -->
+<div class="drawer-backdrop" id="backdrop" hidden></div>
+<aside class="drawer" id="drawer" aria-label="Carrito" aria-hidden="true">
+  <div class="drawer-head">
+    <h3>Tu pedido</h3>
+    <button class="icon-btn" id="close-cart" type="button" aria-label="Cerrar carrito">×</button>
+  </div>
+  <div class="drawer-items" id="cart-items"></div>
+  <div class="drawer-foot">
+    <div class="total"><span>Total</span><span id="cart-total">$0</span></div>
+    <p class="ship-note" id="ship-note">Envío gratis desde $60.000.</p>
+    <a class="btn-primary" id="wa-btn" href="https://wa.me/" target="_blank" rel="noopener">Enviar pedido por WhatsApp</a>
+    <button class="btn-ghost" id="copy-btn" type="button">Copiar pedido</button>
+  </div>
+</aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+<script>
+// ---------- Datos (inferred: precios en ARS de ejemplo, reemplazar por los reales) ----------
+const ART = {
+  mate: (c1, c2) => `<svg viewBox="0 0 100 100"><ellipse cx="50" cy="30" rx="26" ry="7" fill="#5E7F3E"/><path d="M24 31c-3 18-8 32 3 48 7 10 17 14 23 14s16-4 23-14c11-16 6-30 3-48z" fill="${c1}"/><ellipse cx="50" cy="31" rx="27" ry="7.5" fill="none" stroke="${c2}" stroke-width="4"/><rect x="58" y="6" width="4" height="40" rx="2" transform="rotate(14 60 26)" fill="#D9D3C2"/></svg>`,
+  bombilla: (c) => `<svg viewBox="0 0 100 100"><rect x="47" y="8" width="6" height="74" rx="3" transform="rotate(30 50 50)" fill="${c}"/><ellipse cx="30" cy="84" rx="12" ry="6" transform="rotate(30 30 84)" fill="${c}"/><rect x="64" y="8" width="10" height="8" rx="2" transform="rotate(30 69 12)" fill="#E3B04B"/></svg>`,
+  matero: (c) => `<svg viewBox="0 0 100 100"><path d="M18 34h64v48a6 6 0 0 1-6 6H24a6 6 0 0 1-6-6z" fill="${c}"/><path d="M30 34c0-18 40-18 40 0" fill="none" stroke="${c}" stroke-width="5"/><path d="M18 50h64" stroke="#E3B04B" stroke-width="2" stroke-dasharray="3 3"/><rect x="44" y="56" width="12" height="9" rx="2" fill="#E3B04B"/></svg>`,
+  termo: (c) => `<svg viewBox="0 0 100 100"><rect x="34" y="18" width="32" height="72" rx="8" fill="${c}"/><rect x="38" y="6" width="24" height="14" rx="4" fill="#2A2A2A"/><rect x="34" y="40" width="32" height="4" fill="rgba(255,255,255,.25)"/><path d="M66 30h6a4 4 0 0 1 4 4v30a4 4 0 0 1-4 4h-6" fill="none" stroke="#2A2A2A" stroke-width="4"/></svg>`,
+  yerba: (c) => `<svg viewBox="0 0 100 100"><path d="M26 18h48l4 72H22z" fill="${c}"/><rect x="26" y="12" width="48" height="8" fill="#B88C35"/><circle cx="50" cy="50" r="14" fill="#F6EEDC" opacity=".9"/><path d="M44 52c4-8 10-8 12-10-2 6-4 12-12 10z" fill="#5E7F3E"/></svg>`,
+  accesorio: (c) => `<svg viewBox="0 0 100 100"><rect x="22" y="30" width="26" height="50" rx="6" fill="${c}"/><rect x="54" y="38" width="24" height="42" rx="6" fill="#8A4B27"/><rect x="22" y="24" width="26" height="8" rx="3" fill="#E3B04B"/><rect x="54" y="32" width="24" height="8" rx="3" fill="#E3B04B"/></svg>`
+};
+const BG = { mate: "#2B4A30", bombilla: "#24402B", matero: "#3A2E22", termo: "#20362A", yerba: "#2E4526", accesorio: "#33302A", combo: "#3B331F" };
+const CATS = [
+  ["todos", "Todos"], ["mate", "Mates"], ["bombilla", "Bombillas"], ["matero", "Materos"],
+  ["termo", "Termos"], ["yerba", "Yerbas"], ["accesorio", "Accesorios"]
+];
+const PRODUCTS = [
+  { id: "m1", cat: "mate", name: "Mate Imperial de calabaza", desc: "Forrado en cuero, virola de alpaca cincelada a mano.", price: 38500, badge: "Más vendido", art: ART.mate("#6B3A1F", "#E3B04B") },
+  { id: "m2", cat: "mate", name: "Mate Camionero", desc: "Calabaza de boca ancha, virola lisa de acero. Para tomar largo.", price: 29900, art: ART.mate("#8A4B27", "#C9C9C9") },
+  { id: "m3", cat: "mate", name: "Mate Torpedo", desc: "Calabaza alargada forrada en cuero crudo con costura gaucha.", price: 24500, art: ART.mate("#A0673C", "#D9D3C2") },
+  { id: "m4", cat: "mate", name: "Mate de algarrobo", desc: "Madera torneada y encerada. Se cura en un día.", price: 14900, art: ART.mate("#5A3A22", "#5A3A22") },
+  { id: "m5", cat: "mate", name: "Mate de vidrio forrado", desc: "No se cura ni toma gusto. Ideal para la oficina.", price: 11900, badge: "Sin curado", art: ART.mate("#3F5F6B", "#C9C9C9") },
+  { id: "b1", cat: "bombilla", name: "Bombilla de alpaca pico de loro", desc: "Filtro de resorte desmontable, cincelado a mano.", price: 21900, badge: "Artesanal", art: ART.bombilla("#D9D3C2") },
+  { id: "b2", cat: "bombilla", name: "Bombilla de acero 316L", desc: "Pico plano, filtro tipo cuchara. Va al lavavajillas.", price: 8900, art: ART.bombilla("#B9BEC2") },
+  { id: "b3", cat: "bombilla", name: "Bombilla de alpaca y bronce", desc: "Detalles en bronce, filtro de paleta fina.", price: 16500, art: ART.bombilla("#C9A86A") },
+  { id: "t1", cat: "matero", name: "Matero de cuero vacuno", desc: "Para termo de 1 L, mate, yerbera y azucarera. Cosido a mano.", price: 54900, badge: "Hecho a mano", art: ART.matero("#7A4526") },
+  { id: "t2", cat: "matero", name: "Matero de lona encerada", desc: "Liviano, resistente al agua, correa regulable.", price: 32500, art: ART.matero("#5C6B44") },
+  { id: "r1", cat: "termo", name: "Termo acero 1 L pico cebador", desc: "Mantiene el agua caliente 24 h. Pico que no chorrea.", price: 46900, badge: "24 h caliente", art: ART.termo("#2F6B47") },
+  { id: "r2", cat: "termo", name: "Termo acero 1,2 L", desc: "Manija plegable y tapón a rosca. Para la ronda larga.", price: 52900, art: ART.termo("#7A3A2A") },
+  { id: "y1", cat: "yerba", name: "Yerba con palo 1 kg", desc: "Estacionamiento natural de 24 meses. Sabor suave y parejo.", price: 6200, art: ART.yerba("#3E6B35") },
+  { id: "y2", cat: "yerba", name: "Yerba despalada 500 g", desc: "Intensa, rinde más. Para los que la toman fuerte.", price: 4300, art: ART.yerba("#2E5228") },
+  { id: "y3", cat: "yerba", name: "Yerba con hierbas serranas 500 g", desc: "Con peperina, menta y burrito de las sierras.", price: 4900, art: ART.yerba("#5E7F3E") },
+  { id: "a1", cat: "accesorio", name: "Set yerbera y azucarera", desc: "Cuero con tapa a presión y pico dosificador.", price: 18900, art: ART.accesorio("#7A4526") },
+  { id: "a2", cat: "accesorio", name: "Cepillo limpia bombillas", desc: "Cerda fina, llega hasta el filtro. Pack x2.", price: 2900, art: ART.accesorio("#5C6B44") }
+];
+const COMBOS = [
+  { id: "c1", cat: "combo", name: "Combo Arranque", desc: "Mate de algarrobo + bombilla de acero + yerba 1 kg + guía de curado.", price: 26900, was: 30000, badge: "Para empezar", art: ART.mate("#5A3A22", "#5A3A22") },
+  { id: "c2", cat: "combo", name: "Combo Ronda Completa", desc: "Mate Camionero + bombilla de alpaca + termo 1 L + matero de cuero.", price: 139900, was: 153600, badge: "Más elegido", art: ART.matero("#7A4526") },
+  { id: "c3", cat: "combo", name: "Combo Regalo Imperial", desc: "Mate Imperial + bombilla pico de loro + set yerbera/azucarera en caja.", price: 72500, was: 79300, badge: "Para regalar", art: ART.mate("#6B3A1F", "#E3B04B") }
+];
+const ALL = Object.fromEntries([...PRODUCTS, ...COMBOS].map(p => [p.id, p]));
+const FREE_SHIP = 60000;
+const fmt = n => "$" + n.toLocaleString("es-AR");
+
+// ---------- Render ----------
+function card(p) {
+  const was = p.was ? ` <s style="font-family:var(--font-body);font-size:14px;color:var(--text-muted)">${fmt(p.was)}</s>` : "";
+  const catLabel = p.cat === "combo" ? "Combo" : CATS.find(c => c[0] === p.cat)[1];
+  return `<article class="product" data-cat="${p.cat}">
+    <div class="product-img" style="background:${BG[p.cat]}">${p.badge ? `<span class="badge">${p.badge}</span>` : ""}${p.art}</div>
+    <div class="product-body">
+      <span class="product-cat">${catLabel}</span>
+      <h3>${p.name}</h3>
+      <p>${p.desc}</p>
+      <div class="product-foot">
+        <span class="price">${fmt(p.price)}${was}</span>
+        <button class="add-btn" type="button" data-id="${p.id}" aria-label="Agregar ${p.name} al carrito">Agregar</button>
+      </div>
+    </div>
+  </article>`;
+}
+const productsEl = document.getElementById("products");
+productsEl.innerHTML = PRODUCTS.map(card).join("");
+document.getElementById("combos-grid").innerHTML = COMBOS.map(card).join("");
+
+const filtersEl = document.getElementById("filters");
+filtersEl.innerHTML = CATS.map(([k, l], i) => `<button class="chip" type="button" data-cat="${k}" aria-pressed="${i === 0}">${l}</button>`).join("");
+filtersEl.addEventListener("click", e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  filtersEl.querySelectorAll(".chip").forEach(c => c.setAttribute("aria-pressed", c === b));
+  const cat = b.dataset.cat;
+  productsEl.querySelectorAll(".product").forEach(el => { el.hidden = !(cat === "todos" || el.dataset.cat === cat); });
+});
+
+// ---------- Carrito ----------
+let cart = {};
+try { cart = JSON.parse(localStorage.getItem("mp-cart") || "{}") || {}; } catch (e) { cart = {}; }
+const save = () => { try { localStorage.setItem("mp-cart", JSON.stringify(cart)); } catch (e) {} };
+const toastEl = document.getElementById("toast");
+let toastT;
+function toast(msg) { toastEl.textContent = msg; toastEl.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => toastEl.classList.remove("show"), 2000); }
+
+function orderText() {
+  const lines = Object.entries(cart).map(([id, q]) => `• ${q} x ${ALL[id].name} — ${fmt(ALL[id].price * q)}`);
+  const total = Object.entries(cart).reduce((s, [id, q]) => s + ALL[id].price * q, 0);
+  return `Hola Mate y Pampa! Quiero hacer este pedido:\n${lines.join("\n")}\nTotal: ${fmt(total)}`;
+}
+function renderCart() {
+  const entries = Object.entries(cart).filter(([id]) => ALL[id]);
+  const count = entries.reduce((s, [, q]) => s + q, 0);
+  const total = entries.reduce((s, [id, q]) => s + ALL[id].price * q, 0);
+  document.getElementById("cart-count").textContent = count;
+  document.getElementById("cart-total").textContent = fmt(total);
+  document.getElementById("ship-note").textContent = total === 0 ? `Envío gratis desde ${fmt(FREE_SHIP)}.`
+    : total >= FREE_SHIP ? "Tu pedido tiene envío gratis." : `Te faltan ${fmt(FREE_SHIP - total)} para el envío gratis.`;
+  document.getElementById("cart-items").innerHTML = entries.length ? entries.map(([id, q]) => `
+    <div class="cart-item">
+      <h4>${ALL[id].name}</h4><span class="ci-price">${fmt(ALL[id].price * q)}</span>
+      <span class="qty"><button type="button" data-dec="${id}" aria-label="Quitar uno">−</button>${q}<button type="button" data-inc="${id}" aria-label="Agregar uno">+</button></span>
+    </div>`).join("") : `<p class="empty">Todavía no agregaste nada. Empezá por un mate.</p>`;
+  document.getElementById("wa-btn").href = "https://wa.me/?text=" + encodeURIComponent(orderText());
+  const disabled = !entries.length;
+  document.getElementById("wa-btn").style.pointerEvents = disabled ? "none" : "";
+  document.getElementById("wa-btn").style.opacity = disabled ? ".45" : "";
+  document.getElementById("copy-btn").disabled = disabled;
+  save();
+}
+document.addEventListener("click", e => {
+  const add = e.target.closest(".add-btn");
+  if (add) {
+    const id = add.dataset.id; cart[id] = (cart[id] || 0) + 1; renderCart();
+    add.textContent = "¡Sumado!"; add.classList.add("added");
+    setTimeout(() => { add.textContent = "Agregar"; add.classList.remove("added"); }, 1200);
+    toast(`${ALL[id].name} al carrito`);
+    return;
+  }
+  const inc = e.target.closest("[data-inc]"), dec = e.target.closest("[data-dec]");
+  if (inc) { cart[inc.dataset.inc]++; renderCart(); }
+  if (dec) { const id = dec.dataset.dec; cart[id]--; if (cart[id] <= 0) delete cart[id]; renderCart(); }
+});
+const drawer = document.getElementById("drawer"), backdrop = document.getElementById("backdrop");
+function openCart() { backdrop.hidden = false; drawer.classList.add("open"); drawer.setAttribute("aria-hidden", "false"); document.getElementById("close-cart").focus(); }
+function closeCart() { backdrop.hidden = true; drawer.classList.remove("open"); drawer.setAttribute("aria-hidden", "true"); }
+document.getElementById("open-cart").addEventListener("click", openCart);
+document.getElementById("cta-cart").addEventListener("click", openCart);
+document.getElementById("close-cart").addEventListener("click", closeCart);
+backdrop.addEventListener("click", closeCart);
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeCart(); });
+document.getElementById("copy-btn").addEventListener("click", async () => {
+  const text = orderText();
+  try { await navigator.clipboard.writeText(text); toast("Pedido copiado"); }
+  catch (err) {
+    const ta = document.createElement("textarea"); ta.value = text; document.body.appendChild(ta); ta.select();
+    try { document.execCommand("copy"); toast("Pedido copiado"); } catch (e2) { toast("Seleccioná y copiá el texto a mano"); }
+    ta.remove();
+  }
+});
+renderCart();
+
+// ---------- Animaciones (GSAP) ----------
+const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+if (window.gsap && !reduce) {
+  gsap.registerPlugin(ScrollTrigger);
+  // initial states first (FOUC prevention)
+  gsap.set([".hero .eyebrow", ".hero h1", ".hero .subtitle", ".hero-actions", ".hero-facts", ".hero-art"], { opacity: 0, y: 30 });
+  gsap.set(".feature-card", { opacity: 0, y: 55, rotateX: 18 });
+
+  const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+  tl.to(".hero .eyebrow", { opacity: 1, y: 0, duration: 0.6 })
+    .to(".hero h1", { opacity: 1, y: 0, duration: 0.8 }, "-=0.3")
+    .to(".hero-art", { opacity: 1, y: 0, duration: 0.9 }, "-=0.6")
+    .to(".hero .subtitle", { opacity: 1, y: 0, duration: 0.6 }, "-=0.6")
+    .to(".hero-actions", { opacity: 1, y: 0, duration: 0.5 }, "-=0.3")
+    .to(".hero-facts", { opacity: 1, y: 0, duration: 0.4 }, "-=0.2");
+
+  ScrollTrigger.batch(".feature-card", {
+    start: "top 85%",
+    onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, rotateX: 0, duration: 0.8, stagger: 0.11, ease: "power2.out" })
+  });
+
+  const hero = document.querySelector(".hero");
+  hero.addEventListener("mousemove", e => {
+    const x = (e.clientX / window.innerWidth - 0.5) * 2;
+    const y = (e.clientY / window.innerHeight - 0.5) * 2;
+    gsap.to(".hero-shapes-back", { x: x * 45, y: y * 22, duration: 0.8 });
+    gsap.to(".hero-shapes-mid", { x: x * 22, y: y * 11, duration: 0.8 });
+    gsap.to(".hero .container", { x: x * 8, y: y * 5, duration: 0.8 });
+  });
+}
+</script>
+</body>
+</html>
