@@ -66,6 +66,8 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .brand-text b { font-family: var(--font-display); font-weight: 400; font-size: 24px; letter-spacing: .04em; }
 .brand-text small { font-size: 10px; letter-spacing: .32em; color: var(--teal); font-weight: 600; margin-top: 3px; }
 .top-actions { display: flex; align-items: center; gap: 10px; }
+.gear-btn { display: none !important; }
+html.es-duenio .gear-btn { display: grid !important; }
 .gear-btn { width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center; cursor: pointer; background: var(--card-bg); color: var(--off-white); border: 1px solid var(--card-border); transition: transform .3s ease, color .2s ease, border-color .2s ease; }
 .gear-btn svg { width: 20px; height: 20px; }
 .gear-btn:hover { color: var(--teal); border-color: var(--teal); transform: rotate(45deg); }
@@ -292,6 +294,11 @@ footer .container { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-conte
 .f-error { color: #F28B82; font-size: 14px; min-height: 1em; margin: 6px 0 0; }
 .f-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 10px; }
 .f-actions .btn-primary, .f-actions .btn-ghost { font-size: 15px; padding: 13px 20px; }
+.pin-help { color: var(--text-muted); font-size: 14px; margin: 0 0 6px; }
+#pin-input, #pin-input2 { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid rgba(217,217,217,.2); background: var(--navy-deep); color: var(--off-white); font: 700 24px var(--font-body); letter-spacing: .4em; text-align: center; }
+#pin-input2 { margin-top: 8px; }
+#pin-input:focus, #pin-input2:focus { outline: none; border-color: var(--teal); }
+.adm-owner { margin-top: 10px; width: 100%; cursor: pointer; background: transparent; border: 1px dashed rgba(217,217,217,.25); color: var(--text-muted); font: 600 13px var(--font-body); padding: 10px; border-radius: 999px; }
 .no-photo { width: 100%; height: 100%; display: grid; place-items: center; background: var(--card-bg); color: #6b6b6b; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; }
 .out-badge { position: absolute; left: 10px; top: 10px; background: rgba(17,17,17,.85); color: var(--off-white); font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px; }
 .product.is-out .product-img img { opacity: .5; filter: grayscale(.5); }
@@ -427,7 +434,6 @@ footer .container { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-conte
   <div class="container">
     <span>© 2026 Kanec Mates</span>
     <span>Catálogo junio 2026 · Precios sujetos a cambios</span>
-    <a href="#admin" id="open-admin" class="admin-link">Administrar tienda</a>
   </div>
 </footer>
 
@@ -471,6 +477,8 @@ footer .container { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-conte
     </details>
     <div id="adm-list"></div>
     <button class="adm-reset" type="button" id="adm-reset">Descartar cambios de este dispositivo</button>
+    <button class="adm-owner" type="button" id="adm-pin-change">Cambiar mi PIN</button>
+    <button class="adm-owner" type="button" id="adm-hide-gear">Ocultar el engranaje en este dispositivo</button>
   </div>
 </aside>
 
@@ -499,6 +507,21 @@ footer .container { display: flex; flex-wrap: wrap; gap: 8px 24px; justify-conte
     <div class="f-actions">
       <button class="btn-ghost" type="button" id="prod-cancel">Cancelar</button>
       <button class="btn-primary" type="submit">Guardar</button>
+    </div>
+  </form>
+</div>
+<!-- PIN del panel -->
+<div class="drawer-backdrop" id="pin-backdrop" hidden style="z-index:95"></div>
+<div class="prod-modal" id="pin-modal" role="dialog" aria-modal="true" aria-labelledby="pin-title" hidden style="z-index:96; width:min(360px, calc(100% - 24px))">
+  <form id="pin-form" novalidate>
+    <h3 id="pin-title">Ingresá tu PIN</h3>
+    <p class="pin-help" id="pin-help">Escribí tu PIN de 4 números para entrar al panel.</p>
+    <input id="pin-input" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" aria-label="PIN">
+    <input id="pin-input2" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="8" autocomplete="off" aria-label="Repetí el PIN" placeholder="Repetilo" hidden>
+    <p class="f-error" id="pin-error" role="alert"></p>
+    <div class="f-actions">
+      <button class="btn-ghost" type="button" id="pin-cancel">Cancelar</button>
+      <button class="btn-primary" type="submit" id="pin-ok">Entrar</button>
     </div>
   </form>
 </div>
@@ -678,13 +701,67 @@ document.getElementById("copy-phone").addEventListener("click", () => copy("1166
 const adm = document.getElementById("admin"), admBack = document.getElementById("admin-backdrop");
 const form = document.getElementById("prod-form"), formWrap = document.getElementById("prod-modal");
 let editing = null, newImg = { a: undefined, b: undefined };
-function openAdmin() { admBack.hidden = false; adm.classList.add("open"); adm.setAttribute("aria-hidden", "false"); renderAdmin(); }
+function showAdmin() { admBack.hidden = false; adm.classList.add("open"); adm.setAttribute("aria-hidden", "false"); renderAdmin(); }
+
+// ---- Acceso del dueño: engranaje oculto + PIN (guardado solo en este dispositivo, cifrado) ----
+const OWNER_KEY = "kanec-duenio", PIN_KEY = "kanec-pin";
+const ls = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+             set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+             del: k => { try { localStorage.removeItem(k); } catch (e) {} } };
+let pinOk = false, pinMode = "check";
+async function hashPin(pin) {
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode("kanec|" + pin));
+    return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+  } catch (e) { let h = 0; for (const c of "kanec|" + pin) h = (h * 31 + c.charCodeAt(0)) | 0; return "x" + h; }
+}
+function markOwner() { ls.set(OWNER_KEY, "1"); document.documentElement.classList.add("es-duenio"); }
+if (ls.get(OWNER_KEY)) document.documentElement.classList.add("es-duenio");
+const pinModal = document.getElementById("pin-modal"), pinBack = document.getElementById("pin-backdrop");
+function askPin(mode) {
+  pinMode = mode;
+  const nuevo = mode === "create" || mode === "change";
+  document.getElementById("pin-title").textContent = nuevo ? (mode === "change" ? "Nuevo PIN" : "Creá tu PIN") : "Ingresá tu PIN";
+  document.getElementById("pin-help").textContent = nuevo
+    ? "Elegí un PIN de 4 números. Te lo va a pedir cada vez que abras el panel en este dispositivo."
+    : "Escribí tu PIN para entrar al panel.";
+  document.getElementById("pin-ok").textContent = nuevo ? "Guardar PIN" : "Entrar";
+  document.getElementById("pin-input2").hidden = !nuevo;
+  document.getElementById("pin-input").value = ""; document.getElementById("pin-input2").value = "";
+  document.getElementById("pin-error").textContent = "";
+  pinModal.hidden = false; pinBack.hidden = false;
+  setTimeout(() => document.getElementById("pin-input").focus(), 50);
+}
+function closePin() { pinModal.hidden = true; pinBack.hidden = true; }
+document.getElementById("pin-cancel").addEventListener("click", closePin);
+pinBack.addEventListener("click", closePin);
+document.getElementById("pin-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const p1 = document.getElementById("pin-input").value.trim(), p2 = document.getElementById("pin-input2").value.trim(), err = document.getElementById("pin-error");
+  if (!/^\d{4,8}$/.test(p1)) { err.textContent = "El PIN tiene que tener entre 4 y 8 números."; return; }
+  if (pinMode === "check") {
+    if (await hashPin(p1) === ls.get(PIN_KEY)) { pinOk = true; closePin(); showAdmin(); }
+    else { err.textContent = "PIN incorrecto. Probá de nuevo."; document.getElementById("pin-input").value = ""; }
+    return;
+  }
+  if (p1 !== p2) { err.textContent = "Los dos PIN no coinciden."; return; }
+  ls.set(PIN_KEY, await hashPin(p1)); pinOk = true; closePin();
+  toast(pinMode === "change" ? "PIN cambiado" : "PIN guardado"); showAdmin();
+});
+function openAdmin() {
+  if (pinOk) return showAdmin();
+  askPin(ls.get(PIN_KEY) ? "check" : "create");
+}
+document.getElementById("adm-pin-change").addEventListener("click", () => { closeAdmin(); askPin("change"); });
+document.getElementById("adm-hide-gear").addEventListener("click", () => {
+  ls.del(OWNER_KEY); document.documentElement.classList.remove("es-duenio"); pinOk = false; closeAdmin();
+  toast("Listo. Para volver a verlo, entrá con tu link terminado en #admin");
+});
 function closeAdmin() { admBack.hidden = true; adm.classList.remove("open"); adm.setAttribute("aria-hidden", "true"); if (location.hash === "#admin") history.replaceState(null, "", location.pathname + location.search); }
-document.getElementById("open-admin").addEventListener("click", e => { e.preventDefault(); openAdmin(); });
 document.getElementById("open-admin-top").addEventListener("click", openAdmin);
 document.getElementById("close-admin").addEventListener("click", closeAdmin);
 admBack.addEventListener("click", closeAdmin);
-document.addEventListener("keydown", ev => { if (ev.key === "Escape") { if (!formWrap.hidden) closeForm(); else { closeAdmin(); closeCart(); } } });
+document.addEventListener("keydown", ev => { if (ev.key === "Escape") { if (!pinModal.hidden) closePin(); else if (!formWrap.hidden) closeForm(); else { closeAdmin(); closeCart(); } } });
 
 function renderAdmin() {
   const local = readLocal();
@@ -841,7 +918,7 @@ function boot(pub) {
     if (local) { try { localStorage.removeItem(LOCAL_KEY); } catch (e) {} }
     setCatalog(pub && Array.isArray(pub.cats) ? pub.cats : DEFAULT_CATS);
   }
-  if (location.hash === "#admin") openAdmin();
+  if (location.hash === "#admin") { markOwner(); openAdmin(); }
 }
 setCatalog(DEFAULT_CATS);
 fetch("catalogo.json", { cache: "no-store" }).then(r => r.ok ? r.json() : null).catch(() => null).then(boot);

@@ -1470,6 +1470,12 @@
   }
   .catalog{ scroll-margin-top:80px; }
 
+  /* Engranaje solo visible en el dispositivo de la dueña (se activa entrando con #admin) */
+  #openSettings{ display:none !important; }
+  html.es-duenio #openSettings{ display:grid !important; }
+  .adm-ocultar{ margin:18px 0 6px; width:100%; cursor:pointer; background:transparent; border:1.5px dashed var(--line);
+    color:var(--ink-soft); font:700 13px 'Nunito', sans-serif; padding:10px; border-radius:999px; }
+
   .hero{ overflow:hidden; }
 </style>
 </head>
@@ -4481,6 +4487,32 @@ fetch('catalogo.json', {cache:'no-store'})
     if(!b || b.disabled) return;
     b.classList.remove('fx-added'); void b.offsetWidth; b.classList.add('fx-added');
   });
+})();
+
+/* ========== Acceso de la dueña: el engranaje solo aparece en su dispositivo ========== */
+(function(){
+  const KEY = 'tk-duenio';
+  const get = () => { try { return localStorage.getItem(KEY); } catch(e){ return null; } };
+  const set = v => { try { v ? localStorage.setItem(KEY, '1') : localStorage.removeItem(KEY); } catch(e){} };
+  if (location.hash === '#admin') {
+    set(true);
+    history.replaceState(null, '', location.pathname + location.search);
+    setTimeout(() => { const g = document.getElementById('openSettings'); if (g) g.click(); }, 900);
+  }
+  if (get()) document.documentElement.classList.add('es-duenio');
+  const body = document.querySelector('#settings .settings-body') || document.getElementById('settings');
+  if (body) {
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'adm-ocultar';
+    b.textContent = 'Ocultar el engranaje en este dispositivo';
+    b.addEventListener('click', () => {
+      set(false); document.documentElement.classList.remove('es-duenio');
+      const s = document.getElementById('settings'); if (s) s.classList.remove('open');
+      const o = document.getElementById('overlay'); if (o) o.classList.remove('open');
+      alert('Listo. Para volver a ver el engranaje, entrá con tu link terminado en #admin');
+    });
+    body.appendChild(b);
+  }
 })();
 </script>
 
