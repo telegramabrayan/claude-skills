@@ -174,8 +174,8 @@ h1, h2, h3 { margin: 0; text-wrap: balance; }
 .product-img.photo { cursor: pointer; }
 .photo-hint {
   position: absolute; right: 10px; bottom: 10px; background: rgba(17,17,17,.78); color: var(--off-white);
-  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; padding: 5px 9px; border-radius: 999px;
-  pointer-events: none;
+  font-size: 10px; font-weight: 700; letter-spacing: .04em; line-height: 1; padding: 3px 6px; border-radius: 999px;
+  right: 6px; bottom: 6px; background: rgba(17,17,17,.6); font-variant-numeric: tabular-nums; pointer-events: none;
 }
 .product h3 {
   font-family: var(--font-display); font-weight: 400; text-transform: uppercase; color: var(--off-white);
@@ -588,7 +588,7 @@ function renderStore() {
       <div class="cat-head"><h2>${esc(c.title)}</h2><span class="count">${c.items.length} ${c.items.length === 1 ? "producto" : "productos"}</span></div>
       <div class="products">${c.items.map(p => `
         <article class="product${p.out ? " is-out" : ""}">
-          <div class="product-img${p.img2 ? " photo" : ""}">${p.img ? `<img src="${imgSrc(p.img)}" alt="${esc(p.name)}" loading="lazy" width="560" height="560">` : `<div class="no-photo">Foto próximamente</div>`}${p.img2 ? `<img class="alt" src="${imgSrc(p.img2)}" alt="${esc(p.name)}, otra foto" loading="lazy" width="560" height="560"><span class="photo-hint">Foto 1/2 · tocá</span>` : ""}${p.out ? '<span class="out-badge">Sin stock</span>' : ""}</div>
+          <div class="product-img${p.img2 ? " photo" : ""}">${p.img ? `<img src="${imgSrc(p.img)}" alt="${esc(p.name)}" loading="lazy" width="560" height="560">` : `<div class="no-photo">Foto próximamente</div>`}${p.img2 ? `<img class="alt" src="${imgSrc(p.img2)}" alt="${esc(p.name)}, otra foto" loading="lazy" width="560" height="560"><span class="photo-hint" aria-label="Foto 1 de 2, tocá para ver la otra">1/2</span>` : ""}${p.out ? '<span class="out-badge">Sin stock</span>' : ""}</div>
           <h3>${esc(p.name)}</h3>
           <div class="product-foot">
             <span class="price">${fmt(p.price)}</span>
@@ -642,7 +642,7 @@ document.addEventListener("click", ev => {
   if (ph) {
     const on = ph.classList.toggle("show-alt");
     const hint = ph.querySelector(".photo-hint");
-    if (hint) hint.textContent = on ? "Foto 2/2 · tocá" : "Foto 1/2 · tocá";
+    if (hint) { hint.textContent = on ? "2/2" : "1/2"; hint.setAttribute("aria-label", on ? "Foto 2 de 2, tocá para ver la otra" : "Foto 1 de 2, tocá para ver la otra"); }
     return;
   }
   const add = ev.target.closest(".add-btn");
