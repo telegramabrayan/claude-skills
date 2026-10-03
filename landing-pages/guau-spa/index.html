@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Guau Spa</title>
+<meta name="description" content="Peluquería canina: baño, corte y deslanado con turno. Calculá el precio según el tamaño de tu perro y reservá por WhatsApp.">
+<!-- inferred: nombre "Guau Spa", precios, horarios y zona son de referencia; se cambian en el bloque CONFIG del script -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600;700&family=DM+Mono:wght@500&display=swap">
+<style>
+  /* Layout: azulejo de baño de fondo, una gran "bañera" interactiva (antes/después) en el portal,
+     lista de precios como pizarrón del local, el turno contado paso a paso, y la reserva al final. */
+  :root{
+    --tile:#EAF4FB; --tile-line:#D6E7F4; --surface:#FFFFFF; --ink:#13233F; --ink-soft:#4A5A75;
+    --line:#CFE0EE; --coral:#D62F57; --coral-text:#B8234A; --on-coral:#FFFFFF; --sun:#FFC93C; --on-sun:#13233F;
+    --mint:#2FB89A; --shadow:rgba(19,35,63,.12); --wash:rgba(214,47,87,.08); --canvas-bg:#D9ECF8; --canvas-dirty:#D8D2C4;
+    --f-display:'Bricolage Grotesque', 'Arial Rounded MT Bold', system-ui, sans-serif;
+    --f-body:'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+    --f-mono:'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+    --r-lg:28px; --r-md:18px; --r-sm:12px;
+  }
+  @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+    --tile:#0D1A2E; --tile-line:#14243D; --surface:#15253F; --ink:#EAF2FB; --ink-soft:#A8B8CF;
+    --line:#24385A; --coral:#FF6688; --coral-text:#FF7E9A; --on-coral:#1A0A10; --sun:#FFCF4D; --on-sun:#13233F;
+    --mint:#45D0B0; --shadow:rgba(0,0,0,.35); --wash:rgba(255,102,136,.12); --canvas-bg:#18304F; --canvas-dirty:#2C2A30; color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --tile:#0D1A2E; --tile-line:#14243D; --surface:#15253F; --ink:#EAF2FB; --ink-soft:#A8B8CF;
+    --line:#24385A; --coral:#FF6688; --coral-text:#FF7E9A; --on-coral:#1A0A10; --sun:#FFCF4D; --on-sun:#13233F;
+    --mint:#45D0B0; --shadow:rgba(0,0,0,.35); --wash:rgba(255,102,136,.12); --canvas-bg:#18304F; --canvas-dirty:#2C2A30; color-scheme:dark;
+  }
+
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{
+    background:var(--tile); color:var(--ink); font:400 17px/1.6 var(--f-body);
+    background-image:
+      linear-gradient(var(--tile-line) 2px, transparent 2px),
+      linear-gradient(90deg, var(--tile-line) 2px, transparent 2px);
+    background-size:56px 56px; overflow-x:clip;
+  }
+  .wrap{ width:100%; max-width:1200px; margin-inline:auto; padding-inline:24px; }
+  h1,h2,h3{ font-family:var(--f-display); line-height:1.05; text-wrap:balance; margin:0; letter-spacing:-.02em; }
+  p{ margin:0; }
+  a{ color:inherit; }
+  :focus-visible{ outline:3px solid var(--sun); outline-offset:3px; border-radius:6px; }
+  .eyebrow{ font:600 13px/1 var(--f-body); letter-spacing:.2em; text-transform:uppercase; color:var(--coral-text); }
+  .mono{ font-family:var(--f-mono); font-variant-numeric:tabular-nums; }
+
+  /* Botones */
+  .btn-primary, .btn-ghost{
+    display:inline-flex; align-items:center; justify-content:center; gap:10px; cursor:pointer; text-decoration:none;
+    font:700 18px/1 var(--f-body); padding:17px 28px; border-radius:999px; border:0;
+    transition:transform .2s cubic-bezier(.2,.8,.2,1), box-shadow .2s ease, filter .2s ease;
+  }
+  .btn-primary{ background:var(--coral); color:var(--on-coral); box-shadow:0 6px 0 rgba(0,0,0,.18), 0 14px 30px var(--wash); }
+  .btn-primary:hover{ transform:translateY(-3px); filter:brightness(1.06); }
+  .btn-primary:active{ transform:translateY(2px); box-shadow:0 2px 0 rgba(0,0,0,.18); }
+  .btn-ghost{ background:var(--surface); color:var(--ink); box-shadow:inset 0 0 0 2px var(--line); }
+  .btn-ghost:hover{ transform:translateY(-3px); box-shadow:inset 0 0 0 2px var(--ink); }
+
+  /* Encabezado */
+  .top{ position:sticky; top:env(safe-area-inset-top, 0px); z-index:20; padding-block:12px; }
+  .top-bar{ display:flex; align-items:center; justify-content:space-between; gap:16px;
+    background:var(--surface); border-radius:999px; padding:8px 8px 8px 20px; box-shadow:0 8px 24px var(--shadow); }
+  .logo{ display:flex; align-items:center; gap:10px; text-decoration:none; font:800 22px/1 var(--f-display); letter-spacing:-.02em; }
+  .logo svg{ width:34px; height:34px; flex:none; }
+  .nav{ display:flex; gap:26px; font-weight:600; font-size:15px; }
+  .nav a{ text-decoration:none; color:var(--ink-soft); }
+  .nav a:hover{ color:var(--ink); }
+  .top .btn-primary{ padding:12px 20px; font-size:15px; box-shadow:0 4px 0 rgba(0,0,0,.18); }
+
+  /* Portal */
+  .hero{ position:relative; padding-block:40px 70px; }
+  .hero-grid{ display:grid; grid-template-columns:1.05fr 1fr; gap:48px; align-items:center; }
+  .hero-copy{ display:grid; gap:22px; min-width:0; }
+  .hero h1{ font-size:clamp(46px, 7.4vw, 82px); font-weight:800; }
+  .hero h1 .squeak{ display:inline-block; color:var(--coral-text); transform:rotate(-3deg); }
+  .hero h1 .underline{ background:linear-gradient(transparent 62%, var(--sun) 62%, var(--sun) 90%, transparent 90%); padding-inline:4px; }
+  .hero-sub{ font-size:19px; color:var(--ink-soft); max-width:34ch; }
+  .hero-actions{ display:flex; flex-wrap:wrap; gap:14px; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; padding:0; margin:0; list-style:none; }
+  .chips li{ background:var(--surface); border:2px solid var(--line); border-radius:999px; padding:7px 14px; font-size:14px; font-weight:600; }
+  .chips li b{ color:var(--coral-text); }
+
+  .tub{ position:relative; min-width:0; }
+  .tub-frame{ position:relative; border-radius:var(--r-lg); overflow:hidden; background:var(--canvas-bg);
+    box-shadow:0 0 0 8px var(--surface), 0 26px 50px var(--shadow); aspect-ratio:1/1; max-width:100%; touch-action:pan-y; cursor:ew-resize; }
+  .tub canvas{ display:block; width:100%; height:100%; }
+  .tag{ position:absolute; top:16px; font:700 13px/1 var(--f-body); letter-spacing:.14em; text-transform:uppercase;
+    padding:8px 12px; border-radius:999px; pointer-events:none; }
+  .tag-antes{ left:16px; background:var(--ink); color:var(--surface); }
+  .tag-despues{ right:16px; background:var(--sun); color:var(--on-sun); }
+  .tub-control{ display:grid; gap:6px; margin-top:22px; }
+  .tub-control label{ font-weight:600; font-size:14px; color:var(--ink-soft); display:flex; justify-content:space-between; gap:8px; }
+  input[type=range]{ width:100%; accent-color:var(--coral); height:28px; }
+  .sticker{ position:absolute; z-index:2; right:-10px; bottom:58px; width:118px; height:118px; border-radius:50%;
+    background:var(--sun); color:var(--on-sun); display:grid; place-items:center; text-align:center;
+    font:800 15px/1.1 var(--f-display); transform:rotate(12deg); box-shadow:0 10px 24px var(--shadow); padding:12px; }
+  .sticker b{ display:block; font-size:30px; }
+
+  .bubbles{ position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:-1; }
+  .bubbles span{ position:absolute; bottom:-60px; border-radius:50%; border:2px solid var(--line);
+    background:radial-gradient(circle at 30% 30%, var(--surface), transparent 60%); animation:rise linear infinite; }
+  @keyframes rise{ to{ transform:translateY(-110vh) translateX(30px); } }
+
+  /* Secciones */
+  section{ padding-block:110px; }
+  .sec-head{ display:grid; gap:14px; max-width:720px; margin-bottom:46px; }
+  .sec-head h2{ font-size:clamp(38px, 5.4vw, 60px); font-weight:800; }
+  .sec-head p{ color:var(--ink-soft); font-size:18px; max-width:60ch; }
+
+  /* Servicios + calculadora */
+  .features{ background:var(--surface); border-block:2px solid var(--line); }
+  .services{ display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; }
+  .feature-card{ display:grid; gap:12px; align-content:start; padding:28px; border-radius:var(--r-md);
+    background:var(--tile); border:2px solid var(--line); transition:transform .25s cubic-bezier(.2,.8,.2,1), border-color .25s ease; }
+  .feature-card:hover{ transform:translateY(-6px); border-color:var(--coral); }
+  .feature-card h3{ font-size:24px; font-weight:700; }
+  .feature-card p{ color:var(--ink-soft); font-size:16px; }
+  .feature-card .from{ font-size:15px; color:var(--ink-soft); }
+  .feature-card .from b{ color:var(--ink); font:500 20px var(--f-mono); }
+  .ico{ width:54px; height:54px; border-radius:16px; display:grid; place-items:center; background:var(--surface); border:2px solid var(--line); }
+  .ico svg{ width:30px; height:30px; }
+
+  .board{ margin-top:46px; display:grid; grid-template-columns:1.25fr 1fr; gap:0; border-radius:var(--r-lg); overflow:hidden;
+    border:2px solid var(--line); background:var(--tile); }
+  .board-left{ padding:32px; display:grid; gap:26px; min-width:0; }
+  .board-right{ padding:32px; background:var(--ink); color:var(--surface); display:grid; gap:18px; align-content:start; }
+  fieldset{ border:0; padding:0; margin:0; display:grid; gap:12px; min-width:0; }
+  legend{ font:700 15px var(--f-body); margin-bottom:12px; padding:0; }
+  .pills{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pill{ position:relative; }
+  .pill input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; }
+  .pill span{ display:grid; gap:2px; padding:10px 14px; border-radius:var(--r-sm); background:var(--surface); border:2px solid var(--line);
+    font-weight:700; font-size:15px; line-height:1.2; transition:border-color .15s ease, background .15s ease; }
+  .pill small{ font:500 12px var(--f-mono); color:var(--ink-soft); }
+  .pill input:checked + span{ border-color:var(--coral); background:var(--wash); }
+  .pill input:focus-visible + span{ outline:3px solid var(--sun); outline-offset:2px; }
+  .extras{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:8px; }
+  .extras .pill span{ grid-template-columns:1fr auto; align-items:center; }
+  .extras .pill small{ font-size:13px; }
+  .receipt-row{ display:flex; justify-content:space-between; gap:12px; font-size:15px; border-bottom:1px dashed rgba(255,255,255,.22); padding-bottom:10px; }
+  .receipt-row span:last-child{ font-family:var(--f-mono); font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .total{ display:grid; gap:4px; }
+  .total small{ letter-spacing:.16em; text-transform:uppercase; font-size:12px; font-weight:700; opacity:.75; }
+  .total strong{ font:500 clamp(40px, 5vw, 54px)/1 var(--f-mono); font-variant-numeric:tabular-nums; color:var(--sun); }
+  .total em{ font-style:normal; font-size:15px; opacity:.85; }
+  .board-note{ font-size:13px; opacity:.75; }
+  .board-right .btn-primary{ margin-top:6px; }
+  .incluye{ font-size:14px; color:var(--ink-soft); }
+  .incluye b{ color:var(--ink); }
+
+  /* Paso a paso */
+  .steps{ display:grid; grid-template-columns:repeat(3, 1fr); gap:22px; padding:0; margin:0; list-style:none; counter-reset:paso; }
+  .steps li{ counter-increment:paso; display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start; padding:22px; border-radius:var(--r-md);
+    background:var(--surface); border:2px solid var(--line); }
+  .steps li::before{ content:counter(paso); width:44px; height:44px; border-radius:50%; display:grid; place-items:center;
+    background:var(--sun); color:var(--on-sun); font:800 20px var(--f-display); }
+  .steps h3{ font-size:20px; font-weight:700; margin-bottom:4px; }
+  .steps p{ color:var(--ink-soft); font-size:15px; }
+  .steps .min{ font:500 13px var(--f-mono); color:var(--coral-text); display:block; margin-top:6px; }
+
+  /* Preguntas */
+  .faq{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:14px; }
+  details{ background:var(--surface); border:2px solid var(--line); border-radius:var(--r-md); padding:18px 22px; }
+  details[open]{ border-color:var(--coral); }
+  summary{ cursor:pointer; font-weight:700; font-size:17px; list-style:none; display:flex; justify-content:space-between; gap:12px; }
+  summary::-webkit-details-marker{ display:none; }
+  summary::after{ content:"+"; font:800 22px/1 var(--f-display); color:var(--coral-text); transition:transform .2s ease; }
+  details[open] summary::after{ transform:rotate(45deg); }
+  details p{ color:var(--ink-soft); margin-top:10px; font-size:16px; }
+
+  /* Reserva */
+  .closing-cta{ position:relative; overflow-x:clip; }
+  .book{ display:grid; grid-template-columns:1fr 1.15fr; gap:40px; align-items:start; }
+  .book-copy{ display:grid; gap:18px; min-width:0; }
+  .book-copy h2{ font-size:clamp(40px, 5.6vw, 62px); font-weight:800; }
+  .book-copy p{ color:var(--ink-soft); font-size:18px; }
+  .hours{ display:grid; gap:6px; background:var(--surface); border:2px solid var(--line); border-radius:var(--r-md); padding:18px 20px; font-size:15px; }
+  .hours div{ display:flex; justify-content:space-between; gap:12px; }
+  .hours span:last-child{ font-family:var(--f-mono); font-variant-numeric:tabular-nums; }
+  .hours .closed{ color:var(--ink-soft); }
+  form.card{ position:relative; display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:16px; padding:30px; border-radius:var(--r-lg);
+    background:var(--surface); box-shadow:0 0 0 2px var(--line), 0 30px 60px var(--shadow); }
+  form.card::before{ content:""; position:absolute; inset:-40px; z-index:-1; border-radius:50%;
+    background:radial-gradient(closest-side, var(--wash), transparent); }
+  .field{ display:grid; gap:6px; min-width:0; }
+  .field.full{ grid-column:1 / -1; }
+  .field label{ font-weight:700; font-size:14px; }
+  .field input, .field select, .field textarea{ width:100%; font:500 16px var(--f-body); color:var(--ink); background:var(--tile);
+    border:2px solid var(--line); border-radius:var(--r-sm); padding:12px 14px; }
+  .field textarea{ min-height:84px; resize:vertical; }
+  .field input:focus, .field select:focus, .field textarea:focus{ outline:none; border-color:var(--coral); }
+  .hint{ font-size:13px; color:var(--ink-soft); }
+  .err{ font-size:13px; font-weight:700; color:var(--coral-text); }
+  form.card .btn-primary{ grid-column:1 / -1; }
+  .result{ grid-column:1 / -1; display:grid; gap:12px; background:var(--tile); border:2px dashed var(--coral); border-radius:var(--r-md); padding:18px; }
+  .result h3{ font-size:20px; }
+  .result pre{ margin:0; white-space:pre-wrap; word-break:break-word; font:500 14px/1.5 var(--f-mono); background:var(--surface);
+    border-radius:var(--r-sm); padding:14px; border:2px solid var(--line); }
+  .result-actions{ display:flex; flex-wrap:wrap; gap:10px; }
+  .result-actions .btn-primary, .result-actions .btn-ghost{ font-size:15px; padding:13px 18px; }
+  .wa-num{ font-size:14px; color:var(--ink-soft); }
+  .wa-num b{ font-family:var(--f-mono); color:var(--ink); user-select:all; }
+
+  footer{ padding-block:40px 60px; border-top:2px solid var(--line); background:var(--surface); }
+  .foot{ display:flex; flex-wrap:wrap; justify-content:space-between; gap:20px; font-size:15px; color:var(--ink-soft); }
+  .foot b{ color:var(--ink); }
+
+  /* Botón flotante en celular */
+  .float-cta{ display:none; }
+
+  @media (max-width:900px){
+    .nav{ display:none; }
+    .hero-grid, .book, .board{ grid-template-columns:1fr; }
+    .services, .steps{ grid-template-columns:1fr 1fr; }
+    .tub{ max-width:520px; width:100%; margin-inline:auto; }
+    .sticker{ right:-6px; }
+  }
+  @media (max-width:580px){
+    body{ font-size:16px; background-size:44px 44px; }
+    .wrap{ padding-inline:16px; }
+    section{ padding-block:70px; }
+    .hero{ padding-block:24px 50px; }
+    .services, .steps, .faq, .extras{ grid-template-columns:1fr; }
+    form.card{ grid-template-columns:1fr; padding:22px; }
+    .board-left, .board-right{ padding:22px; }
+    .sticker{ width:92px; height:92px; font-size:12px; bottom:64px; right:4px; }
+    .sticker b{ font-size:22px; }
+    .top .btn-primary{ padding:11px 14px; font-size:14px; }
+    .logo{ font-size:19px; }
+    .float-cta{ display:flex; position:fixed; z-index:30; left:16px; right:16px; bottom:calc(14px + env(safe-area-inset-bottom, 0px));
+      transition:transform .3s ease, opacity .3s ease; }
+    .float-cta.away{ transform:translateY(140%); opacity:0; pointer-events:none; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{ scroll-behavior:auto; }
+    .bubbles{ display:none; }
+    *, *::before, *::after{ transition:none !important; animation:none !important; }
+  }
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-bar">
+      <a class="logo" href="#inicio" aria-label="Guau Spa, inicio">
+        <svg viewBox="0 0 40 40" aria-hidden="true">
+          <circle cx="20" cy="20" r="19" fill="var(--sun)"/>
+          <ellipse cx="20" cy="25" rx="7" ry="5.5" fill="var(--ink)"/>
+          <circle cx="12" cy="17" r="3.3" fill="var(--ink)"/><circle cx="28" cy="17" r="3.3" fill="var(--ink)"/>
+          <circle cx="16.3" cy="11.5" r="3" fill="var(--ink)"/><circle cx="23.7" cy="11.5" r="3" fill="var(--ink)"/>
+          <circle cx="31" cy="8" r="3" fill="var(--surface)" stroke="var(--ink)" stroke-width="1.2"/>
+          <circle cx="34.5" cy="13" r="1.8" fill="var(--surface)" stroke="var(--ink)" stroke-width="1"/>
+        </svg>
+        Guau Spa
+      </a>
+      <nav class="nav" aria-label="Secciones">
+        <a href="#servicios">Servicios y precios</a>
+        <a href="#turno">Cómo es el turno</a>
+        <a href="#preguntas">Preguntas</a>
+      </nav>
+      <a class="btn-primary" href="#reservar">Reservar turno</a>
+    </div>
+  </div>
+</header>
+
+<main id="inicio">
+  <section class="hero" aria-labelledby="h-hero">
+    <div class="bubbles" aria-hidden="true" id="bubbles"></div>
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <span class="eyebrow hero-in">Peluquería canina con turno</span>
+        <h1 id="h-hero" class="hero-in">Entra despeinado. <span class="underline">Sale</span> <span class="squeak">para la foto.</span></h1>
+        <p class="hero-sub hero-in">Baño con agua tibia, secado a mano y corte según la raza. Sin jaulas, sin apuros y con un mensaje tuyo cuando está listo para volver a casa.</p>
+        <div class="hero-actions hero-in">
+          <a class="btn-primary" href="#reservar">Reservar turno
+            <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </a>
+          <a class="btn-ghost" href="#servicios">Calcular el precio</a>
+        </div>
+        <ul class="chips hero-in" aria-label="Lo que tenés que saber">
+          <li><b>Mar a sáb</b> · 9 a 19 h</li>
+          <li>Uñas y oídos <b>siempre incluidos</b></li>
+          <li>Retiro y entrega a domicilio</li>
+        </ul>
+      </div>
+
+      <div class="tub hero-in">
+        <div class="tub-frame" id="tubFrame">
+          <canvas id="dog" role="img" aria-label="Dibujo de un perro: a la izquierda despeinado y con barro, a la derecha recién bañado con un moño."></canvas>
+          <span class="tag tag-antes">Antes</span>
+          <span class="tag tag-despues">Después</span>
+        </div>
+        <div class="sticker" aria-hidden="true"><span><b>90'</b>baño promedio de un mediano</span></div>
+        <div class="tub-control">
+          <label for="split"><span>Pasale la esponja</span><span aria-hidden="true">↔</span></label>
+          <input type="range" id="split" min="0" max="100" value="48" aria-label="Mover la línea entre el antes y el después">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="features" id="servicios" aria-labelledby="h-serv">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Servicios y precios</span>
+        <h2 id="h-serv">El precio depende del tamaño, no del humor del día.</h2>
+        <p>Elegí el tamaño y el servicio y te mostramos cuánto sale y cuánto tarda. El precio final se confirma al recibirlo, porque un pelo muy enredado lleva más tiempo.</p>
+      </div>
+
+      <div class="services">
+        <article class="feature-card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 32 32"><path d="M4 16h24v3a7 7 0 0 1-7 7H11a7 7 0 0 1-7-7z" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><circle cx="11" cy="10" r="3" fill="none" stroke="var(--coral)" stroke-width="2"/><circle cx="18" cy="7" r="2" fill="none" stroke="var(--coral)" stroke-width="2"/><circle cx="22" cy="12" r="1.6" fill="none" stroke="var(--coral)" stroke-width="2"/></svg></div>
+          <h3>Baño completo</h3>
+          <p>Shampoo según el pelaje, enjuague doble, secado a mano y cepillado. Para tenerlo limpio entre corte y corte.</p>
+          <span class="from">desde <b class="mono" data-desde="bano"></b></span>
+        </article>
+        <article class="feature-card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 32 32"><circle cx="9" cy="23" r="4" fill="none" stroke="var(--ink)" stroke-width="2"/><circle cx="23" cy="23" r="4" fill="none" stroke="var(--ink)" stroke-width="2"/><path d="M11.5 20 24 5M20.5 20 8 5" stroke="var(--coral)" stroke-width="2.4" stroke-linecap="round"/></svg></div>
+          <h3>Baño y corte</h3>
+          <p>Todo lo del baño más corte con tijera o máquina: estándar de la raza o como lo quieras vos, nos mostrás una foto.</p>
+          <span class="from">desde <b class="mono" data-desde="corte"></b></span>
+        </article>
+        <article class="feature-card">
+          <div class="ico" aria-hidden="true"><svg viewBox="0 0 32 32"><rect x="5" y="6" width="22" height="7" rx="3" fill="var(--sun)" stroke="var(--ink)" stroke-width="2"/><path d="M8 13v6M12 13v8M16 13v6M20 13v8M24 13v6" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/><path d="M14 26c2-2 4-2 6 0" stroke="var(--coral)" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+          <h3>Deslanado</h3>
+          <p>Para doble manto (golden, husky, ovejero): sacamos el pelo muerto de abajo y deja de soltar pelo por toda la casa.</p>
+          <span class="from">desde <b class="mono" data-desde="deslanado"></b></span>
+        </article>
+      </div>
+
+      <div class="board" id="calculadora">
+        <div class="board-left">
+          <fieldset>
+            <legend>1. ¿Cuánto pesa?</legend>
+            <div class="pills" id="sizes"></div>
+          </fieldset>
+          <fieldset>
+            <legend>2. ¿Qué servicio?</legend>
+            <div class="pills" id="services"></div>
+          </fieldset>
+          <fieldset>
+            <legend>3. Extras (opcional)</legend>
+            <div class="extras" id="extras"></div>
+          </fieldset>
+          <p class="incluye"><b>Siempre incluido:</b> corte de uñas, limpieza de oídos, perfume suave y pañuelo o moño.</p>
+        </div>
+        <div class="board-right" aria-live="polite">
+          <div class="total">
+            <small>Total estimado</small>
+            <strong id="total">$ 0</strong>
+            <em id="tiempo"></em>
+          </div>
+          <div id="detalle" style="display:grid; gap:10px;"></div>
+          <a class="btn-primary" href="#reservar" id="usarCalc">Reservar este turno</a>
+          <p class="board-note">Precios de referencia en pesos. Para perros que se ponen nerviosos podemos dar un turno sin otros perros en el local.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="turno" aria-labelledby="h-turno">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Cómo es el turno</span>
+        <h2 id="h-turno">Seis pasos, siempre en el mismo orden.</h2>
+        <p>Así sabés en qué anda mientras lo esperás. Los tiempos son de un perro mediano con pelo largo.</p>
+      </div>
+      <ol class="steps">
+        <li><div><h3>Recepción y revisión</h3><p>Miramos piel, orejas y nudos con vos presente y anotamos si tiene alergias o algún miedo.</p><span class="min">5 min</span></div></li>
+        <li><div><h3>Cepillado previo</h3><p>Desarmamos los nudos antes del agua: mojado, un nudo se cierra y después hay que cortarlo.</p><span class="min">15 min</span></div></li>
+        <li><div><h3>Baño tibio</h3><p>Shampoo para su tipo de pelo, dos enjuagues y acondicionador si lo necesita.</p><span class="min">20 min</span></div></li>
+        <li><div><h3>Secado a mano</h3><p>Con soplador a temperatura baja, nada de jaulas de secado. Así el pelo queda suelto y sin frizz.</p><span class="min">25 min</span></div></li>
+        <li><div><h3>Corte y prolijado</h3><p>Patas, cara y zona íntima, o el corte completo si lo pediste.</p><span class="min">20 min</span></div></li>
+        <li><div><h3>Uñas, oídos y foto</h3><p>Terminamos con uñas y oídos, le ponemos el pañuelo y te mandamos la foto para que lo vengas a buscar.</p><span class="min">5 min</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="preguntas" aria-labelledby="h-faq">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="eyebrow">Preguntas</span>
+        <h2 id="h-faq">Lo que todos preguntan antes del primer baño.</h2>
+      </div>
+      <div class="faq">
+        <details><summary>¿Necesita tener las vacunas al día?</summary><p>Sí, pedimos la antirrábica y la séxtuple vigentes. Traé la libreta la primera vez y la anotamos en su ficha.</p></details>
+        <details><summary>¿Cada cuánto conviene bañarlo?</summary><p>A la mayoría le alcanza con un baño cada 3 a 6 semanas. Bañarlo más seguido le seca la piel.</p></details>
+        <details><summary>Es miedoso, ¿qué hacen?</summary><p>Le damos un turno a primera hora, sin otros perros, y vamos más despacio. Si se estresa mucho, cortamos y lo terminamos otro día sin cargo extra.</p></details>
+        <details><summary>¿Puedo quedarme mientras lo bañan?</summary><p>En la recepción sí. Durante el baño, la mayoría se porta mejor si no ve a su dueño, así que te avisamos cuando esté listo.</p></details>
+        <details><summary>¿Atienden gatos?</summary><p>Por ahora solo perros. Para gatos te recomendamos un lugar que los atienda aparte, sin ladridos alrededor.</p></details>
+        <details><summary>¿Qué pasa si llego tarde?</summary><p>Esperamos hasta 15 minutos. Después reprogramamos el turno para no atrasar al perro que viene detrás.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="closing-cta" id="reservar" aria-labelledby="h-book">
+    <div class="wrap book">
+      <div class="book-copy">
+        <span class="eyebrow">Reservar</span>
+        <h2 id="h-book">Su próximo baño ya tiene horario.</h2>
+        <p>Completá los datos y se arma el mensaje para mandarnos por WhatsApp. Te confirmamos el turno en el día.</p>
+        <div class="hours" aria-label="Horarios">
+          <div><span>Martes a viernes</span><span>9:00 – 19:00</span></div>
+          <div><span>Sábados</span><span>9:00 – 14:00</span></div>
+          <div class="closed"><span>Domingos y lunes</span><span>Cerrado</span></div>
+        </div>
+      </div>
+
+      <form class="card" id="bookForm" novalidate>
+        <div class="field"><label for="perro">Nombre del perro</label><input id="perro" name="perro" required placeholder="Ej.: Toby" autocomplete="off"></div>
+        <div class="field"><label for="raza">Raza</label><input id="raza" name="raza" placeholder="Ej.: caniche, mestizo" autocomplete="off"></div>
+        <div class="field"><label for="fTam">Tamaño</label><select id="fTam" name="tam"></select></div>
+        <div class="field"><label for="fServ">Servicio</label><select id="fServ" name="serv"></select></div>
+        <div class="field"><label for="dia">Día</label><input id="dia" name="dia" type="date" required><span class="hint">De martes a sábado.</span></div>
+        <div class="field"><label for="franja">Horario</label>
+          <select id="franja" name="franja"><option>Mañana (9 a 13 h)</option><option>Tarde (14 a 19 h)</option></select></div>
+        <div class="field"><label for="nombre">Tu nombre</label><input id="nombre" name="nombre" required autocomplete="name"></div>
+        <div class="field"><label for="retiro">¿Lo retiramos?</label>
+          <select id="retiro" name="retiro"><option value="no">No, lo llevo yo</option><option value="si">Sí, retiro y entrega a domicilio</option></select></div>
+        <div class="field full"><label for="notas">Algo que debamos saber</label><textarea id="notas" name="notas" placeholder="Alergias, miedos, cómo querés el corte…"></textarea></div>
+        <p class="err full" id="formErr" hidden></p>
+        <button class="btn-primary" type="submit">Armar mensaje de reserva</button>
+        <div class="result" id="result" hidden>
+          <h3>Tu mensaje está listo</h3>
+          <pre id="msg"></pre>
+          <div class="result-actions">
+            <a class="btn-primary" id="waLink" href="#" target="_blank" rel="noopener">Abrir WhatsApp</a>
+            <button class="btn-ghost" type="button" id="copyBtn">Copiar mensaje</button>
+          </div>
+          <p class="wa-num">Si no se abre, mandalo a <b id="waNum"></b>.</p>
+        </div>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span><b>Guau Spa</b> · Peluquería canina con turno</span>
+    <span>WhatsApp <b class="mono" id="footNum"></b></span>
+    <span>Mar a vie 9 – 19 h · Sáb 9 – 14 h</span>
+  </div>
+</footer>
+
+<a class="btn-primary float-cta away" id="floatCta" href="#reservar">Reservar turno</a>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script>
+/* ====== CONFIG: cambiá acá el número, precios y tiempos ====== */
+const CONFIG = {
+  whatsapp: '5491179023405',            // con código de país, sin + ni espacios
+  tamanos: [
+    { id:'mini',    nombre:'Mini',    kg:'hasta 5 kg' },
+    { id:'chico',   nombre:'Chico',   kg:'5 a 10 kg' },
+    { id:'mediano', nombre:'Mediano', kg:'10 a 25 kg' },
+    { id:'grande',  nombre:'Grande',  kg:'25 a 40 kg' },
+    { id:'gigante', nombre:'Gigante', kg:'más de 40 kg' },
+  ],
+  servicios: [   // precio y minutos por tamaño, en el mismo orden de arriba
+    { id:'bano',      nombre:'Baño completo', precio:[13000,15000,18500,23000,28000], min:[60,70,90,110,140] },
+    { id:'corte',     nombre:'Baño y corte',  precio:[19500,22000,27000,33000,40000], min:[100,110,135,160,190] },
+    { id:'deslanado', nombre:'Deslanado',     precio:[21000,24000,29000,36000,44000], min:[110,120,150,180,220] },
+  ],
+  extras: [
+    { id:'hidra',  nombre:'Hidratación con mascarilla', precio:5000, min:10 },
+    { id:'dientes',nombre:'Cepillado de dientes',       precio:3000, min:5 },
+    { id:'pulgas', nombre:'Baño antipulgas',            precio:4500, min:10 },
+    { id:'retiro', nombre:'Retiro y entrega',           precio:6000, min:0 },
+  ],
+};
+/* ============================================================== */
+
+const $ = s => document.querySelector(s);
+const pesos = n => '$ ' + n.toLocaleString('es-AR');
+const horas = m => m < 60 ? `${m} min` : `${Math.floor(m/60)} h${m%60 ? ' ' + (m%60) + ' min' : ''}`;
+const state = { tam:2, serv:0, extras:new Set() };
+
+/* ---------- Calculadora ---------- */
+function pill(type, name, value, checked, title, sub){
+  const l = document.createElement('label'); l.className = 'pill';
+  l.innerHTML = `<input type="${type}" name="${name}" value="${value}" ${checked ? 'checked' : ''}><span>${title}<small>${sub}</small></span>`;
+  return l;
+}
+CONFIG.tamanos.forEach((t,i) => $('#sizes').appendChild(pill('radio','tam',i,i===state.tam,t.nombre,t.kg)));
+CONFIG.servicios.forEach((s,i) => $('#services').appendChild(pill('radio','serv',i,i===state.serv,s.nombre,'desde ' + pesos(s.precio[0]))));
+CONFIG.extras.forEach(e => $('#extras').appendChild(pill('checkbox','extra',e.id,false,e.nombre,'+ ' + pesos(e.precio))));
+document.querySelectorAll('[data-desde]').forEach(el => { const s = CONFIG.servicios.find(x => x.id === el.dataset.desde); el.textContent = pesos(s.precio[0]); });
+
+function calcular(){
+  const s = CONFIG.servicios[state.serv], t = CONFIG.tamanos[state.tam];
+  let total = s.precio[state.tam], min = s.min[state.tam];
+  const filas = [[`${s.nombre} · ${t.nombre}`, pesos(s.precio[state.tam])]];
+  CONFIG.extras.filter(e => state.extras.has(e.id)).forEach(e => { total += e.precio; min += e.min; filas.push([e.nombre, '+ ' + pesos(e.precio)]); });
+  $('#total').textContent = pesos(total);
+  $('#tiempo').textContent = `Tarda unas ${horas(min)}`;
+  $('#detalle').innerHTML = filas.map(f => `<div class="receipt-row"><span>${f[0]}</span><span>${f[1]}</span></div>`).join('');
+  return { total, min, s, t };
+}
+$('#calculadora').addEventListener('change', e => {
+  const i = e.target;
+  if(i.name === 'tam') state.tam = +i.value;
+  if(i.name === 'serv') state.serv = +i.value;
+  if(i.name === 'extra') i.checked ? state.extras.add(i.value) : state.extras.delete(i.value);
+  calcular();
+});
+calcular();
+
+/* ---------- Formulario ---------- */
+CONFIG.tamanos.forEach((t,i) => $('#fTam').add(new Option(`${t.nombre} (${t.kg})`, i)));
+CONFIG.servicios.forEach((s,i) => $('#fServ').add(new Option(s.nombre, i)));
+$('#fTam').value = state.tam; $('#fServ').value = state.serv;
+$('#waNum').textContent = '+' + CONFIG.whatsapp;
+$('#footNum').textContent = '+' + CONFIG.whatsapp;
+
+const hoy = new Date(); hoy.setHours(0,0,0,0);
+const iso = d => new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+$('#dia').min = iso(hoy);
+(function primerDia(){ const d = new Date(hoy); d.setDate(d.getDate()+1); while([0,1].includes(d.getDay())) d.setDate(d.getDate()+1); $('#dia').value = iso(d); })();
+
+$('#usarCalc').addEventListener('click', () => {
+  $('#fTam').value = state.tam; $('#fServ').value = state.serv;
+  if(state.extras.has('retiro')) $('#retiro').value = 'si';
+  const extras = CONFIG.extras.filter(e => state.extras.has(e.id) && e.id !== 'retiro').map(e => e.nombre.toLowerCase());
+  if(extras.length && !$('#notas').value) $('#notas').value = 'Extras: ' + extras.join(', ');
+  setTimeout(() => $('#perro').focus({preventScroll:true}), 500);
+});
+
+$('#bookForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const f = e.target, err = $('#formErr');
+  const faltan = [['perro','el nombre del perro'],['nombre','tu nombre'],['dia','el día']].filter(([id]) => !f[id].value.trim()).map(x => x[1]);
+  let msgErr = faltan.length ? `Falta completar ${faltan.join(' y ')}.` : '';
+  if(!msgErr){
+    const d = new Date(f.dia.value + 'T12:00');
+    if(d < hoy) msgErr = 'Elegí un día de hoy en adelante.';
+    else if([0,1].includes(d.getDay())) msgErr = 'Domingos y lunes estamos cerrados. Elegí de martes a sábado.';
+    else if(d.getDay() === 6 && f.franja.selectedIndex === 1) msgErr = 'Los sábados atendemos hasta las 14 h. Elegí el turno mañana.';
+  }
+  if(msgErr){ err.textContent = msgErr; err.hidden = false; $('#result').hidden = true; return; }
+  err.hidden = true;
+  const t = CONFIG.tamanos[f.tam.value], s = CONFIG.servicios[f.serv.value];
+  const dia = new Date(f.dia.value + 'T12:00').toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
+  const lineas = [
+    '¡Hola Guau Spa! Quiero reservar un turno 🐾',
+    `Perro: ${f.perro.value.trim()}${f.raza.value.trim() ? ' (' + f.raza.value.trim() + ')' : ''}, ${t.nombre.toLowerCase()} ${t.kg}`,
+    `Servicio: ${s.nombre}`,
+    `Día: ${dia} · ${f.franja.value}`,
+    f.retiro.value === 'si' ? 'Necesito retiro y entrega a domicilio' : 'Lo llevo yo al local',
+    `Mi nombre: ${f.nombre.value.trim()}`,
+  ];
+  if(f.notas.value.trim()) lineas.push(`Notas: ${f.notas.value.trim()}`);
+  const texto = lineas.join('\n');
+  $('#msg').textContent = texto;
+  $('#waLink').href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(texto)}`;
+  $('#result').hidden = false;
+  $('#result').scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block:'nearest' });
+});
+$('#copyBtn').addEventListener('click', async () => {
+  const b = $('#copyBtn');
+  try { await navigator.clipboard.writeText($('#msg').textContent); b.textContent = 'Copiado'; }
+  catch(_){ const r = document.createRange(); r.selectNodeContents($('#msg')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent = 'Texto seleccionado'; }
+  setTimeout(() => b.textContent = 'Copiar mensaje', 2200);
+});
+
+/* ---------- Perro antes / después (canvas) ---------- */
+const cv = $('#dog'), ctx = cv.getContext('2d'), frame = $('#tubFrame'), range = $('#split');
+let W = 0, split = range.value / 100;
+function css(v){ return getComputedStyle(document.documentElement).getPropertyValue(v).trim(); }
+function rnd(seed){ return () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; }; }
+
+function drawDog(clean){
+  const S = W, cx = S*0.5, cy = S*0.47, r = S*0.25;
+  const fur = clean ? '#F2C78A' : '#B99A6B', furDark = clean ? '#E3A85E' : '#8C7049', ink = '#2A1D14';
+  const R = rnd(clean ? 7 : 42);
+  // fondo
+  ctx.fillStyle = css(clean ? '--canvas-bg' : '--canvas-dirty');
+  ctx.fillRect(0,0,S,S);
+  if(clean){ // azulejos
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2;
+    for(let x = S/8; x < S; x += S/8){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,S); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,x); ctx.lineTo(S,x); ctx.stroke(); }
+  } else { // salpicaduras de barro
+    ctx.fillStyle = 'rgba(110,80,45,.35)';
+    for(let i=0;i<18;i++){ ctx.beginPath(); ctx.arc(R()*S, R()*S, 3 + R()*12, 0, 7); ctx.fill(); }
+  }
+  // cuerpo / pecho
+  ctx.fillStyle = fur; ctx.beginPath(); ctx.ellipse(cx, cy + r*1.55, r*1.15, r*0.85, 0, 0, 7); ctx.fill();
+  // orejas
+  for(const side of [-1,1]){
+    ctx.save(); ctx.translate(cx + side*r*0.92, cy - r*0.05); ctx.rotate(side * (clean ? 0.32 : 0.55));
+    ctx.fillStyle = furDark; ctx.beginPath(); ctx.ellipse(0, r*0.45, r*0.36, r*0.72, 0, 0, 7); ctx.fill();
+    if(clean){ ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.ellipse(-side*r*0.08, r*0.35, r*0.12, r*0.4, 0, 0, 7); ctx.fill(); }
+    ctx.restore();
+  }
+  // cabeza
+  ctx.fillStyle = fur; ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
+  if(clean){ // copete esponjoso
+    ctx.fillStyle = fur;
+    for(let i=0;i<9;i++){ const a = Math.PI*1.12 + i*(Math.PI*0.76/8); ctx.beginPath(); ctx.arc(cx + Math.cos(a)*r*0.9, cy + Math.sin(a)*r*0.9, r*0.24, 0, 7); ctx.fill(); }
+    ctx.beginPath(); ctx.arc(cx, cy - r*0.95, r*0.32, 0, 7); ctx.fill();
+  } else { // mechones despeinados
+    ctx.fillStyle = fur;
+    for(let i=0;i<34;i++){
+      const a = R()*Math.PI*2, len = r*(0.18 + R()*0.42), w = 0.1 + R()*0.14;
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a-w)*r*0.94, cy + Math.sin(a-w)*r*0.94);
+      ctx.lineTo(cx + Math.cos(a)*(r+len), cy + Math.sin(a)*(r+len) + (R()-.5)*r*0.2);
+      ctx.lineTo(cx + Math.cos(a+w)*r*0.94, cy + Math.sin(a+w)*r*0.94); ctx.fill();
+    }
+    ctx.fillStyle = '#6E5030'; // barro en la cara
+    [[-.45,.35,.16],[.5,-.2,.12],[.15,.62,.1],[-.2,-.55,.09]].forEach(([dx,dy,rr]) => { ctx.beginPath(); ctx.ellipse(cx+dx*r, cy+dy*r, rr*r*1.3, rr*r, R(), 0, 7); ctx.fill(); });
+    // hoja
+    ctx.save(); ctx.translate(cx + r*0.55, cy - r*0.82); ctx.rotate(0.6); ctx.fillStyle = '#5F8F3A';
+    ctx.beginPath(); ctx.ellipse(0,0,r*0.2,r*0.09,0,0,7); ctx.fill(); ctx.strokeStyle = '#3F6625'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(-r*0.2,0); ctx.lineTo(r*0.2,0); ctx.stroke(); ctx.restore();
+  }
+  // hocico
+  ctx.fillStyle = clean ? '#FFF1DC' : '#D9C49E'; ctx.beginPath(); ctx.ellipse(cx, cy + r*0.38, r*0.46, r*0.34, 0, 0, 7); ctx.fill();
+  // ojos
+  for(const side of [-1,1]){
+    const ex = cx + side*r*0.38, ey = cy - r*0.08;
+    ctx.fillStyle = ink; ctx.beginPath(); ctx.arc(ex, ey, r*0.1, 0, 7); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(ex - r*0.03, ey - r*0.035, r*0.035, 0, 7); ctx.fill();
+  }
+  if(!clean){ // flequillo sobre los ojos
+    ctx.fillStyle = furDark;
+    for(let i=0;i<7;i++){ const x = cx - r*0.62 + i*r*0.2; ctx.beginPath(); ctx.moveTo(x - r*0.12, cy - r*0.4); ctx.lineTo(x + (R()-.5)*r*0.1, cy - r*0.02 + R()*r*0.08); ctx.lineTo(x + r*0.12, cy - r*0.4); ctx.fill(); }
+  }
+  // nariz y boca
+  ctx.fillStyle = ink; ctx.beginPath(); ctx.ellipse(cx, cy + r*0.25, r*0.13, r*0.09, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = ink; ctx.lineWidth = Math.max(2, r*0.035); ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(cx, cy + r*0.33); ctx.lineTo(cx, cy + r*0.43);
+  if(clean){ ctx.arc(cx - r*0.11, cy + r*0.43, r*0.11, 0, Math.PI*0.9); ctx.moveTo(cx, cy + r*0.43); ctx.arc(cx + r*0.11, cy + r*0.43, r*0.11, Math.PI, Math.PI*0.1, true); }
+  else { ctx.quadraticCurveTo(cx - r*0.14, cy + r*0.5, cx - r*0.22, cy + r*0.44); ctx.moveTo(cx, cy + r*0.43); ctx.quadraticCurveTo(cx + r*0.14, cy + r*0.5, cx + r*0.22, cy + r*0.44); }
+  ctx.stroke();
+  if(clean){
+    ctx.fillStyle = '#FF7A93'; ctx.beginPath(); ctx.ellipse(cx, cy + r*0.6, r*0.1, r*0.13, 0, 0, 7); ctx.fill(); // lengua
+    ctx.fillStyle = 'rgba(255,122,147,.45)'; for(const side of [-1,1]){ ctx.beginPath(); ctx.ellipse(cx + side*r*0.6, cy + r*0.28, r*0.12, r*0.08, 0, 0, 7); ctx.fill(); }
+    // moño
+    const bx = cx, by = cy - r*1.18, coral = '#E8456B';
+    ctx.fillStyle = coral;
+    for(const side of [-1,1]){ ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bx + side*r*0.34, by - r*0.2); ctx.lineTo(bx + side*r*0.34, by + r*0.2); ctx.closePath(); ctx.fill(); }
+    ctx.beginPath(); ctx.arc(bx, by, r*0.09, 0, 7); ctx.fill();
+    // pañuelo
+    ctx.fillStyle = '#2FB89A'; ctx.beginPath(); ctx.moveTo(cx - r*0.8, cy + r*0.86); ctx.lineTo(cx + r*0.8, cy + r*0.86); ctx.lineTo(cx, cy + r*1.55); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.7)'; for(let i=0;i<5;i++){ ctx.beginPath(); ctx.arc(cx - r*0.4 + i*r*0.2, cy + r*1.02 + (i%2)*r*0.14, r*0.03, 0, 7); ctx.fill(); }
+    // brillos y burbujas
+    const spark = (x,y,s) => { ctx.fillStyle = '#FFD84D'; ctx.beginPath(); for(let k=0;k<8;k++){ const a = k*Math.PI/4, d = k%2 ? s*0.35 : s; ctx.lineTo(x + Math.cos(a)*d, y + Math.sin(a)*d); } ctx.fill(); };
+    spark(cx + r*1.25, cy - r*0.7, r*0.16); spark(cx - r*1.3, cy - r*0.2, r*0.11); spark(cx + r*1.05, cy + r*0.55, r*0.09);
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 2;
+    [[.12,.2,.05],[.82,.18,.035],[.9,.8,.06],[.08,.75,.04],[.72,.08,.025]].forEach(([x,y,s]) => { ctx.beginPath(); ctx.arc(x*S, y*S, s*S, 0, 7); ctx.stroke(); });
+  } else { // moscas
+    ctx.fillStyle = ink;
+    [[.2,.18],[.8,.3],[.74,.24]].forEach(([x,y]) => { ctx.beginPath(); ctx.arc(x*S, y*S, 3, 0, 7); ctx.fill(); ctx.strokeStyle = ink; ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x*S + 6, y*S - 4, 4, 0, 7); ctx.stroke(); });
+  }
+}
+
+function render(){
+  if(!W) return;
+  const x = Math.round(W * split);
+  ctx.save(); ctx.beginPath(); ctx.rect(0,0,x,W); ctx.clip(); drawDog(false); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.rect(x,0,W-x,W); ctx.clip(); drawDog(true); ctx.restore();
+  // línea y esponja
+  ctx.fillStyle = '#fff'; ctx.fillRect(x - 2, 0, 4, W);
+  const hy = W*0.86, hw = W*0.12, hh = W*0.075;
+  ctx.fillStyle = '#FFC93C'; ctx.strokeStyle = '#13233F'; ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x - hw/2, hy - hh/2, hw, hh, hh*0.4) : ctx.rect(x - hw/2, hy - hh/2, hw, hh); ctx.fill(); ctx.stroke();
+  ctx.fillStyle = 'rgba(19,35,63,.35)'; [[-.25,-.15],[.1,.2],[.3,-.2],[-.05,.05]].forEach(([dx,dy]) => { ctx.beginPath(); ctx.arc(x + dx*hw, hy + dy*hh, hh*0.08, 0, 7); ctx.fill(); });
+  ctx.fillStyle = '#13233F'; ctx.font = `800 ${Math.round(hh*0.42)}px sans-serif`; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('‹  ›', x, hy + 1);
+}
+function resize(){
+  const w = frame.clientWidth, dpr = Math.min(devicePixelRatio || 1, 2);
+  cv.width = cv.height = Math.round(w * dpr); ctx.setTransform(dpr,0,0,dpr,0,0); W = w; render();
+}
+new ResizeObserver(resize).observe(frame);
+range.addEventListener('input', () => { split = range.value / 100; render(); });
+function fromPointer(e){ const b = frame.getBoundingClientRect(); split = Math.min(1, Math.max(0, (e.clientX - b.left) / b.width)); range.value = Math.round(split*100); render(); }
+let dragging = false;
+frame.addEventListener('pointerdown', e => { dragging = true; frame.setPointerCapture(e.pointerId); fromPointer(e); });
+frame.addEventListener('pointermove', e => { if(dragging) fromPointer(e); });
+frame.addEventListener('pointerup', () => dragging = false);
+frame.addEventListener('pointercancel', () => dragging = false);
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', render);
+
+/* ---------- Movimiento ---------- */
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+if(!reduce){
+  const bub = $('#bubbles');
+  for(let i=0;i<14;i++){
+    const s = document.createElement('span'), z = 14 + Math.random()*46;
+    s.style.cssText = `left:${Math.random()*96}%;width:${z}px;height:${z}px;animation-duration:${10+Math.random()*12}s;animation-delay:${-Math.random()*20}s`;
+    bub.appendChild(s);
+  }
+}
+if(window.gsap && !reduce){
+  gsap.registerPlugin(ScrollTrigger);
+  gsap.set('.hero-in', { y:26 });
+  gsap.timeline({ defaults:{ ease:'back.out(1.6)', duration:.7 } }).to('.hero-in', { y:0, stagger:.08 });
+  // la esponja pasa sola una vez para mostrar que se puede mover
+  const demo = { v:0.12 };
+  gsap.to(demo, { v:0.48, duration:1.6, delay:.5, ease:'power2.inOut', onUpdate(){ if(!dragging){ split = demo.v; range.value = Math.round(split*100); render(); } } });
+  gsap.utils.toArray('.feature-card, .steps li, .faq details').forEach((el, i) => {
+    gsap.from(el, { y:34, duration:.6, ease:'power3.out', delay:(i%3)*.08, scrollTrigger:{ trigger:el, start:'top 92%', once:true } });
+  });
+  gsap.from('.sticker', { rotate:-30, scale:.6, duration:.9, delay:.6, ease:'elastic.out(1,.5)' });
+}
+
+/* Botón flotante: se esconde cuando ya se ve el formulario */
+const fl = $('#floatCta');
+const vistos = new Set();
+const obs = new IntersectionObserver(ents => { ents.forEach(en => en.isIntersecting ? vistos.add(en.target) : vistos.delete(en.target)); fl.classList.toggle('away', vistos.size > 0); }, { threshold:.05 });
+obs.observe($('.hero-actions')); obs.observe($('#reservar'));
+</script>
+
+</body>
+</html>
