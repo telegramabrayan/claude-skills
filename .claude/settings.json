@@ -6,9 +6,57 @@
                 "source": "github",
                 "repo": "affaan-m/ECC"
             }
+        },
+        "claude-code-skills": {
+            "source": {
+                "source": "github",
+                "repo": "telegramabrayan/claude-skills"
+            }
+        },
+        "claude-code-plugins": {
+            "source": {
+                "source": "github",
+                "repo": "anthropics/claude-code"
+            }
+        },
+        "impeccable": {
+            "source": {
+                "source": "github",
+                "repo": "pbakaus/impeccable"
+            }
         }
     },
     "enabledPlugins": {
-        "ecc@ecc": true
+        "ecc@ecc": true,
+        "a11y-audit@claude-code-skills": true,
+        "aeo@claude-code-skills": true,
+        "agenthub@claude-code-skills": true,
+        "andreessen@claude-code-skills": true,
+        "apple-hig-expert@claude-code-skills": true,
+        "arquiteto-de-empresa@claude-code-skills": true,
+        "business-growth-skills@claude-code-skills": true,
+        "business-investment-advisor@claude-code-skills": true,
+        "c-level-agents@claude-code-skills": true,
+        "claude-coach@claude-code-skills": true,
+        "commercial-skills@claude-code-skills": true,
+        "deep-research@claude-code-skills": true,
+        "dossier@claude-code-skills": true,
+        "email-pair@claude-code-skills": true,
+        "engineering-skills@claude-code-skills": true,
+        "fable-goal@claude-code-skills": true,
+        "finance-skills@claude-code-skills": true,
+        "landing@claude-code-skills": true,
+        "linkedin@claude-code-skills": true,
+        "markdown-html-skills@claude-code-skills": true,
+        "marketing-skills@claude-code-skills": true,
+        "product-skills@claude-code-skills": true,
+        "pulse@claude-code-skills": true,
+        "research-summarizer@claude-code-skills": true,
+        "roast@claude-code-skills": true,
+        "statistical-analyst@claude-code-skills": true,
+        "video-content-strategist@claude-code-skills": true,
+        "deep-work@claude-code-skills": true,
+        "frontend-design@claude-code-plugins": true,
+        "impeccable@impeccable": true
     }
 }
