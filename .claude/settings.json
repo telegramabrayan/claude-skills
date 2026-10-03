@@ -30,6 +30,12 @@
                 "source": "github",
                 "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
             }
+        },
+        "claude-plugins-official": {
+            "source": {
+                "source": "github",
+                "repo": "anthropics/claude-plugins-official"
+            }
         }
     },
     "enabledPlugins": {
@@ -64,6 +70,7 @@
         "deep-work@claude-code-skills": true,
         "frontend-design@claude-code-plugins": true,
         "impeccable@impeccable": true,
-        "ui-ux-pro-max@ui-ux-pro-max-skill": true
+        "ui-ux-pro-max@ui-ux-pro-max-skill": true,
+        "figma@claude-plugins-official": true
     }
 }

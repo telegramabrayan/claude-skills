@@ -38,9 +38,17 @@ It drives the `npx shadcn@latest` CLI, so a project needs Node.js to use it.
 
 Not vendored: migrate-radix-to-base (one-off Radix → Base UI migration guide).
 
+## Vendored from anthropics/skills
+
+canvas-design, theme-factory and brand-guidelines are copied verbatim from
+[anthropics/skills](https://github.com/anthropics/skills) (commit `8a1541c`),
+Apache License 2.0 © Anthropic, PBC. Each folder keeps its upstream
+`LICENSE.txt`.
+
 ## Plugins enabled for this project
 
 `.claude/settings.json` enables this repo's own marketplace plugins plus
-`frontend-design` (anthropics/claude-code), `impeccable` (pbakaus/impeccable) and
-`ui-ux-pro-max` (nextlevelbuilder/ui-ux-pro-max-skill, MIT),
+`frontend-design` (anthropics/claude-code), `impeccable` (pbakaus/impeccable),
+`ui-ux-pro-max` (nextlevelbuilder/ui-ux-pro-max-skill, MIT) and `figma`
+(figma/mcp-server-guide, via anthropics/claude-plugins-official),
 which Claude Code installs from their marketplaces at session start.
