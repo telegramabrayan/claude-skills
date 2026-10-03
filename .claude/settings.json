@@ -24,6 +24,12 @@
                 "source": "github",
                 "repo": "pbakaus/impeccable"
             }
+        },
+        "ui-ux-pro-max-skill": {
+            "source": {
+                "source": "github",
+                "repo": "nextlevelbuilder/ui-ux-pro-max-skill"
+            }
         }
     },
     "enabledPlugins": {
@@ -57,6 +63,7 @@
         "video-content-strategist@claude-code-skills": true,
         "deep-work@claude-code-skills": true,
         "frontend-design@claude-code-plugins": true,
-        "impeccable@impeccable": true
+        "impeccable@impeccable": true,
+        "ui-ux-pro-max@ui-ux-pro-max-skill": true
     }
 }

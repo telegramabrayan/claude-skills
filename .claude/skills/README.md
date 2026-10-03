@@ -19,5 +19,6 @@ Not vendored: write-swift, animate-expo, ask-sonner.
 ## Plugins enabled for this project
 
 `.claude/settings.json` enables this repo's own marketplace plugins plus
-`frontend-design` (anthropics/claude-code) and `impeccable` (pbakaus/impeccable),
+`frontend-design` (anthropics/claude-code), `impeccable` (pbakaus/impeccable) and
+`ui-ux-pro-max` (nextlevelbuilder/ui-ux-pro-max-skill, MIT),
 which Claude Code installs from their marketplaces at session start.
