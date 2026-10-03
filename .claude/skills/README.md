@@ -29,6 +29,15 @@ fixing-motion-performance, improve-ui
 Not vendored: ui-skills-root (fetches skills through the `ui-skills` npm CLI at
 run time; the skills it would fetch are vendored above instead).
 
+## Vendored from shadcn-ui/ui
+
+`shadcn/` is copied verbatim from the official
+[shadcn-ui/ui](https://github.com/shadcn-ui/ui/tree/main/skills/shadcn) repo
+(commit `295a1f1`), MIT License © 2023 shadcn, with the upstream `LICENSE.md`.
+It drives the `npx shadcn@latest` CLI, so a project needs Node.js to use it.
+
+Not vendored: migrate-radix-to-base (one-off Radix → Base UI migration guide).
+
 ## Plugins enabled for this project
 
 `.claude/settings.json` enables this repo's own marketplace plugins plus
