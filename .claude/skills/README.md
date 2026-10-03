@@ -48,7 +48,7 @@ Apache License 2.0 © Anthropic, PBC. Each folder keeps its upstream
 ## Plugins enabled for this project
 
 `.claude/settings.json` enables this repo's own marketplace plugins plus
-`frontend-design` (anthropics/claude-code), `impeccable` (pbakaus/impeccable) and
+`frontend-design` (anthropics/claude-code), `impeccable` (pbakaus/impeccable),
 `ui-ux-pro-max` (nextlevelbuilder/ui-ux-pro-max-skill, MIT) and `figma`
 (figma/mcp-server-guide, via anthropics/claude-plugins-official),
 which Claude Code installs from their marketplaces at session start.
