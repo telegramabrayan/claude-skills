@@ -1476,17 +1476,6 @@
   .adm-ocultar{ margin:18px 0 6px; width:100%; cursor:pointer; background:transparent; border:1.5px dashed var(--line);
     color:var(--ink-soft); font:700 13px 'Nunito', sans-serif; padding:10px; border-radius:999px; }
 
-  /* Sugerencia de categorías junto a "Ver más" */
-  .ver-mas-wrap{ flex-direction:column; align-items:center; gap:18px; }
-  .sugerir-cats{ width:100%; display:grid; gap:12px; text-align:center; padding:20px; border-radius:22px;
-    background:var(--btn-bg); border:2px dashed var(--coral); }
-  .sugerir-cats p{ margin:0; color:var(--ink); font-size:16px; }
-  .sugerir-chips{ display:flex; flex-wrap:wrap; justify-content:center; gap:8px; }
-  .sugerir-chip{ cursor:pointer; border:2px solid var(--line); background:var(--surface); color:var(--forest);
-    font:800 14px 'Nunito', sans-serif; padding:9px 14px; border-radius:999px; transition:transform .2s ease, border-color .2s ease; }
-  .sugerir-chip:hover{ transform:translateY(-2px); border-color:var(--forest); }
-  .sugerir-chip small{ font-weight:700; opacity:.65; margin-left:2px; }
-
   .hero{ overflow:hidden; }
 </style>
 </head>
@@ -1585,7 +1574,7 @@
     <button class="quick-filter" data-qf="destacado">★ Destacados</button>
     <button class="quick-filter" data-qf="nuevo">🆕 Nuevos</button>
   </div>
-  <button type="button" class="back-cats" id="backCats" hidden>← Ver todos los productos</button>
+  <button type="button" class="back-cats" id="backCats" hidden>← Todas las categorías</button>
   <div class="grid" id="grid"></div>
 </main>
 
@@ -2362,10 +2351,10 @@ function resolveKey(key){
 
 
 /* ---------- Inicio con categorías y "Ver más" ---------- */
-const GRID_STEP = 50;
+const GRID_STEP = 12;
 let GRID_LIMIT = GRID_STEP, GRID_KEY = '', VER_TODO = false;
 function esInicio(){
-  return false;   // al entrar se ven los productos directamente (sin la pantalla de categorías)
+  return activeCat==='todos' && !VER_TODO && !searchTerm && !quickFilter;
 }
 function irACategoria(id){
   activeCat = id; VER_TODO = (id==='todos');
@@ -2382,14 +2371,6 @@ function volverAlInicio(){
   if(cat) cat.scrollIntoView({behavior:'smooth', block:'start'});
 }
 { const bc = document.getElementById('backCats'); if(bc) bc.addEventListener('click', volverAlInicio); }
-function sugerirCategorias(){
-  const base = mode==='mayor' ? PRODUCTS.filter(hasMayor) : PRODUCTS;
-  const cats = CATEGORIES.filter(c=>c.id!=='todos').map(c=>({c, n: base.filter(p=>catsOf(p).includes(c.id)).length})).filter(x=>x.n>0);
-  return `<div class="sugerir-cats">
-    <p><b>¿Buscás algo en particular?</b> Elegí una categoría y lo encontrás más rápido:</p>
-    <div class="sugerir-chips">${cats.map(x=>`<button type="button" class="sugerir-chip" data-ir-cat="${escaparHtml(x.c.id)}">${escaparHtml(x.c.label)} <small>${x.n}</small></button>`).join('')}</div>
-  </div>`;
-}
 function renderInicio(grid){
   const base = mode==='mayor' ? PRODUCTS.filter(hasMayor) : PRODUCTS;
   const tiles = CATEGORIES.filter(c=>c.id!=='todos').map(c=>{
@@ -2428,7 +2409,7 @@ function renderGrid(){
     return;
   }
   grid.classList.remove('grid-cats');
-  if(back) back.hidden = (activeCat==='todos' && !searchTerm && !quickFilter);
+  if(back) back.hidden = (activeCat==='todos' && !VER_TODO && !searchTerm && !quickFilter);
   if(titulo) titulo.textContent = activeCat!=='todos'
     ? (CATEGORIES.find(c=>c.id===activeCat)?.label || 'Catálogo')
     : (searchTerm ? 'Resultados' : 'Catálogo');
@@ -2480,9 +2461,8 @@ function renderGrid(){
       </div>
     </div>
   `;}).join('') + (allList.length > list.length
-      ? `<div class="ver-mas-wrap">${(activeCat==='todos' && !searchTerm) ? sugerirCategorias() : ''}<button type="button" class="ver-mas" id="verMas">Ver más productos <small>(${allList.length - list.length} más)</small></button></div>`
+      ? `<div class="ver-mas-wrap"><button type="button" class="ver-mas" id="verMas">Ver más productos <small>(${allList.length - list.length} más)</small></button></div>`
       : '');
-  grid.querySelectorAll('[data-ir-cat]').forEach(b=>b.addEventListener('click', ()=>irACategoria(b.dataset.irCat)));
 
   const vm = document.getElementById('verMas');
   if(vm) vm.addEventListener('click', ()=>{ GRID_LIMIT += GRID_STEP; renderGrid(); });
