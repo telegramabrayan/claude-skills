@@ -16,6 +16,19 @@ mobile-native, break-ui, pick-ui-library
 
 Not vendored: write-swift, animate-expo, ask-sonner.
 
+## Vendored from ibelick/ui-skills
+
+The following 6 skills are copied verbatim from
+[ibelick/ui-skills](https://github.com/ibelick/ui-skills) (commit `ebf5f26`),
+MIT License © 2026 Julien Thibeaut. Each folder keeps its own copy of the
+upstream `LICENSE`.
+
+baseline-ui, create-design-md, fixing-accessibility, fixing-metadata,
+fixing-motion-performance, improve-ui
+
+Not vendored: ui-skills-root (fetches skills through the `ui-skills` npm CLI at
+run time; the skills it would fetch are vendored above instead).
+
 ## Plugins enabled for this project
 
 `.claude/settings.json` enables this repo's own marketplace plugins plus
