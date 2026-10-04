@@ -1487,44 +1487,6 @@
   .sugerir-chip:hover{ transform:translateY(-2px); border-color:var(--forest); }
   .sugerir-chip small{ font-weight:700; opacity:.65; margin-left:2px; }
 
-  /* ---------- Pulido ---------- */
-  /* Tarjetas blancas que se despegan del fondo */
-  .card{ background:var(--surface); border-radius:22px; padding:8px; box-shadow:0 1px 0 var(--line), 0 10px 26px rgba(70,10,64,.08); }
-  .card-media{ border-radius:16px; }
-  .card-body{ padding:12px 8px 6px; }
-  /* "Agregar" es la acción principal: violeta fuerte */
-  .card-add{ background:var(--forest) !important; color:#fff !important; }
-  .card-add:hover{ background:var(--forest-deep, #6a0059) !important; }
-  .card.out .card-add{ background:var(--line) !important; color:var(--ink-soft) !important; }
-  /* Descargar PDF como opción secundaria */
-  .btn-pdf{ background:none; border:0; padding:8px 4px; cursor:pointer; color:var(--forest); font:800 15px 'Nunito', sans-serif;
-    text-decoration:underline; text-underline-offset:4px; align-self:center; }
-  .hero-eyebrow{ border:0 !important; background:none !important; }
-
-  @media (max-width:600px){
-    /* Portada compacta: los productos aparecen antes */
-    .hero{ padding:14px 16px 18px !important; gap:10px !important; }
-    .hero-art{ display:none !important; }   /* el logo ya está en el encabezado */
-    .hero-eyebrow{ font-size:11px !important; letter-spacing:.12em !important; margin-bottom:6px !important; }
-    .hero h1{ font-size:31px !important; line-height:1.03 !important; }
-    .hero p{ font-size:15px !important; line-height:1.45 !important; margin-top:8px !important; }
-    .hero-actions{ margin-top:14px !important; gap:8px !important; }
-    .hero-actions{ flex-wrap:wrap !important; }
-    .hero-actions .btn-primary, .hero-actions .btn-ghost{ flex:1 1 0; min-width:0; white-space:nowrap; padding:12px 10px !important; font-size:14.5px !important; justify-content:center; }
-    .btn-pdf{ flex-basis:100%; text-align:left; padding-inline:2px; }
-    .btn-pdf{ font-size:13.5px; }
-    .fx-float, .hero::before, .hero::after{ display:none !important; }   /* corazón y huella decorativos tapaban el texto */
-    /* Filtros en una sola fila que se desliza */
-    .quick-filters{ flex-wrap:nowrap !important; overflow-x:auto; scrollbar-width:none; margin-inline:-16px !important; padding-inline:16px; }
-    .quick-filters::-webkit-scrollbar{ display:none; }
-    .quick-filter{ flex:none; }
-    .catalog-head h2{ font-size:40px !important; }
-    /* Lugar al final para que los botones flotantes no tapen nada */
-    .catalog{ padding-bottom:110px !important; }
-    .card{ padding:6px; border-radius:18px; }
-    .card-body{ padding:10px 4px 4px; }
-  }
-
   .hero{ overflow:hidden; }
 </style>
 </head>
@@ -1557,9 +1519,8 @@
     <h1 id="txtTitle">Todo lo que tu <em>perrita</em> y tu gatita necesitan</h1>
     <p id="txtSubtitle">Ropita, juguetes, accesorios y más — elegí lo que te gusta, armá tu pedido y lo recibís por WhatsApp en un momento.</p>
     <div class="hero-actions">
-      <button class="btn-primary" id="goProductos">Ver productos</button>
+      <button class="btn-primary" id="goCatalog">Descargar catálogo</button>
       <button class="btn-ghost" id="goCats">Explorar categorías</button>
-      <button class="btn-pdf" id="goCatalog">Descargar catálogo (PDF)</button>
     </div>
   </div>
   <div class="hero-art">
@@ -2215,8 +2176,6 @@ function visibleProducts(){
     if(sortBy==='precio-asc')  return priceOf(a)-priceOf(b);
     if(sortBy==='precio-desc') return priceOf(b)-priceOf(a);
     if(sortBy==='nombre')      return a.name.localeCompare(b.name,'es');
-    const foto = p => (p.img || (p.imgs && p.imgs.length)) ? 0 : 1;
-    if(foto(a)!==foto(b)) return foto(a)-foto(b);
     const fa = a.featured?0:1, fb = b.featured?0:1;
     return fa-fb;
   });
@@ -2490,13 +2449,12 @@ function renderGrid(){
   grid.innerHTML = list.map(p => {
     const opts = (p.variants||[]).filter(v=>unitPrice(p, v.name)!=null);
     const hasVar = opts.length > 0;
-    const mismoPrecio = new Set(opts.map(v=>unitPrice(p, v.name))).size === 1;
     const out = sinStock(p);
     const variantUI = hasVar ? `
       <div class="card-variant">
         <label>${p.variantLabel || 'Opción'}</label>
         <select data-variant-for="${p.id}">
-          ${opts.map(v=>`<option value="${v.name}" ${v.out?'disabled':''}>${v.name}${mismoPrecio ? '' : ' — ' + plata(unitPrice(p, v.name))}${v.out?' (agotado)':(v.low?' (queda poco)':'')}</option>`).join('')}
+          ${opts.map(v=>`<option value="${v.name}" ${v.out?'disabled':''}>${v.name} — ${plata(unitPrice(p, v.name))}${v.out?' (agotado)':(v.low?' (queda poco)':'')}</option>`).join('')}
         </select>
       </div>` : '';
     return `
@@ -2510,10 +2468,10 @@ function renderGrid(){
         ${(p.imgs && p.imgs.length>1) ? `<span class="gal-count">${p.imgs.length} fotos</span>` : ''}
       </div>
       <div class="card-body">
-        ${(activeCat==='todos' && catLabels(p).length) ? `<span class="card-cat">${escaparHtml(catLabels(p).join(' · '))}</span>` : ''}
+        ${catLabels(p).length ? `<span class="card-cat">${escaparHtml(catLabels(p).join(' · '))}</span>` : ''}
         <div class="card-name">${escaparHtml(p.name)}</div>
         <div class="card-price" data-price-for="${p.id}">${priceLabel(p)}${precioViejo(p) ? `<span class="price-old">${plata(precioViejo(p))}</span>` : ''}</div>
-        ${(p.desc && norm(p.desc)!==norm(p.name)) ? `<div class="card-desc">${escaparHtml(p.desc)}</div>` : ''}
+        ${p.desc ? `<div class="card-desc">${escaparHtml(p.desc)}</div>` : ''}
         ${mode==='mayor' && !out ? `<div class="card-min">Mínimo ${MIN_MAYOR} unidades</div>` : ''}
         ${out ? '' : variantUI}
         <button class="card-add" data-id="${p.id}" ${out?'disabled':''}>
@@ -3952,7 +3910,6 @@ document.getElementById('clearHero').addEventListener('click', ()=>{
 });
 
 document.getElementById('goCatalog').addEventListener('click', descargarCatalogoPdf);
-document.getElementById('goProductos').addEventListener('click', ()=>document.getElementById('catalogo').scrollIntoView({behavior:'smooth', block:'start'}));
 document.getElementById('goCats').addEventListener('click', openCatsPanel);
 
 const topFloat = document.getElementById('topFloat');
