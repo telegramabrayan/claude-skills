@@ -59,3 +59,13 @@ Los datos oficiales (materias, unidades, correlatividades) llevan su **estado de
 verificación** y sus fuentes, visibles en la app. Lo no confirmado está marcado
 como tal; no se inventaron programas ni correlatividades. Ver
 [ACADEMIC_SOURCES.md](docs/ACADEMIC_SOURCES.md).
+
+## Versión de un solo archivo
+
+```bash
+npm run build:standalone   # genera dist-standalone/ingenia.html
+```
+
+Empaqueta toda la app (mismas páginas, navegación por `#/ruta`) en un único HTML que
+se puede abrir directamente en el navegador o publicar como página. Está en
+`standalone/`: un router por hash reemplaza a `next/link` y `next/navigation`.

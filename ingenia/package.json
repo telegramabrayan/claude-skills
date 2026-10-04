@@ -2,13 +2,14 @@
   "name": "ingenia",
   "version": "0.1.0",
   "private": true,
-  "description": "Ingenia — plataforma educativa gamificada para llegar desde el secundario a Ingeniería (referencia: CBC / FIUBA, UBA).",
+  "description": "Ingenia \u2014 plataforma educativa gamificada para llegar desde el secundario a Ingenier\u00eda (referencia: CBC / FIUBA, UBA).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:standalone": "node standalone/build.mjs"
   },
   "dependencies": {
     "next": "^16.3.8",
@@ -16,10 +17,12 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@tailwindcss/cli": "^4.3.3",
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
+    "esbuild": "^0.28.2",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
     "vitest": "^5.0.3"

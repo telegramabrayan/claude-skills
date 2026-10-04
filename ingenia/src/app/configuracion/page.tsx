@@ -11,6 +11,37 @@ function Settings() {
   const router = useRouter();
   const file = useRef<HTMLInputElement>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [confirmReset, setConfirmReset] = useState(false);
+  const [pasted, setPasted] = useState("");
+  // Dentro de un visor embebido (p. ej. claude.ai) las descargas están bloqueadas.
+  const [canDownload] = useState(() => {
+    try {
+      return window.self === window.top;
+    } catch {
+      return false;
+    }
+  });
+
+  const copy = async () => {
+    const text = exportJson(store.getState());
+    try {
+      await navigator.clipboard.writeText(text);
+      setMsg("Respaldo copiado. Pegalo en una nota o un mail para guardarlo.");
+    } catch {
+      setPasted(text);
+      setMsg("No pude copiar automáticamente: seleccioná el texto de abajo y copialo.");
+    }
+  };
+
+  const restoreText = () => {
+    try {
+      actions.replaceState(importJson(pasted));
+      setMsg("Respaldo restaurado.");
+      setPasted("");
+    } catch (e) {
+      setMsg(e instanceof Error ? e.message : "Ese texto no es un respaldo válido.");
+    }
+  };
 
   const download = () => {
     const blob = new Blob([exportJson(store.getState())], { type: "application/json" });
@@ -67,27 +98,51 @@ function Settings() {
       <div className="card space-y-3 p-4">
         <p className="text-sm text-muted">Tu progreso se guarda en este navegador. Descargá un respaldo para no perderlo o para pasarlo a otro dispositivo.</p>
         <div className="flex flex-wrap gap-2">
-          <button className="btn btn-secondary" onClick={download}>
-            Descargar respaldo
+          <button className="btn btn-secondary" onClick={copy}>
+            Copiar respaldo
           </button>
+          {canDownload && (
+            <button className="btn btn-secondary" onClick={download}>
+              Descargar respaldo
+            </button>
+          )}
           <button className="btn btn-secondary" onClick={() => file.current?.click()}>
             Restaurar respaldo
           </button>
           <input ref={file} type="file" accept="application/json" className="hidden" onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])} />
         </div>
         {msg && <p className="text-sm" role="status">{msg}</p>}
-        <hr className="border-line" />
-        <button
-          className="btn btn-ghost !text-danger"
-          onClick={async () => {
-            if (window.confirm("¿Borrar todo tu progreso? Esta acción no se puede deshacer.")) {
-              await actions.reset();
-              router.replace("/bienvenida");
-            }
-          }}
-        >
-          Borrar todo el progreso
+        <label className="block">
+          <span className="text-sm font-semibold">Restaurar pegando el texto del respaldo</span>
+          <textarea id="respaldo" className="input mt-1 min-h-24 font-mono text-xs" value={pasted} onChange={(e) => setPasted(e.target.value)} placeholder="Pegá acá el respaldo copiado" />
+        </label>
+        <button className="btn btn-secondary" onClick={restoreText} disabled={!pasted.trim()}>
+          Restaurar desde el texto
         </button>
+        <hr className="border-line" />
+        {confirmReset ? (
+          <div className="rounded-xl bg-danger-soft p-3">
+            <p className="font-semibold">¿Borrar todo tu progreso? No se puede deshacer.</p>
+            <div className="mt-2 flex gap-2">
+              <button
+                className="btn btn-primary !bg-danger"
+                onClick={async () => {
+                  await actions.reset();
+                  router.replace("/bienvenida");
+                }}
+              >
+                Sí, borrar todo
+              </button>
+              <button className="btn btn-secondary" onClick={() => setConfirmReset(false)}>
+                Cancelar
+              </button>
+            </div>
+          </div>
+        ) : (
+          <button className="btn btn-ghost !text-danger" onClick={() => setConfirmReset(true)}>
+            Borrar todo el progreso
+          </button>
+        )}
       </div>
     </div>
   );
