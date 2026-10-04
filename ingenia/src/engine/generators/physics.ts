@@ -1,4 +1,4 @@
-import type { Generator, NumericExercise } from "../types";
+import type { FrequentError, Generator, NumericExercise } from "../types";
 import { fmt } from "../math/parser";
 import { rng } from "./rng";
 import { base, choice, par, sgn } from "./helpers";
@@ -30,11 +30,11 @@ export const vectorModulo: Generator = {
         ],
         solution: [`|v| = √(${par(x)}² + ${par(y)}²)`, `= √(${x * x} + ${y * y}) = √${x * x + y * y}`, `= ${fmt(mod, 2)}`],
         explanation: "El módulo de (x, y) es √(x² + y²), por el teorema de Pitágoras. Siempre es positivo.",
-        frequentErrors: [
+        frequentErrors: ([
           { match: Math.abs(x) + Math.abs(y), type: "vectores", message: "Sumaste las componentes. El largo de la flecha no es x + y: es la hipotenusa del triángulo, √(x² + y²)." },
           { match: x + y, type: "vectores", message: "Sumaste las componentes. El módulo se calcula con Pitágoras: √(x² + y²)." },
           { match: x * x + y * y, type: "calculo", message: "Te faltó la raíz cuadrada al final." },
-        ].filter((e) => Math.abs((e.match as number) - mod) > 0.01),
+        ] as FrequentError[]).filter((e) => Math.abs((e.match as number) - mod) > 0.01),
         formulaId: "modulo-vector",
         visual: { type: "vector", vectors: [{ x, y, label: "v" }] },
       }),
@@ -111,10 +111,10 @@ export const vectorComponentes: Generator = {
         ],
         solution: [askX ? `vx = ${mod} · cos(${ang}°)` : `vy = ${mod} · sen(${ang}°)`, `= ${fmt(val, 2)}`],
         explanation: "vx = |v|·cos θ y vy = |v|·sen θ, con θ medido desde el eje x positivo. La calculadora tiene que estar en grados (DEG).",
-        frequentErrors: [
+        frequentErrors: ([
           { match: wrong, type: "vectores", message: `Usaste ${askX ? "seno" : "coseno"}. Con el ángulo medido desde el eje x: x ↔ coseno, y ↔ seno.` },
           { match: Math.round(mod * (askX ? Math.cos(ang) : Math.sin(ang)) * 100) / 100, type: "calculo", message: "La calculadora está en radianes. Ponela en grados (DEG)." },
-        ].filter((e) => Math.abs((e.match as number) - val) > 0.02),
+        ] as FrequentError[]).filter((e) => Math.abs((e.match as number) - val) > 0.02),
         formulaId: "componentes-vector",
         visual: { type: "vector", vectors: [{ x: mod * Math.cos(rad), y: mod * Math.sin(rad), label: "v" }] },
       }),
@@ -185,11 +185,11 @@ export const conversionUnidades: Generator = {
         unit: toMs ? "m/s" : "km/h",
       } as NumericExercise;
     }
-    const table = {
+    const table: Record<"longitud" | "masa" | "tiempo", [string, string, number][]> = {
       longitud: [["km", "m", 1000], ["m", "cm", 100], ["cm", "m", 0.01], ["m", "km", 0.001], ["mm", "m", 0.001]],
       masa: [["kg", "g", 1000], ["g", "kg", 0.001], ["t", "kg", 1000]],
       tiempo: [["h", "min", 60], ["min", "s", 60], ["h", "s", 3600], ["min", "h", 1 / 60]],
-    } as const;
+    };
     const [from, to, factor] = r.pick(table[kind]);
     const val = factor < 1 ? r.pick([250, 500, 1500, 30, 90, 120, 4500]) : r.pick([2, 3.5, 0.75, 1.2, 12, 0.5]);
     const ans = Math.round(val * factor * 1e6) / 1e6;
@@ -262,7 +262,7 @@ export const mru: Generator = {
           hints: ["En MRU: x(t) = x₀ + v·t.", `Reemplazá: ${fmt(x)} = ${fmt(x0)} ${sgn(v)}·t.`, `Despejá t: t = (${fmt(x)} − ${par(x0)}) / ${par(v)}.`],
           solution: [`${fmt(x)} = ${fmt(x0)} ${sgn(v)}·t`, `${fmt(x - x0)} = ${fmt(v)}·t`, `t = ${fmt(t)} s`],
           explanation: "En el MRU la velocidad no cambia: la posición aumenta (o disminuye) lo mismo cada segundo.",
-          frequentErrors: [{ match: x / v, type: "formula", message: "Te olvidaste de la posición inicial x₀: el desplazamiento es x − x₀." }].filter((e) => Math.abs(e.match - t) > 1e-9),
+          frequentErrors: ([{ match: x / v, type: "formula", message: "Te olvidaste de la posición inicial x₀: el desplazamiento es x − x₀." }] as FrequentError[]).filter((e) => Math.abs((e.match as number) - t) > 1e-9),
           formulaId: "mru",
         }),
         kind: "numeric",
@@ -278,10 +278,10 @@ export const mru: Generator = {
         hints: ["En MRU: x(t) = x₀ + v·t.", `Reemplazá: x(${t}) = ${fmt(x0)} + ${par(v)}·${t}.`, `${par(v)}·${t} = ${fmt(v * t)}.`],
         solution: [`x(${t}) = ${fmt(x0)} + ${par(v)}·${t}`, `= ${fmt(x0)} ${sgn(v * t)}`, `= ${fmt(x)} m`],
         explanation: "x(t) = x₀ + v·t: posición inicial más lo que avanzó.",
-        frequentErrors: [
+        frequentErrors: ([
           { match: v * t, type: "formula", message: `Calculaste cuánto avanzó (${fmt(v * t)} m), pero falta sumarle dónde empezó: x₀ = ${fmt(x0)} m.` },
           { match: x0 + v, type: "formula", message: "Sumaste la velocidad sin multiplicarla por el tiempo." },
-        ].filter((e) => Math.abs(e.match - x) > 1e-9),
+        ] as FrequentError[]).filter((e) => Math.abs((e.match as number) - x) > 1e-9),
         formulaId: "mru",
         visual: { type: "plot", functions: [`${x0} + ${v}*x`], xRange: [0, t + 2], points: [[t, x]] },
       }),
@@ -312,11 +312,11 @@ export const mruv: Generator = {
           hints: ["La aceleración dice cuánto cambia la velocidad cada segundo.", "v(t) = v₀ + a·t", `v(${t}) = ${fmt(v0)} + ${par(a)}·${t}.`],
           solution: [`v(${t}) = ${fmt(v0)} + ${par(a)}·${t}`, `= ${fmt(v0)} ${sgn(a * t)}`, `= ${fmt(v)} m/s`],
           explanation: "Con aceleración constante, la velocidad cambia lo mismo cada segundo: v = v₀ + a·t.",
-          frequentErrors: [
+          frequentErrors: ([
             { match: a * t, type: "formula", message: "Te faltó sumar la velocidad inicial v₀." },
             { match: v0 + a, type: "velocidad-aceleracion", message: `La aceleración se suma una vez POR CADA SEGUNDO: hay que multiplicarla por t = ${t}.` },
             { match: v0 + a * t * t / 2, type: "velocidad-aceleracion", message: "Usaste la fórmula de la POSICIÓN. Para la velocidad es v = v₀ + a·t." },
-          ].filter((e) => Math.abs(e.match - v) > 1e-9),
+          ] as FrequentError[]).filter((e) => Math.abs((e.match as number) - v) > 1e-9),
           formulaId: "mruv-velocidad",
         }),
         kind: "numeric",
@@ -332,11 +332,11 @@ export const mruv: Generator = {
         hints: ["x(t) = x₀ + v₀·t + ½·a·t²", `El término de la aceleración es ½·${par(a)}·${t}² = ${fmt(0.5 * a * t * t)}.`, `Sumá todo: ${fmt(x0)} + ${fmt(v0 * t)} + ${par(0.5 * a * t * t)}.`],
         solution: [`x(${t}) = ${fmt(x0)} + ${par(v0)}·${t} + ½·${par(a)}·${t}²`, `= ${fmt(x0)} ${sgn(v0 * t)} ${sgn(0.5 * a * t * t)}`, `= ${fmt(x)} m`],
         explanation: "La posición en el MRUV tiene un término con t² porque la velocidad va cambiando: x = x₀ + v₀t + ½at².",
-        frequentErrors: [
+        frequentErrors: ([
           { match: x0 + v0 * t + a * t * t, type: "formula", message: "Te olvidaste del ½ en el término ½·a·t²." },
           { match: x0 + v0 * t + 0.5 * a * t, type: "formula", message: "El tiempo va al cuadrado en el término de la aceleración: ½·a·t²." },
           { match: x0 + v0 * t, type: "velocidad-aceleracion", message: "Calculaste como si la velocidad fuera constante (MRU). Con aceleración hay que sumar ½·a·t²." },
-        ].filter((e) => Math.abs(e.match - x) > 1e-9),
+        ] as FrequentError[]).filter((e) => Math.abs((e.match as number) - x) > 1e-9),
         formulaId: "mruv-posicion",
         visual: { type: "plot", functions: [`${x0} + ${v0}*x + ${0.5 * a}*x^2`], xRange: [0, t + 1], points: [[t, x]] },
       }),

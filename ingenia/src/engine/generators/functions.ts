@@ -1,4 +1,4 @@
-import type { Generator } from "../types";
+import type { FrequentError, Generator } from "../types";
 import { fmt, fracText } from "../math/parser";
 import { rng } from "./rng";
 import { base, choice, coef, par, sgn, termX } from "./helpers";
@@ -65,10 +65,10 @@ export const pendiente: Generator = {
         ],
         solution: [`m = (${fmt(y2)} − ${par(y1)}) / (${fmt(x2)} − ${par(x1)})`, `m = ${fmt(dy)} / ${fmt(dx)}`, `m = ${fracText(dy, dx)}`],
         explanation: "La pendiente es Δy/Δx. Si es positiva la recta sube, si es negativa baja.",
-        frequentErrors: [
+        frequentErrors: ([
           { match: dx / dy, type: "conceptual", message: "Lo dividiste al revés. La pendiente es el cambio en y (vertical) sobre el cambio en x (horizontal): Δy/Δx." },
           { match: (y2 + y1) / (x2 + x1 || 0.5), type: "calculo", message: "Sumaste las coordenadas. La pendiente usa DIFERENCIAS: y₂ − y₁ y x₂ − x₁." },
-        ].filter((e) => Number.isFinite(e.match) && Math.abs((e.match as number) - slope) > 1e-9),
+        ] as FrequentError[]).filter((e) => Number.isFinite(e.match) && Math.abs((e.match as number) - slope) > 1e-9),
         visual: { type: "plot", functions: [`${slope}*(x - ${x1}) + ${y1}`], points: [[x1, y1], [x2, y2]] },
       }),
       kind: "numeric",
