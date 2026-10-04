@@ -16,7 +16,7 @@ interface Side {
   q: number; // término independiente
 }
 
-function sideOf(expr: string): Side | null {
+export function sideOf(expr: string): Side | null {
   const n = parse(expr, ["x"]);
   for (const v of variablesOf(n)) if (v !== "x") throw new ParseError(`Usá solo la incógnita «x» (apareció «${v}»).`);
   const f = (x: number) => evaluate(n, { x });
@@ -26,7 +26,10 @@ function sideOf(expr: string): Side | null {
   return { p, q };
 }
 
-function sidesOf(eq: string): [Side, Side] | null {
+export type { Side };
+
+/** Coeficientes (p·x + q) de cada lado de una ecuación lineal; null si no es lineal. */
+export function sidesOf(eq: string): [Side, Side] | null {
   const [l, r] = splitEquation(eq);
   const L = sideOf(l);
   const R = sideOf(r);

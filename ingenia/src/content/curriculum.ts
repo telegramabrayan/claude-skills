@@ -32,8 +32,9 @@ const official = (status: OfficialInfo["status"], sources: OfficialInfo["sources
   note,
 });
 
-const unit = (id: string, title: string, summary: string, lessonIds: string[] = [], topicIds: string[] = []): Unit => ({
+const unit = (id: string, title: string, summary: string, lessonIds: string[] = [], topicIds: string[] = [], icon?: string): Unit => ({
   id,
+  icon,
   title,
   summary,
   lessonIds,
@@ -61,14 +62,14 @@ export const PREPARACION: Subject = {
     "Pensar un problema como algoritmo y seguir la ejecución de un programa.",
   ],
   units: [
-    unit("nivel-0", "Nivel 0 · Volviendo a estudiar", "Cómo estudiar matemática, signos, orden de operaciones, fracciones, porcentajes y potencias.", ["l-como-estudiar", "l-signos", "l-jerarquia", "l-fracciones", "l-porcentajes", "l-potencias"], ["t-signos", "t-jerarquia", "t-fracciones", "t-porcentajes", "t-potencias"]),
-    unit("nivel-1", "Nivel 1 · Fundamentos algebraicos", "Variables, expresiones, ecuaciones lineales y despeje de fórmulas.", ["l-expresiones", "l-ecuaciones", "l-despeje"], ["t-expresiones", "t-ecuaciones", "t-despeje"]),
+    unit("nivel-0", "Nivel 0 · Volviendo a estudiar", "Cómo estudiar matemática, signos, orden de operaciones, fracciones, porcentajes y potencias.", ["l-como-estudiar", "l-signos", "l-jerarquia", "l-fracciones", "l-porcentajes", "l-potencias"], ["t-signos", "t-jerarquia", "t-fracciones", "t-porcentajes", "t-potencias"], "🧮"),
+    unit("nivel-1", "Nivel 1 · Fundamentos algebraicos", "Variables, expresiones, ecuaciones lineales y despeje de fórmulas.", ["l-expresiones", "l-ecuaciones", "l-despeje"], ["t-expresiones", "t-ecuaciones", "t-despeje"], "⚖️"),
     {
-      ...unit("nivel-2", "Nivel 2 · Matemática pre-universitaria", "Funciones, plano cartesiano, función lineal y dominio. (Trigonometría, exponenciales, logaritmos y límites: próximas lecciones.)", ["l-funciones", "l-recta", "l-dominio"], ["t-funciones", "t-recta", "t-dominio"]),
+      ...unit("nivel-2", "Nivel 2 · Matemática pre-universitaria", "Funciones, plano cartesiano, función lineal y dominio. (Trigonometría, exponenciales, logaritmos y límites: próximas lecciones.)", ["l-funciones", "l-recta", "l-dominio"], ["t-funciones", "t-recta", "t-dominio"], "📈"),
       contentStatus: "parcial",
     },
-    unit("nivel-3", "Nivel 3 · Preparación para Física", "Unidades, notación científica, vectores y movimiento.", ["l-unidades", "l-vectores", "l-mru", "l-mruv"], ["t-unidades", "t-vectores", "t-mru", "t-mruv"]),
-    unit("nivel-4", "Nivel 4 · Preparación computacional", "Algoritmos, variables, condiciones y bucles con un lenguaje real (Python).", ["l-algoritmos", "l-condicionales", "l-bucles"], ["t-variables-codigo", "t-condicionales", "t-bucles"]),
+    unit("nivel-3", "Nivel 3 · Preparación para Física", "Unidades, notación científica, vectores y movimiento.", ["l-unidades", "l-vectores", "l-mru", "l-mruv"], ["t-unidades", "t-vectores", "t-mru", "t-mruv"], "🚀"),
+    unit("nivel-4", "Nivel 4 · Preparación computacional", "Algoritmos, variables, condiciones y bucles con un lenguaje real (Python).", ["l-algoritmos", "l-condicionales", "l-bucles"], ["t-variables-codigo", "t-condicionales", "t-bucles"], "💻"),
   ],
   prerequisites: [],
   bibliography: [],

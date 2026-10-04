@@ -45,14 +45,12 @@ export function nodeStatus(s: ProgressState, nodeId: string): NodeStatus {
   const found = findUnit(nodeId);
   if (!found) return "estructura";
   const st = rawUnitStatus(s, found.unit);
-  if (st !== "disponible") return st;
-  if (s.unlocked.includes(nodeId)) return "disponible";
-  const reqs = node?.requires ?? [];
-  const ok = reqs.every((r) => {
-    const rs = nodeStatus(s, r);
-    return rs === "completado" || rs === "dominado";
-  });
-  return ok ? "disponible" : "bloqueado";
+  if (st === "estructura" || st === "completado" || st === "dominado") return st;
+  // Si ya abrió una lección de la unidad, la unidad está en uso aunque no cumpla los requisitos.
+  const lessonStarted = found.unit.lessonIds.some((id) => s.lessons[id]);
+  const reqsOk = (node?.requires ?? []).every((r) => ["completado", "dominado"].includes(nodeStatus(s, r)));
+  if (!lessonStarted && !reqsOk && !s.unlocked.includes(nodeId)) return "bloqueado";
+  return st;
 }
 
 /** Qué falta para desbloquear un nodo (para explicarlo en la UI). */

@@ -49,6 +49,8 @@ export interface Career {
 export interface Unit {
   id: string;
   title: string;
+  /** Ícono opcional para el mapa (si falta, se usa el de la materia). */
+  icon?: string;
   summary: string;
   /** Lecciones interactivas disponibles (ids). Una lección puede reutilizarse en varias unidades. */
   lessonIds: string[];
