@@ -1525,28 +1525,6 @@
     .card-body{ padding:10px 4px 4px; }
   }
 
-  /* ---------- Animaciones de compra ---------- */
-  .fx-vuela{ position:fixed; z-index:9999; pointer-events:none; border-radius:18px; object-fit:cover; background:#fff;
-    box-shadow:0 12px 30px rgba(70,10,64,.28); display:grid; place-items:center; font-size:48px; will-change:transform; }
-  @keyframes fxCarrito{ 0%{transform:scale(1) rotate(0)} 25%{transform:scale(1.12) rotate(-6deg)} 50%{transform:scale(1.08) rotate(5deg)} 75%{transform:scale(1.04) rotate(-2deg)} 100%{transform:none} }
-  .fx-carrito{ animation:fxCarrito .55s ease; }
-  @keyframes fxTick{ 0%{ transform:scale(1); } 35%{ transform:scale(1.12); color:var(--coral); } 100%{ transform:none; } }
-  .card-price.fx-tick{ display:inline-block; transform-origin:left center; animation:fxTick .45s ease; }
-  header{ transition:box-shadow .3s ease, background-color .3s ease; }
-  header.fx-scrolled{ box-shadow:0 8px 24px rgba(70,10,64,.12); }
-  /* Las tarjetas se levantan un poco al pasar el mouse (computadora) */
-  @media (hover:hover){
-    .card{ transition:transform .3s cubic-bezier(.2,.8,.2,1), box-shadow .3s ease; }
-    .card:hover{ transform:translateY(-4px); box-shadow:0 1px 0 var(--line), 0 18px 36px rgba(70,10,64,.14); }
-    .card:hover .card-media{ transform:none !important; box-shadow:none !important; }
-  }
-  .card-add, .ver-mas, .sugerir-chip, .quick-filter{ transition:transform .15s ease, background-color .2s ease, box-shadow .2s ease; }
-  .card-add:active, .ver-mas:active, .sugerir-chip:active, .quick-filter:active{ transform:scale(.95); }
-  @media (prefers-reduced-motion: reduce){
-    .fx-carrito, .card-price.fx-tick{ animation:none !important; }
-    .card:hover{ transform:none; }
-  }
-
   .hero{ overflow:hidden; }
 </style>
 </head>
@@ -4597,59 +4575,6 @@ fetch('catalogo.json', {cache:'no-store'})
       alert('Listo. Para volver a ver el engranaje, entrá con tu link terminado en #admin');
     });
     body.appendChild(b);
-  }
-})();
-
-/* ========== Animaciones con sentido: el producto vuela al carrito, el precio avisa el cambio ========== */
-(function(){
-  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const cart = document.getElementById('openCart');
-
-  // 1) Al tocar "Agregar": la foto del producto vuela hasta el carrito y el carrito se sacude
-  document.addEventListener('click', e=>{
-    const b = e.target.closest('.card-add');
-    if(!b || b.disabled || !cart) return;
-    if(reduce){ return; }
-    const card = b.closest('.card'); if(!card) return;
-    const media = card.querySelector('.card-media img') || card.querySelector('.card-media svg') || card.querySelector('.card-media');
-    if(!media) return;
-    const from = media.getBoundingClientRect(), to = cart.getBoundingClientRect();
-    const size = Math.min(from.width, from.height, 140);
-    const ghost = media.tagName === 'IMG' ? new Image() : document.createElement('div');
-    if(media.tagName === 'IMG'){ ghost.src = media.currentSrc || media.src; } else { ghost.innerHTML = '🐾'; }
-    ghost.className = 'fx-vuela';
-    ghost.style.cssText = `left:${from.left + from.width/2 - size/2}px; top:${from.top + from.height/2 - size/2}px; width:${size}px; height:${size}px;`;
-    document.body.appendChild(ghost);
-    const dx = (to.left + to.width/2) - (from.left + from.width/2);
-    const dy = (to.top + to.height/2) - (from.top + from.height/2);
-    const anim = ghost.animate([
-      { transform:'translate(0,0) scale(1)', opacity:1 },
-      { transform:`translate(${dx*0.45}px, ${dy*0.45 - 60}px) scale(.55)`, opacity:1, offset:.55 },
-      { transform:`translate(${dx}px, ${dy}px) scale(.12)`, opacity:.4 }
-    ], { duration:700, easing:'cubic-bezier(.45,.05,.35,1)' });
-    anim.onfinish = ()=>{
-      ghost.remove();
-      cart.classList.remove('fx-carrito'); void cart.offsetWidth; cart.classList.add('fx-carrito');
-    };
-  });
-
-  // 2) Al cambiar de talle o medida, el precio hace un destello para que se note el cambio
-  document.addEventListener('change', e=>{
-    const sel = e.target.closest('select[data-variant-for]');
-    if(!sel || reduce) return;
-    setTimeout(()=>{
-      const card = sel.closest('.card');
-      const pr = card && card.querySelector('.card-price');
-      if(!pr) return;
-      pr.classList.remove('fx-tick'); void pr.offsetWidth; pr.classList.add('fx-tick');
-    }, 0);
-  });
-
-  // 3) El encabezado toma sombra cuando se baja, así se separa de los productos
-  const head = document.querySelector('header');
-  if(head){
-    const marcar = ()=> head.classList.toggle('fx-scrolled', window.scrollY > 24);
-    window.addEventListener('scroll', marcar, { passive:true }); marcar();
   }
 })();
 </script>
