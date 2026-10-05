@@ -4,9 +4,10 @@ import { algebraLessons } from "./algebra";
 import { funcionesLessons } from "./funciones";
 import { fisicaLessons } from "./fisica";
 import { codigoLessons } from "./codigo";
+import { precalculoLessons } from "./precalculo";
 
 /** Todas las lecciones disponibles. Para agregar una, creala en su archivo y sumala acá. */
-export const LESSONS: Lesson[] = [...aritmeticaLessons, ...algebraLessons, ...funcionesLessons, ...fisicaLessons, ...codigoLessons];
+export const LESSONS: Lesson[] = [...aritmeticaLessons, ...algebraLessons, ...funcionesLessons, ...fisicaLessons, ...codigoLessons, ...precalculoLessons];
 
 const BY_ID = new Map(LESSONS.map((l) => [l.id, l]));
 

@@ -76,7 +76,8 @@ export function unitsWithLessons(): { unitId: string; lessonIds: string[] }[] {
 
 // ───────────────────────── Ruta personalizada ─────────────────────────
 
-const DEFAULT_ROUTE_UNITS = ["nivel-0", "nivel-1", "nivel-2", "nivel-3", "nivel-4", "fis-2", "alg-1"];
+const PREP_UNITS = ["nivel-0", "nivel-1", "prep-geo", "nivel-2", "prep-uni", "nivel-3", "nivel-4"];
+const DEFAULT_ROUTE_UNITS = [...PREP_UNITS, "fis-2", "alg-1"];
 
 /** Ruta completa desde cero: todas las lecciones en orden pedagógico. */
 export function fullRoute(): string[] {
@@ -109,12 +110,12 @@ export function routeFromDiagnostic(skills: Partial<Record<SkillId, number>>): D
   };
   const skip = new Set<string>();
   const unlocked: string[] = [];
-  for (const u of ["nivel-0", "nivel-1", "nivel-2", "nivel-3", "nivel-4"]) {
+  for (const u of PREP_UNITS) {
     if (avg(u) >= 0.8) skip.add(u);
     if (avg(u) >= 0.7) unlocked.push(u);
   }
   // Desbloquear también el siguiente nivel al último dominado, para que no tenga que "rendir" lo que ya sabe.
-  const order = ["nivel-0", "nivel-1", "nivel-2", "nivel-3"];
+  const order = ["nivel-0", "nivel-1", "nivel-2", "prep-uni", "nivel-3"];
   order.forEach((u, i) => {
     if (skip.has(u) && order[i + 1]) unlocked.push(order[i + 1]);
   });

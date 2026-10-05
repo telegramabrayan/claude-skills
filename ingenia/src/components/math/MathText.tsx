@@ -119,6 +119,24 @@ function MathSegment({ src, k }: { src: string; k: string }) {
   };
   for (let i = 0; i < s.length; ) {
     const c = s[i];
+    // Fracción apilada: \frac{numerador}{denominador}
+    if (s.startsWith("\\frac{", i)) {
+      const [num, afterNum] = readGroup(s, i + 5);
+      const [den, afterDen] = s[afterNum] === "{" ? readGroup(s, afterNum) : ["", afterNum];
+      flush();
+      parts.push(
+        <span key={`${k}-f${n++}`} className="mx-0.5 inline-flex flex-col items-center align-middle text-[0.92em] leading-tight">
+          <span className="border-b border-current px-1">
+            <MathSegment src={num} k={`${k}-fn${n}`} />
+          </span>
+          <span className="px-1">
+            <MathSegment src={den} k={`${k}-fd${n}`} />
+          </span>
+        </span>,
+      );
+      i = afterDen;
+      continue;
+    }
     if (c === "\\" && i + 1 < s.length) {
       buf += s[i + 1];
       i += 2;

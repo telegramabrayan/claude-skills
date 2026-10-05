@@ -58,6 +58,31 @@ export interface LessonState {
   status: "en-curso" | "completada";
   card: number;
   completedAt?: string;
+  /** Mejor precisión (0..1) y si alguna vez se completó sin errores. */
+  bestAccuracy?: number;
+  perfect?: boolean;
+}
+
+export interface SavedItem {
+  kind: "formula" | "leccion" | "tema" | "materia" | "definicion";
+  id: string;
+  title: string;
+  href: string;
+  at: string;
+}
+
+export interface LaterItem {
+  id: string;
+  /** Copia del ejercicio para poder rehacerlo aunque no venga de un generador. */
+  exercise: unknown;
+  topicId: string;
+  at: string;
+}
+
+export interface StudyPlan {
+  minutes: number;
+  subjectId: string;
+  examDate: string | null; // YYYY-MM-DD
 }
 
 export interface ProgressState {
@@ -73,6 +98,8 @@ export interface ProgressState {
     theme: "system" | "light" | "dark";
     hearts: boolean;
     dailyMinutes: number;
+    sound: boolean;
+    accent: string;
   };
   xp: number;
   streak: { current: number; longest: number; lastDay: string | null };
@@ -88,6 +115,18 @@ export interface ProgressState {
   achievements: Record<string, string>;
   missions: Record<string, string>; // clave de misión → fecha reclamada
   challengesWon: number;
+  /** Moneda interna (⚙️ engranajes): solo para cosméticos y protectores de racha. */
+  gears: number;
+  streakFreezes: number;
+  owned: string[];
+  /** Desafíos finales superados por unidad. */
+  bosses: Record<string, string>;
+  saved: SavedItem[];
+  notes: Record<string, { text: string; updatedAt: string }>;
+  later: LaterItem[];
+  cards: Record<string, { box: number; due: string }>;
+  plan: StudyPlan | null;
+  lastActivity: { topicId: string; exerciseId: string; errorType?: ErrorType; correct: boolean; ts: number } | null;
 }
 
 export const MAX_ATTEMPTS = 3000;
@@ -96,7 +135,7 @@ export function initialState(): ProgressState {
   return {
     version: 1,
     profile: { name: "", goal: null, onboarded: false, startMode: null, createdAt: new Date().toISOString() },
-    settings: { theme: "system", hearts: true, dailyMinutes: 15 },
+    settings: { theme: "system", hearts: true, dailyMinutes: 15, sound: true, accent: "turquesa" },
     xp: 0,
     streak: { current: 0, longest: 0, lastDay: null },
     days: {},
@@ -111,6 +150,16 @@ export function initialState(): ProgressState {
     achievements: {},
     missions: {},
     challengesWon: 0,
+    gears: 0,
+    streakFreezes: 0,
+    owned: [],
+    bosses: {},
+    saved: [],
+    notes: {},
+    later: [],
+    cards: {},
+    plan: null,
+    lastActivity: null,
   };
 }
 

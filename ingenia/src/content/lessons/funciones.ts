@@ -28,6 +28,11 @@ export const funcionesLesson: Lesson = {
       "Para dibujar una función se usan dos ejes: el horizontal ($x$, la entrada) y el vertical ($y$, la salida).\n\nCada par $(x, f(x))$ es un **punto**. Uniendo muchos puntos aparece el gráfico. Probá cambiar la fórmula:",
       { widget: { type: "plot", mode: "free", initial: "x^2" }, tag: "matematico" },
     ),
+    explain(
+      "Mové x y mirá el punto",
+      "Con $f(x) = x^2$: si $x = −2$, sale $f(−2) = 4$ y el punto es $(−2, 4)$. Si $x = 3$, el punto es $(3, 9)$. Movelo vos:",
+      { widget: { type: "function-point", expr: "x^2" }, tag: "intuitivo" },
+    ),
     example("Ejemplo resuelto", "Si $f(x) = x^2 − 3$, calculá $f(−2)$", ["Reemplazo $x$ por $(−2)$: $f(−2) = (−2)^2 − 3$", "$(−2)^2 = 4$", "$f(−2) = 4 − 3 = 1$", "En el gráfico: el punto $(−2, 1)$"], "1"),
     practice("Ejercicio guiado", "funcion-evaluar", 2, 4, true),
     practice("Tu turno", "funcion-evaluar", 3, 10),

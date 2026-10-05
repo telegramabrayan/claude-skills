@@ -43,6 +43,8 @@ export interface Career {
   cbcSubjects: string[];
   /** Materias del ciclo posterior (ids de Subject), en orden orientativo. */
   laterSubjects: string[];
+  /** Versión del plan de estudios de referencia (p. ej. "2023"). */
+  planVersion: string;
   official: OfficialInfo;
 }
 
@@ -62,7 +64,12 @@ export interface Unit {
    * con contenido inventado.
    */
   contentStatus: "completo" | "parcial" | "estructura";
+  /** El orden o el alcance de esta unidad no se pudo confirmar contra el programa oficial. */
+  needsVerification?: boolean;
 }
+
+/** Estado editorial de una materia. */
+export type ContentLevel = "draft" | "partial" | "verified" | "complete";
 
 export interface Subject {
   id: string;
@@ -78,6 +85,7 @@ export interface Subject {
   prerequisites: string[]; // ids de Subject
   bibliography: SourceRef[];
   official: OfficialInfo;
+  contentLevel: ContentLevel;
 }
 
 // ───────────────────────── Temas y dominio ─────────────────────────
@@ -104,7 +112,8 @@ export type SkillId =
   | "vectores"
   | "fisica"
   | "logica"
-  | "computacional";
+  | "computacional"
+  | "trigonometria";
 
 // ───────────────────────── Errores ─────────────────────────
 
@@ -124,7 +133,11 @@ export type ErrorType =
   | "formula"
   | "sintaxis"
   | "logica"
-  | "algoritmico";
+  | "algoritmico"
+  | "factorizacion"
+  | "limites"
+  | "trigonometria"
+  | "programacion";
 
 /** Error frecuente anticipado: si la respuesta del alumno coincide, se explica el error específico. */
 export interface FrequentError {
@@ -167,6 +180,21 @@ export interface ChoiceExercise extends ExerciseBase {
   kind: "choice";
   options: string[];
   answer: number; // índice correcto
+  /** Cómo mostrar las opciones: texto, mini-gráficos (expresiones de x) o pasos de una resolución. */
+  display?: "text" | "plot" | "steps";
+}
+
+/** Ordenar pasos o elementos. `answer` es el orden correcto; la UI los muestra mezclados. */
+export interface OrderExercise extends ExerciseBase {
+  kind: "order";
+  items: string[];
+  answer: string[];
+}
+
+/** Relacionar conceptos: cada par [izquierda, derecha] es una asociación correcta. */
+export interface MatchExercise extends ExerciseBase {
+  kind: "match";
+  pairs: [string, string][];
 }
 
 export interface NumericExercise extends ExerciseBase {
@@ -208,7 +236,9 @@ export type Exercise =
   | NumericExercise
   | ExpressionExercise
   | StepsExercise
-  | TraceExercise;
+  | TraceExercise
+  | OrderExercise
+  | MatchExercise;
 
 export type Visual =
   | { type: "plot"; functions: string[]; xRange?: [number, number]; yRange?: [number, number]; points?: [number, number][] }
@@ -260,7 +290,10 @@ export type Widget =
   | { type: "code"; code: string }
   | { type: "percent"; base: number; percent: number }
   | { type: "power"; base: number; exponent: number }
-  | { type: "units"; value: number };
+  | { type: "units"; value: number }
+  | { type: "trig"; angle: number; hyp: number }
+  | { type: "tangent"; initial: string }
+  | { type: "function-point"; expr: string };
 
 export type LessonCard =
   | { kind: "intro"; title: string; learn: string; why: string }

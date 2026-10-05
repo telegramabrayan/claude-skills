@@ -68,7 +68,7 @@ export interface Option {
 }
 
 /** Arma un ejercicio de opción múltiple barajando opciones y conservando el diagnóstico de cada distractor. */
-export function choice(r: Rng, b: ExerciseBase, options: Option[]): ChoiceExercise {
+export function choice(r: Rng, b: ExerciseBase, options: Option[], display?: ChoiceExercise["display"]): ChoiceExercise {
   const seen = new Set<string>();
   const unique = options.filter((o) => {
     if (seen.has(o.text)) return false;
@@ -81,7 +81,7 @@ export function choice(r: Rng, b: ExerciseBase, options: Option[]): ChoiceExerci
   shuffled.forEach((o, i) => {
     if (o.error) frequentErrors.push({ match: i, type: o.error.type, message: o.error.message });
   });
-  return { ...b, kind: "choice", options: shuffled.map((o) => o.text), answer, frequentErrors };
+  return { ...b, kind: "choice", options: shuffled.map((o) => o.text), answer, frequentErrors, display };
 }
 
 /** Elige el rango de números según la dificultad. */

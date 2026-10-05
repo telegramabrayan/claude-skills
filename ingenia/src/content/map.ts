@@ -31,7 +31,15 @@ export const MAP: MapSection[] = [
     id: "preparacion",
     title: "Preparación para Ingeniería",
     subtitle: "Del secundario al nivel CBC",
-    nodes: [u("nivel-0"), u("nivel-1", ["nivel-0"]), u("nivel-2", ["nivel-1"]), u("nivel-3", ["nivel-2"]), u("nivel-4", ["nivel-0"])],
+    nodes: [
+      u("nivel-0"),
+      u("nivel-1", ["nivel-0"]),
+      u("prep-geo", ["nivel-1"]),
+      u("nivel-2", ["nivel-1"]),
+      u("prep-uni", ["nivel-2"]),
+      u("nivel-3", ["nivel-2"]),
+      u("nivel-4", ["nivel-0"]),
+    ],
   },
   {
     id: "cbc",
@@ -40,6 +48,8 @@ export const MAP: MapSection[] = [
     nodes: [
       u("alg-1", ["nivel-3"]),
       u("am-1", ["nivel-2"]),
+      u("am-4", ["am-1", "prep-uni"]),
+      u("am-5", ["am-4"]),
       u("fis-0", ["nivel-1"]),
       u("fis-1", ["fis-0", "nivel-3"]),
       u("fis-2", ["fis-1"]),

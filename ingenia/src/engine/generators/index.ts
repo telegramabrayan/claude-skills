@@ -4,6 +4,8 @@ import { algebraGenerators } from "./algebra";
 import { functionGenerators } from "./functions";
 import { physicsGenerators } from "./physics";
 import { codeGenerators } from "./code";
+import { precalcGenerators } from "./precalc";
+import { formatGenerators } from "./formats";
 import { newSeed } from "./rng";
 
 /**
@@ -29,6 +31,8 @@ export const GENERATORS: Generator[] = [
   ...functionGenerators,
   ...physicsGenerators,
   ...codeGenerators,
+  ...precalcGenerators,
+  ...formatGenerators,
 ].map(safe);
 
 const BY_ID = new Map(GENERATORS.map((g) => [g.id, g]));

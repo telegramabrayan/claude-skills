@@ -33,6 +33,11 @@ export const DIAGNOSTIC: { skill: SkillId; intro: string; items: DiagnosticItem[
     { generator: "pendiente", difficulty: 3, seed: 402, weight: 2 },
     { generator: "recta-elementos", difficulty: 4, seed: 403, weight: 3 },
   ] },
+  { skill: "trigonometria", intro: "Geometría y trigonometría.", items: [
+    { generator: "pitagoras", difficulty: 1, seed: 901, weight: 1 },
+    { generator: "trigonometria", difficulty: 1, seed: 902, weight: 2 },
+    { generator: "trigonometria", difficulty: 4, seed: 903, weight: 3 },
+  ] },
   { skill: "vectores", intro: "Vectores.", items: [
     { generator: "vector-modulo", difficulty: 1, seed: 501, weight: 1 },
     { generator: "vector-suma", difficulty: 3, seed: 502, weight: 2 },
@@ -65,4 +70,5 @@ export const SKILL_UNIT: Record<SkillId, string> = {
   fisica: "nivel-3",
   logica: "nivel-4",
   computacional: "nivel-4",
+  trigonometria: "prep-geo",
 };

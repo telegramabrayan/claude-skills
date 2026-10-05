@@ -3,6 +3,7 @@ import type { Widget as WidgetSpec } from "@/engine/types";
 import { CodeStepper } from "../code/CodeStepper";
 import { FractionBarsWidget, NumberLineWidget, PercentWidget, PowerWidget, UnitsWidget } from "./Simple";
 import { BalanceWidget, KinematicsWidget, PlotWidget, VectorWidget } from "./Interactive";
+import { FunctionPointWidget, TangentWidget, TrigWidget } from "./Calculus";
 
 /** Despacha la especificación de un widget (dato del contenido) a su componente. */
 export function Widget({ widget }: { widget: WidgetSpec }) {
@@ -27,5 +28,11 @@ export function Widget({ widget }: { widget: WidgetSpec }) {
       return <PowerWidget base={widget.base} exponent={widget.exponent} />;
     case "units":
       return <UnitsWidget value={widget.value} />;
+    case "trig":
+      return <TrigWidget angle={widget.angle} hyp={widget.hyp} />;
+    case "tangent":
+      return <TangentWidget initial={widget.initial} />;
+    case "function-point":
+      return <FunctionPointWidget expr={widget.expr} />;
   }
 }

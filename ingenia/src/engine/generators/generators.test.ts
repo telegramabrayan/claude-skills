@@ -43,6 +43,15 @@ describe.each(GENERATORS.map((g) => [g.id, g] as const))("generador %s", (_id, g
             expect(r.correct, `${ex.equation} :: ${ex.expectedSteps.join(" | ")} :: ${JSON.stringify(r.steps)}`).toBe(true);
             break;
           }
+          case "order":
+            expect(new Set(ex.items).size).toBe(ex.items.length);
+            expect([...ex.items].sort()).toEqual([...ex.answer].sort());
+            expect(evaluateAnswer(ex, { kind: "order", order: ex.answer }).correct).toBe(true);
+            break;
+          case "match":
+            expect(evaluateAnswer(ex, { kind: "match", pairs: Object.fromEntries(ex.pairs) }).correct).toBe(true);
+            expect(new Set(ex.pairs.map((p) => p[1])).size).toBe(ex.pairs.length);
+            break;
           case "trace": {
             const values = Object.fromEntries(Object.entries(ex.answer).map(([k, v]) => [k, typeof v === "boolean" ? (v ? "True" : "False") : String(v)]));
             expect(evaluateAnswer(ex, { kind: "trace", values }).correct, ex.code).toBe(true);

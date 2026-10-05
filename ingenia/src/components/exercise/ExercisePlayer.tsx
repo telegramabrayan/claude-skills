@@ -97,6 +97,8 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
         return { kind: "steps", steps, final: text };
       case "trace":
         return { kind: "trace", values: traceVals };
+      default:
+        return { kind: "order", order: [] };
     }
   };
 

@@ -9,7 +9,9 @@ import type {
   Exercise,
   ExpressionExercise,
   FrequentError,
+  MatchExercise,
   NumericExercise,
+  OrderExercise,
   StepsExercise,
   TraceExercise,
 } from "../types";
@@ -24,7 +26,9 @@ export type Answer =
   | { kind: "numeric"; value: string }
   | { kind: "expression"; value: string }
   | { kind: "steps"; steps: string[]; final: string }
-  | { kind: "trace"; values: Record<string, string> };
+  | { kind: "trace"; values: Record<string, string> }
+  | { kind: "order"; order: string[] }
+  | { kind: "match"; pairs: Record<string, string> };
 
 export function evaluateAnswer(ex: Exercise, answer: Answer): EvaluationResult {
   switch (ex.kind) {
@@ -38,7 +42,36 @@ export function evaluateAnswer(ex: Exercise, answer: Answer): EvaluationResult {
       return answer.kind === "steps" ? evalSteps(ex, answer.steps, answer.final) : invalid();
     case "trace":
       return answer.kind === "trace" ? evalTrace(ex, answer.values) : invalid();
+    case "order":
+      return answer.kind === "order" ? evalOrder(ex, answer.order) : invalid();
+    case "match":
+      return answer.kind === "match" ? evalMatch(ex, answer.pairs) : invalid();
   }
+}
+
+function evalOrder(ex: OrderExercise, order: string[]): EvaluationResult {
+  if (order.length !== ex.answer.length) return invalid("Ubicá todos los elementos antes de comprobar.");
+  const firstWrong = order.findIndex((it, i) => it !== ex.answer[i]);
+  if (firstWrong < 0) return { correct: true, message: correctMessage(order.length) };
+  return {
+    correct: false,
+    message: firstWrong === 0 ? "El primer elemento no va ahí." : `Bien hasta el paso ${firstWrong}. El problema empieza en el paso ${firstWrong + 1}.`,
+    errorType: "interpretacion",
+    diagnosis: `En la posición ${firstWrong + 1} va «${ex.answer[firstWrong]}». ${ex.explanation}`,
+  };
+}
+
+function evalMatch(ex: MatchExercise, pairs: Record<string, string>): EvaluationResult {
+  const missing = ex.pairs.filter(([l]) => !pairs[l]);
+  if (missing.length) return invalid("Relacioná todos los elementos antes de comprobar.");
+  const wrong = ex.pairs.filter(([l, r]) => pairs[l] !== r);
+  if (!wrong.length) return { correct: true, message: correctMessage(ex.pairs.length) };
+  return {
+    correct: false,
+    message: `${ex.pairs.length - wrong.length} de ${ex.pairs.length} bien. Revisemos ${wrong.length === 1 ? "uno" : "algunos"}.`,
+    errorType: "conceptual",
+    diagnosis: wrong.map(([l, r]) => `${l} → ${r} (pusiste ${pairs[l]})`).join(". ") + `. ${ex.explanation}`,
+  };
 }
 
 function invalid(msg = "No pude interpretar la respuesta."): EvaluationResult {

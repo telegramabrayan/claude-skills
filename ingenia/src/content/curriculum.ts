@@ -8,9 +8,12 @@
  */
 import type { Career, OfficialInfo, Subject, Unit } from "@/engine/types";
 
-const CHECKED = "2026-10-04";
+const CHECKED = "2026-10-05";
 
 const SRC = {
+  pcSitio: { label: "Pensamiento Computacional — material de la cátedra", url: "https://pensamientocomputacional.dev.ar/" },
+  ipc2026: { label: "Campus CBC — Programa IPC 1º C 2026", url: "https://cbccampusvirtual.uba.ar/pluginfile.php/1914271/mod_resource/content/13/Programa%20IPC%201%C2%BA%20C%202026.pdf" },
+  icseProg: { label: "Programa analítico ICSE (CBC) publicado por FFyB-UBA", url: "https://www.ffyb.uba.ar/wp-content/uploads/2024/08/03.-Programa-Analitico-de-Introduccion-al-Conocimiento-de-la-Sociedad-y-el-Estado-CBC.pdf" },
   pcCreacion: {
     label: "Res. CS UBA 2022 — Creación de la asignatura Pensamiento Computacional (CBC)",
     url: "https://cms.fi.uba.ar/uploads/RESCS_2022_9_E_UBA_REC_Creacion_de_asignatura_Pensamiento_computacional_017078f40f.pdf",
@@ -42,6 +45,9 @@ const unit = (id: string, title: string, summary: string, lessonIds: string[] = 
   contentStatus: lessonIds.length === 0 ? "estructura" : "completo",
 });
 
+/** Unidad cuyo orden o alcance no se pudo confirmar contra el programa oficial. */
+const unverified = (u: Unit): Unit => ({ ...u, needsVerification: true });
+
 // ───────────────────────── Preparación ─────────────────────────
 
 export const PREPARACION: Subject = {
@@ -62,18 +68,18 @@ export const PREPARACION: Subject = {
     "Pensar un problema como algoritmo y seguir la ejecución de un programa.",
   ],
   units: [
-    unit("nivel-0", "Nivel 0 · Volviendo a estudiar", "Cómo estudiar matemática, signos, orden de operaciones, fracciones, porcentajes y potencias.", ["l-como-estudiar", "l-signos", "l-jerarquia", "l-fracciones", "l-porcentajes", "l-potencias"], ["t-signos", "t-jerarquia", "t-fracciones", "t-porcentajes", "t-potencias"], "🧮"),
-    unit("nivel-1", "Nivel 1 · Fundamentos algebraicos", "Variables, expresiones, ecuaciones lineales y despeje de fórmulas.", ["l-expresiones", "l-ecuaciones", "l-despeje"], ["t-expresiones", "t-ecuaciones", "t-despeje"], "⚖️"),
-    {
-      ...unit("nivel-2", "Nivel 2 · Matemática pre-universitaria", "Funciones, plano cartesiano, función lineal y dominio. (Trigonometría, exponenciales, logaritmos y límites: próximas lecciones.)", ["l-funciones", "l-recta", "l-dominio"], ["t-funciones", "t-recta", "t-dominio"], "📈"),
-      contentStatus: "parcial",
-    },
-    unit("nivel-3", "Nivel 3 · Preparación para Física", "Unidades, notación científica, vectores y movimiento.", ["l-unidades", "l-vectores", "l-mru", "l-mruv"], ["t-unidades", "t-vectores", "t-mru", "t-mruv"], "🚀"),
-    unit("nivel-4", "Nivel 4 · Preparación computacional", "Algoritmos, variables, condiciones y bucles con un lenguaje real (Python).", ["l-algoritmos", "l-condicionales", "l-bucles"], ["t-variables-codigo", "t-condicionales", "t-bucles"], "💻"),
+    unit("nivel-0", "Recuperando las bases", "Cómo estudiar matemática, signos, orden de operaciones, fracciones, porcentajes y potencias.", ["l-como-estudiar", "l-signos", "l-jerarquia", "l-fracciones", "l-porcentajes", "l-potencias"], ["t-signos", "t-jerarquia", "t-fracciones", "t-porcentajes", "t-potencias"], "🧮"),
+    unit("nivel-1", "Álgebra básica", "Variables, expresiones, factorización, ecuaciones lineales y cuadráticas, despeje de fórmulas.", ["l-expresiones", "l-ecuaciones", "l-factorizacion", "l-cuadratica", "l-despeje"], ["t-expresiones", "t-ecuaciones", "t-factorizacion", "t-cuadratica", "t-despeje"], "⚖️"),
+    unit("prep-geo", "Geometría y trigonometría", "Pitágoras, distancia entre puntos, seno, coseno, tangente, grados y radianes.", ["l-pitagoras", "l-trigonometria"], ["t-pitagoras", "t-trigonometria"], "📐"),
+    unit("nivel-2", "Funciones", "Qué es una función, plano cartesiano, función lineal, dominio e imagen.", ["l-funciones", "l-recta", "l-dominio"], ["t-funciones", "t-recta", "t-dominio"], "📈"),
+    unit("prep-uni", "Hacia la universidad", "La idea de límite y la derivada como pendiente: el puente al CBC.", ["l-limites", "l-derivadas"], ["t-limites", "t-derivadas"], "🎓"),
+    unit("nivel-3", "Kit matemático para Física", "Unidades, notación científica, vectores y movimiento.", ["l-unidades", "l-vectores", "l-mru", "l-mruv"], ["t-unidades", "t-vectores", "t-mru", "t-mruv"], "🚀"),
+    unit("nivel-4", "Pensar como programador", "Algoritmos, variables, condiciones y bucles con un lenguaje real (Python).", ["l-algoritmos", "l-condicionales", "l-bucles"], ["t-variables-codigo", "t-condicionales", "t-bucles"], "💻"),
   ],
   prerequisites: [],
   bibliography: [],
   official: official("verificado", [], "Sección propia de Ingenia (no es una materia oficial): diseñada para cubrir los prerrequisitos del CBC."),
+  contentLevel: "partial",
 };
 
 // ───────────────────────── CBC ─────────────────────────
@@ -97,8 +103,8 @@ export const AM_A: Subject = {
     { ...unit("am-1", "Funciones", "Dominio, imagen, gráficos y función lineal.", ["l-funciones", "l-recta", "l-dominio"], ["t-funciones", "t-recta", "t-dominio"]), contentStatus: "parcial" },
     unit("am-2", "Números reales", "Propiedades de los reales, intervalos, valor absoluto."),
     unit("am-3", "Sucesiones", "Sucesiones y sus límites."),
-    unit("am-4", "Límites y continuidad", "Límite de funciones, asíntotas, continuidad."),
-    unit("am-5", "Derivadas", "Definición, reglas de derivación, recta tangente."),
+    { ...unit("am-4", "Límites y continuidad", "Límite de funciones, indeterminaciones, asíntotas, continuidad.", ["l-limites"], ["t-limites"]), contentStatus: "parcial" },
+    { ...unit("am-5", "Derivadas", "Definición, reglas de derivación, recta tangente.", ["l-derivadas"], ["t-derivadas"]), contentStatus: "parcial" },
     unit("am-6", "Teorema del valor medio y regla de L'Hôpital", ""),
     unit("am-7", "Estudio de funciones y optimización", "Crecimiento, extremos, concavidad, problemas de optimización."),
     unit("am-8", "Teorema de Taylor", "Polinomio de Taylor y aproximación."),
@@ -113,6 +119,7 @@ export const AM_A: Subject = {
     [SRC.mate66],
     "Las 11 unidades siguen la organización en prácticas del curso 66 relevada en fuentes secundarias; confirmar contra el programa vigente de la cátedra (cbc.uba.ar estaba inaccesible al momento de la carga).",
   ),
+  contentLevel: "partial",
 };
 
 export const ALGEBRA_A: Subject = {
@@ -126,20 +133,23 @@ export const ALGEBRA_A: Subject = {
   description: "Vectores, rectas y planos, sistemas lineales, matrices y transformaciones: la base del álgebra lineal.",
   objectives: ["Operar con vectores en ℝⁿ y usar el producto escalar.", "Resolver sistemas de ecuaciones lineales.", "Trabajar con matrices, determinantes y transformaciones lineales."],
   units: [
-    { ...unit("alg-1", "Vectores en ℝⁿ", "Conjuntos, ℝⁿ, operaciones con vectores, producto escalar, norma, distancia, ángulo y ortogonalidad.", ["l-vectores", "l-producto-escalar"], ["t-vectores", "t-producto-escalar"]), contentStatus: "parcial" },
-    unit("alg-2", "Rectas y planos", "Ecuaciones vectoriales y paramétricas."),
-    unit("alg-3", "Sistemas de ecuaciones lineales", "Método de eliminación de Gauss."),
-    unit("alg-4", "Matrices y determinantes", ""),
+    unverified(unit("alg-con", "Conjuntos", "Definición por comprensión y por extensión, pertenencia, inclusión, unión, intersección, diferencia y complemento.")),
+    unverified(unit("alg-cx", "Números complejos y polinomios", "Forma binómica y trigonométrica, operaciones, teorema de De Moivre; polinomios, división, raíces y factorización.")),
+    { ...unit("alg-1", "Vectores en ℝ² y ℝ³", "Operaciones, norma, producto escalar, ángulo y ortogonalidad, producto vectorial y mixto.", ["l-vectores", "l-producto-escalar"], ["t-vectores", "t-producto-escalar"]), contentStatus: "parcial" },
+    unverified(unit("alg-2", "Rectas y planos", "Ecuaciones vectoriales y paramétricas, posiciones relativas, proyección ortogonal, distancias de punto a recta y a plano.")),
+    unverified(unit("alg-3", "Matrices y sistemas lineales", "Suma y producto de matrices, eliminación de Gauss-Jordan, rango, teorema de Rouché-Frobenius.")),
+    unverified(unit("alg-4", "Determinantes", "Definición, propiedades, cálculo y aplicaciones.")),
     unit("alg-5", "Transformaciones lineales", "Forma matricial y funcional, imagen, núcleo, clasificación."),
-    unit("alg-6", "Cónicas", ""),
+    unit("alg-6", "Cónicas", "Circunferencia, parábola, elipse e hipérbola."),
   ],
   prerequisites: ["preparacion"],
   bibliography: [],
   official: official(
     "parcial",
     [SRC.cbcCarreras],
-    "Unidad 1, transformaciones lineales, determinantes y cónicas confirmadas en fuentes secundarias del programa; 'Rectas y planos' y 'Sistemas' cargadas como estructura habitual del curso 62, pendientes de verificar.",
+    "Unidades relevadas en programas de cátedra (fuentes secundarias): conjuntos; números complejos y polinomios; vectores, rectas y planos; matrices y sistemas; determinantes; transformaciones lineales; cónicas. El orden exacto depende de la cátedra y está marcado para verificar.",
   ),
+  contentLevel: "partial",
 };
 
 export const FISICA: Subject = {
@@ -153,16 +163,24 @@ export const FISICA: Subject = {
   description: "Magnitudes, vectores, cinemática, dinámica, trabajo y energía e hidrostática: describir y predecir el movimiento.",
   objectives: ["Modelar movimientos con ecuaciones y gráficos.", "Aplicar las leyes de Newton.", "Usar trabajo y energía para resolver problemas.", "Comprender presión e hidrostática."],
   units: [
-    unit("fis-0", "Unidad 0 · Repaso matemático", "Despeje de fórmulas, unidades y notación científica.", ["l-despeje", "l-unidades"], ["t-despeje", "t-unidades"]),
-    unit("fis-1", "Unidad 1 · Magnitudes físicas y vectores", "Magnitudes escalares y vectoriales, componentes, módulo, suma.", ["l-unidades", "l-vectores"], ["t-unidades", "t-vectores"]),
-    unit("fis-2", "Unidad 2 · Cinemática", "MRU, MRUV, caída libre y tiro vertical.", ["l-mru", "l-mruv", "l-caida-libre"], ["t-mru", "t-mruv", "t-caida-libre"]),
-    unit("fis-3", "Unidad 3 · Dinámica", "Fuerzas y leyes de Newton."),
-    unit("fis-4", "Unidad 4 · Trabajo y energía", ""),
-    unit("fis-5", "Unidad 5 · Hidrostática", "Presión, principio de Pascal y de Arquímedes."),
+    unit("fis-0", "Kit matemático para Física", "Despeje de fórmulas, unidades y notación científica.", ["l-despeje", "l-unidades"], ["t-despeje", "t-unidades"]),
+    unit("fis-1", "Magnitudes físicas y vectores", "Magnitudes escalares y vectoriales, componentes, módulo, suma.", ["l-unidades", "l-vectores"], ["t-unidades", "t-vectores"]),
+    unverified(unit("fis-est", "Estática", "Fuerzas, momento de una fuerza, cuerpos puntuales y extensos, centro de gravedad, condiciones de equilibrio.")),
+    unit("fis-2", "Cinemática en una dimensión", "MRU, MRUV, caída libre y tiro vertical.", ["l-mru", "l-mruv", "l-caida-libre"], ["t-mru", "t-mruv", "t-caida-libre"]),
+    unverified(unit("fis-2d", "Cinemática en dos dimensiones", "Movimiento vectorial en el plano, tiro oblicuo, aceleración tangencial y normal, movimiento circular, movimiento relativo.")),
+    unit("fis-3", "Dinámica", "Fuerzas y leyes de Newton, rozamiento, planos inclinados, movimiento circular."),
+    unverified(unit("fis-osc", "Movimiento oscilatorio", "Movimiento armónico simple.")),
+    unit("fis-4", "Trabajo y energía", "Trabajo, energía cinética y potencial, conservación, potencia."),
+    unit("fis-5", "Hidrostática", "Densidad, presión, principio de Pascal, teorema fundamental, Arquímedes."),
   ],
   prerequisites: ["preparacion"],
   bibliography: [{ label: "Guías de la cátedra de Física del CBC", url: SRC.fisicaCbc.url }],
-  official: official("parcial", [SRC.fisicaCbc], "Las guías 1-5 (magnitudes y vectores, cinemática, dinámica, trabajo y energía, hidrostática) figuran en el campus del CBC; la Unidad 0 es un repaso agregado por Ingenia."),
+  official: official(
+    "parcial",
+    [SRC.fisicaCbc],
+    "Guías del campus del CBC: magnitudes y vectores, cinemática, dinámica, trabajo y energía, hidrostática. Estática, cinemática en 2D y movimiento oscilatorio figuran en programas relevados en fuentes secundarias (orden a verificar). El kit matemático es un repaso agregado por Ingenia.",
+  ),
+  contentLevel: "partial",
 };
 
 export const PENSAMIENTO_COMPUTACIONAL: Subject = {
@@ -176,19 +194,22 @@ export const PENSAMIENTO_COMPUTACIONAL: Subject = {
   description: "Descomposición, abstracción, reconocimiento de patrones y algoritmos, programando en un lenguaje real.",
   objectives: ["Formular problemas de forma que una computadora pueda resolverlos.", "Diseñar algoritmos y traducirlos a código.", "Leer, ejecutar mentalmente y depurar programas."],
   units: [
-    unit("pc-1", "Algoritmos y variables", "Qué es un algoritmo, variables, asignación, entrada y salida.", ["l-algoritmos"], ["t-variables-codigo"]),
-    unit("pc-2", "Condicionales y lógica", "if / elif / else, expresiones booleanas.", ["l-condicionales"], ["t-condicionales"]),
-    unit("pc-3", "Repetición", "Bucles for y while, acumuladores y contadores.", ["l-bucles"], ["t-bucles"]),
-    unit("pc-4", "Funciones", "Descomposición de problemas en funciones."),
-    unit("pc-5", "Listas y estructuras de datos", ""),
+    unit("pc-1", "Introducción a la algoritmia y la programación", "Qué es un algoritmo, variables, asignación, secuencia.", ["l-algoritmos"], ["t-variables-codigo"]),
+    unverified(unit("pc-tipos", "Tipos de datos, expresiones y funciones", "Números, cadenas y booleanos, operadores, definición y uso de funciones.")),
+    { ...unit("pc-2", "Estructuras de control: condicionales", "if / elif / else, expresiones booleanas.", ["l-condicionales"], ["t-condicionales"]), needsVerification: true },
+    { ...unit("pc-3", "Estructuras de control: repetición", "Bucles for y while, acumuladores y contadores.", ["l-bucles"], ["t-bucles"]), needsVerification: true },
+    unit("pc-datos", "Estructuras de datos", "Listas, tuplas, diccionarios y cadenas de texto."),
+    unit("pc-io", "Entrada y salida", "Lectura de datos y archivos."),
+    unit("pc-libs", "Bibliotecas de Python", "NumPy, Pandas y Matplotlib para cálculo y gráficos."),
   ],
   prerequisites: ["preparacion"],
   bibliography: [],
   official: official(
     "parcial",
-    [SRC.pcCreacion, SRC.cbcNueva],
-    "Materia del CBC obligatoria para ingresantes a FIUBA desde 2023. El programa vigente no pudo consultarse; las unidades son una organización provisoria basada en los ejes de la resolución de creación (descomposición, abstracción, patrones, algoritmos).",
+    [SRC.pcCreacion, SRC.cbcNueva, SRC.pcSitio],
+    "Materia del CBC obligatoria para ingresantes a FIUBA desde 2023. Se programa en Python. Unidades relevadas en el programa de UBA XXI (fuente secundaria): algoritmia y programación; tipos de datos, expresiones y funciones; estructuras de datos; entrada/salida; bibliotecas. La ubicación de las estructuras de control está marcada para verificar.",
   ),
+  contentLevel: "partial",
 };
 
 const pendingSubject = (id: string, name: string, shortName: string, icon: string, color: string, description: string, careers: Subject["careers"] = "todas"): Subject => ({
@@ -205,10 +226,33 @@ const pendingSubject = (id: string, name: string, shortName: string, icon: strin
   prerequisites: [],
   bibliography: [],
   official: official("pendiente", [SRC.cbcCarreras], "Materia del CBC de Ingeniería. Programa pendiente de cargar desde la fuente oficial: no se agregan unidades inventadas."),
+  contentLevel: "draft",
 });
 
-export const IPC = pendingSubject("ipc", "Introducción al Pensamiento Científico", "IPC", "🔬", "humanities", "Qué es el conocimiento científico, cómo se construye y cómo se pone a prueba.");
-export const ICSE = pendingSubject("icse", "Introducción al Conocimiento de la Sociedad y el Estado", "ICSE", "🏛️", "humanities", "Sociedad, Estado y su relación, con foco en la historia argentina.");
+export const IPC: Subject = {
+  ...pendingSubject("ipc", "Introducción al Pensamiento Científico", "IPC", "🔬", "humanities", "Qué es el conocimiento científico, cómo se construye y cómo se pone a prueba."),
+  objectives: [
+    "Distinguir conocimiento de sentido común y científico, y conocimiento formal y fáctico.",
+    "Analizar argumentos y reconocer tipos de inferencias y su corrección.",
+    "Distinguir tipos de enunciados según sus condiciones de verdad.",
+  ],
+  units: [
+    unit("ipc-1", "Historia de la ciencia", "La razón en el pensamiento occidental y el desarrollo histórico de la ciencia."),
+    unit("ipc-2", "Consideraciones sobre el lenguaje", "Lenguaje y teorías científicas, lenguaje y realidad, dimensiones sintáctica y semántica."),
+  ],
+  official: official("parcial", [SRC.ipc2026], "Unidades 1 y 2 y objetivos tomados del programa del 1º C 2026 de una cátedra. Las unidades siguientes, los autores y la bibliografía varían según cátedra: se cargan cuando se verifiquen."),
+  contentLevel: "draft",
+};
+export const ICSE: Subject = {
+  ...pendingSubject("icse", "Introducción al Conocimiento de la Sociedad y el Estado", "ICSE", "🏛️", "humanities", "Sociedad, Estado y su relación a lo largo del tiempo, con perspectivas histórica, sociológica y política."),
+  units: [
+    unit("icse-1", "Sociedad", "Conceptos básicos, estratificación, orden, cooperación y conflicto, actores sociopolíticos, desigualdad, transformaciones contemporáneas."),
+    unit("icse-2", "El Estado", "Definiciones y tipos, origen y evolución, formación del Estado argentino, ciudadanía, regímenes políticos, instituciones democráticas."),
+    unit("icse-3", "Estado y desarrollo socioeconómico", "Políticas públicas en economía, infraestructura, salud, ciencia, tecnología y educación."),
+  ],
+  official: official("parcial", [SRC.icseProg], "Tres ejes de los contenidos mínimos del programa analítico. Los contenidos específicos, autores y períodos dependen de la cátedra."),
+  contentLevel: "draft",
+};
 export const QUIMICA = pendingSubject("quimica", "Química", "Química", "⚗️", "chem", "Estructura de la materia, reacciones y estequiometría.");
 
 // ───────────────────────── Segundo ciclo ─────────────────────────
@@ -227,6 +271,7 @@ const later = (id: string, name: string, careers: Subject["careers"], prerequisi
   prerequisites,
   bibliography: [],
   official: official("parcial", src, note),
+  contentLevel: "draft",
 });
 
 const NOTE_NAME = "Nombre confirmado en el plan 2023 (fuentes de búsqueda sobre la resolución oficial). Programa, ubicación y correlatividades pendientes de cargar.";
@@ -261,6 +306,7 @@ export const CAREERS: Career[] = [
     description: "Diseño y construcción de sistemas de software: algoritmos, programación, sistemas operativos, redes, bases de datos.",
     cbcSubjects: ["am-a", "algebra-a", "fisica", "pensamiento-computacional", "ipc", "icse"],
     laterSubjects: LATER_SUBJECTS.filter((s) => s.careers !== "todas" && s.careers.includes("informatica")).map((s) => s.id),
+    planVersion: "2023",
     official: official(
       "parcial",
       [SRC.informatica2023, SRC.planes2023, SRC.cbcNueva],
@@ -274,6 +320,7 @@ export const CAREERS: Career[] = [
     description: "Diseño, gestión y mejora de sistemas productivos y organizaciones: operaciones, economía, estadística, logística.",
     cbcSubjects: ["am-a", "algebra-a", "fisica", "quimica", "ipc", "icse"],
     laterSubjects: LATER_SUBJECTS.filter((s) => s.careers !== "todas" && s.careers.includes("industrial")).map((s) => s.id),
+    planVersion: "2023 (mod. 2024)",
     official: official(
       "parcial",
       [SRC.industrial2023, SRC.industrialMod, SRC.planes2023],

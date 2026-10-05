@@ -36,7 +36,7 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: "sobreviviste-despeje", title: "Sobreviviste al álgebra", description: "Completaste el Nivel 1 de Preparación.", icon: "🧗", check: (s) => !!s.units["nivel-1"] },
   { id: "dominador-vectores", title: "Dominador de vectores", description: "Dominás el tema vectores.", icon: "🏹", check: (s) => mastered(s, "t-vectores") },
   { id: "cinematica", title: "En movimiento", description: "Completaste la Unidad de Cinemática.", icon: "🏎️", check: (s) => !!s.units["fis-2"] },
-  { id: "preparado", title: "Listo para el CBC", description: "Completaste los cinco niveles de Preparación.", icon: "🎓", check: (s) => ["nivel-0", "nivel-1", "nivel-2", "nivel-3", "nivel-4"].every((u) => s.units[u]) },
+  { id: "preparado", title: "Listo para el CBC", description: "Completaste los cinco niveles de Preparación.", icon: "🎓", check: (s) => ["nivel-0", "nivel-1", "prep-geo", "nivel-2", "prep-uni", "nivel-3", "nivel-4"].every((u) => s.units[u]) },
   { id: "primer-programa", title: "Hola, mundo", description: "Ejecutaste tu primer programa en el laboratorio.", icon: "💻" },
   { id: "primera-funcion", title: "Primera función programada", description: "Definiste y usaste una función con def.", icon: "🧩" },
   { id: "retador", title: "Retador", description: "Superaste tu primer desafío.", icon: "⚔️", check: (s) => s.challengesWon >= 1 },
