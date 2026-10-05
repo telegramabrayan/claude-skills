@@ -22,6 +22,12 @@ import Configuracion from "@/app/configuracion/page";
 import Formulas from "@/app/formulas/page";
 import Diccionario from "@/app/diccionario/page";
 import Buscar from "@/app/buscar/page";
+import Camino from "@/app/camino/page";
+import Desafio from "@/app/desafio/page";
+import Tarjetas from "@/app/tarjetas/page";
+import Plan from "@/app/plan/page";
+import Guardados from "@/app/guardados/page";
+import Taller from "@/app/taller/page";
 import NotFound from "@/app/not-found";
 import { LessonView } from "@/app/leccion/[id]/view";
 import { SubjectView } from "@/app/materias/[id]/view";
@@ -48,6 +54,12 @@ const ROUTES: Record<string, ComponentType> = {
   "/formulas": Formulas,
   "/diccionario": Diccionario,
   "/buscar": Buscar,
+  "/camino": Camino,
+  "/desafio": Desafio,
+  "/tarjetas": Tarjetas,
+  "/plan": Plan,
+  "/guardados": Guardados,
+  "/taller": Taller,
 };
 
 function Router() {

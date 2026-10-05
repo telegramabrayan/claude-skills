@@ -26,7 +26,7 @@ function Node({ id, status, offset, onOpen }: { id: string; status: NodeStatus; 
   const s = useProgress();
   const pct = unit ? unitProgress(s, unit.unit) : null;
   return (
-    <div className="flex justify-center" style={{ transform: `translateX(${offset}px)` }}>
+    <div className="mx-auto flex w-fit justify-center" style={{ transform: `translateX(${offset}px)` }}>
       <button onClick={onOpen} className="group flex flex-col items-center gap-2" aria-label={`${nodeTitle(id)}: ${st.label}`}>
         <span
           className={`relative grid h-20 w-20 place-items-center rounded-full border-4 text-3xl shadow-md transition group-hover:scale-105 ${status === "estructura" ? "border-dashed" : ""} ${status === "disponible" ? "animate-[pulse_2.5s_ease-in-out_infinite]" : ""}`}

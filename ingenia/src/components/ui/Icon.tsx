@@ -32,6 +32,13 @@ const PATHS: Record<string, string> = {
   alert: "M12 3 2 20h20zm0 6v5m0 3v.5",
   sparkle: "M12 3v4m0 10v4M3 12h4m10 0h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6",
   formula: "M5 4h6M8 4v16m-3 0h6m4-12 5 8m0-8-5 8",
+  path: "M6 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm12-12a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM8 18h6a3 3 0 0 0 0-6h-4a3 3 0 0 1 0-6h6",
+  bookmark: "M6 3h12v18l-6-4-6 4z",
+  cards: "M7 4h12v14H7zM4 7v13h12",
+  calendar: "M4 6h16v15H4zm0 5h16M8 3v5m8-5v5",
+  gear: "M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm0-12v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1",
+  sound: "M4 9v6h4l5 4V5L8 9zm12 0a4 4 0 0 1 0 6m2.5-8.5a7.5 7.5 0 0 1 0 11",
+  mute: "M4 9v6h4l5 4V5L8 9zm12 1 5 5m0-5-5 5",
 };
 
 export type IconName = keyof typeof PATHS;

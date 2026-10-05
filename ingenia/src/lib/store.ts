@@ -7,9 +7,11 @@
  */
 import { useSyncExternalStore } from "react";
 import type { CareerGoal, Difficulty, SkillId } from "@/engine/types";
-import { initialState, newTopicState, type ExamRecord, type ProgressState } from "@/engine/progress/state";
-import { addStudyTime as addTime, addXp, completeLesson as completeLessonRule, levelInfo, recordAttempt as recordAttemptRule, saveLessonCard, XP, type AttemptInput } from "@/engine/progress/rules";
-import { dayKey } from "@/engine/progress/dates";
+import { initialState, newTopicState, type ExamRecord, type LaterItem, type ProgressState, type SavedItem, type StudyPlan } from "@/engine/progress/state";
+import { addGears, addStudyTime as addTime, addXp, completeLesson as completeLessonRule, levelInfo, recordAttempt as recordAttemptRule, saveLessonCard, winBoss as winBossRule, XP, type AttemptInput } from "@/engine/progress/rules";
+import { addDays, dayKey } from "@/engine/progress/dates";
+import { SHOP } from "@/content/shop";
+import { play, setSoundEnabled } from "./sound";
 import { ACHIEVEMENTS, newlyUnlocked } from "@/content/achievements";
 import { routeFromDiagnostic, unitsWithLessons, fullRoute } from "./learning";
 import { repository } from "./storage";
@@ -73,7 +75,11 @@ function commit(next: ProgressState) {
   emitChange();
   scheduleSave();
   unlocked.forEach((a) => emit({ type: "achievement", achievementId: a.id }));
-  if (after > before) emit({ type: "level", level: after });
+  if (unlocked.length) play("achievement");
+  if (after > before) {
+    emit({ type: "level", level: after });
+    play("levelup");
+  }
 }
 
 export const store = {
@@ -95,6 +101,7 @@ export const store = {
     if (hydrated) return;
     const loaded = await repository.load();
     if (loaded) state = loaded;
+    setSoundEnabled(state.settings.sound);
     hydrated = true;
     emitChange();
   },
@@ -148,21 +155,30 @@ export const actions = {
     if (next !== state) commit(next);
   },
 
-  completeLesson(lessonId: string) {
-    const r = completeLessonRule(state, lessonId, unitsWithLessons());
+  completeLesson(lessonId: string, accuracy = 1) {
+    const r = completeLessonRule(state, lessonId, unitsWithLessons(), { accuracy });
     commit(r.state);
-    if (r.xpGained) emit({ type: "xp", amount: r.xpGained, label: "Lección completada" });
+    play(r.unitsCompleted.length ? "unlock" : "complete");
     r.unitsCompleted.forEach((u) => emit({ type: "unit", unitId: u }));
     return r;
   },
 
   winChallenge() {
-    commit(addXp({ ...state, challengesWon: state.challengesWon + 1 }, XP.challenge));
+    commit(addGears(addXp({ ...state, challengesWon: state.challengesWon + 1 }, XP.challenge), 30));
     emit({ type: "xp", amount: XP.challenge, label: "Desafío superado" });
+    play("unlock");
+  },
+
+  winBoss(unitId: string) {
+    const r = winBossRule(state, unitId);
+    commit(r.state);
+    emit({ type: "xp", amount: r.xpGained, label: "Desafío final" });
+    play("achievement");
+    return r;
   },
 
   saveExam(record: ExamRecord) {
-    const xp = Math.round(record.score * 5);
+    const xp = Math.round(record.score * XP.examPerPoint);
     commit(addXp({ ...state, exams: [...state.exams, record] }, xp));
     if (xp) emit({ type: "xp", amount: xp, label: "Examen" });
   },
@@ -185,6 +201,51 @@ export const actions = {
     emit({ type: "achievement", achievementId: id });
   },
 
+  buy(itemId: string): string | null {
+    const item = SHOP.find((i) => i.id === itemId);
+    if (!item) return "Ese artículo no existe.";
+    if (item.kind === "freeze" && state.streakFreezes >= 2) return "Ya tenés el máximo de 2 protectores.";
+    if (item.kind !== "freeze" && state.owned.includes(item.id)) return null;
+    if (state.gears < item.price) return `Te faltan ${item.price - state.gears} engranajes.`;
+    commit({
+      ...state,
+      gears: state.gears - item.price,
+      streakFreezes: item.kind === "freeze" ? state.streakFreezes + 1 : state.streakFreezes,
+      owned: item.kind === "freeze" ? state.owned : [...state.owned, item.id],
+    });
+    play("unlock");
+    return null;
+  },
+
+  toggleSaved(item: Omit<SavedItem, "at">) {
+    const exists = state.saved.some((x) => x.kind === item.kind && x.id === item.id);
+    commit({ ...state, saved: exists ? state.saved.filter((x) => !(x.kind === item.kind && x.id === item.id)) : [...state.saved, { ...item, at: new Date().toISOString() }] });
+  },
+
+  saveNote(key: string, text: string) {
+    const notes = { ...state.notes };
+    if (text.trim()) notes[key] = { text, updatedAt: new Date().toISOString() };
+    else delete notes[key];
+    commit({ ...state, notes });
+  },
+
+  toggleLater(item: Omit<LaterItem, "at">) {
+    const exists = state.later.some((x) => x.id === item.id);
+    commit({ ...state, later: exists ? state.later.filter((x) => x.id !== item.id) : [...state.later, { ...item, at: new Date().toISOString() }].slice(-100) });
+  },
+
+  /** Tarjeta de memoria: Leitner con intervalos 1, 3, 7, 14, 30 días. */
+  reviewCard(cardId: string, knew: boolean) {
+    const ladder = [1, 3, 7, 14, 30];
+    const prev = state.cards[cardId] ?? { box: 0, due: dayKey() };
+    const box = knew ? Math.min(ladder.length - 1, prev.box + 1) : 0;
+    commit({ ...state, cards: { ...state.cards, [cardId]: { box, due: addDays(dayKey(), knew ? ladder[box] : 0) } } });
+  },
+
+  setPlan(plan: StudyPlan | null) {
+    commit({ ...state, plan });
+  },
+
   addStudyTime(seconds: number) {
     state = addTime(state, seconds);
     emitChange();
@@ -192,6 +253,7 @@ export const actions = {
   },
 
   updateSettings(patch: Partial<ProgressState["settings"]>) {
+    if (patch.sound !== undefined) setSoundEnabled(patch.sound);
     commit({ ...state, settings: { ...state.settings, ...patch } });
   },
 

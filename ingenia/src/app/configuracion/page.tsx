@@ -1,4 +1,5 @@
 "use client";
+import Link from "next/link";
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { actions, store, useProgress } from "@/lib/store";
@@ -82,6 +83,20 @@ function Settings() {
           </span>
           <input type="checkbox" className="h-6 w-6 accent-[var(--primary)]" checked={s.settings.hearts} onChange={(e) => actions.updateSettings({ hearts: e.target.checked })} />
         </label>
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="block font-semibold">Sonidos</span>
+            <span className="text-sm text-muted">Sonidos cortos y discretos al acertar, equivocarte o subir de nivel.</span>
+          </span>
+          <input type="checkbox" className="h-6 w-6 accent-[var(--primary)]" checked={s.settings.sound} onChange={(e) => actions.updateSettings({ sound: e.target.checked })} />
+        </label>
+        <p className="text-sm">
+          Colores y estilo del guía:{" "}
+          <Link href="/taller" className="font-semibold text-primary">
+            Taller
+          </Link>
+          .
+        </p>
         <label className="block">
           <span className="font-semibold">Meta diaria</span>
           <select className="input mt-1" value={s.settings.dailyMinutes} onChange={(e) => actions.updateSettings({ dailyMinutes: Number(e.target.value) })}>

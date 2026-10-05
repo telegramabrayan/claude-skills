@@ -3,7 +3,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { actions, store, useHydrated, useProgress } from "@/lib/store";
-import { currentStreak, levelInfo } from "@/engine/progress/rules";
+import { currentStreak, levelInfo, levelTitle } from "@/engine/progress/rules";
 import { Icon } from "../ui/Icon";
 import { Toaster } from "./Toaster";
 import { isActive, NAV_MAIN, NAV_MOBILE, NAV_SECONDARY, type NavItem } from "./nav";
@@ -25,6 +25,20 @@ function useTheme() {
 }
 
 /** Cuenta tiempo de estudio real: pestaña visible y actividad en los últimos 90 s. */
+/** Aplica los cosméticos comprados en el Taller (color de acento y estilo del guía). */
+function useCosmetics() {
+  const s = useProgress();
+  const accent = s.settings.accent;
+  const guide = s.settings.guide;
+  useEffect(() => {
+    const el = document.documentElement;
+    if (accent && accent !== "turquesa") el.dataset.accent = accent;
+    else delete el.dataset.accent;
+    if (guide) el.dataset.guide = guide;
+    else delete el.dataset.guide;
+  }, [accent, guide]);
+}
+
 function useStudyTimer() {
   useEffect(() => {
     let last = Date.now();
@@ -66,10 +80,23 @@ function PlayerBadge() {
       <span className="flex items-center gap-1 rounded-full bg-warn-soft px-2.5 py-1 text-warn" title="Racha de días">
         <Icon name="flame" size={16} /> {streak}
       </span>
-      <span className="flex items-center gap-1 rounded-full bg-xp-soft px-2.5 py-1 text-xp" title={`${into} / ${needed} XP para el nivel ${level + 1}`}>
+      <span className="flex items-center gap-1 rounded-full bg-xp-soft px-2.5 py-1 text-xp" title={`${levelTitle(level)} · ${into} / ${needed} XP para el nivel ${level + 1}`}>
         <Icon name="star" size={16} /> Nv {level}
       </span>
+      <Link href="/taller" className="hidden items-center gap-1 rounded-full bg-surface-2 px-2.5 py-1 text-ink sm:flex" title="Engranajes: se usan en el Taller">
+        <span aria-hidden>⚙️</span> {s.gears}
+      </Link>
     </div>
+  );
+}
+
+function SoundToggle() {
+  const on = useProgress().settings.sound;
+  const label = on ? "Sonidos activados (tocar para silenciar)" : "Sonidos desactivados (tocar para activar)";
+  return (
+    <button className="btn btn-ghost !min-h-10 !px-2.5" onClick={() => actions.updateSettings({ sound: !on })} aria-label={label} title={label} aria-pressed={on}>
+      <Icon name={on ? "sound" : "mute"} size={20} />
+    </button>
   );
 }
 
@@ -95,6 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     void store.hydrate();
   }, []);
   useTheme();
+  useCosmetics();
   useStudyTimer();
 
   useEffect(() => {
@@ -151,6 +179,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <Icon name="search" size={20} />
             </Link>
             <PlayerBadge />
+            <SoundToggle />
             <ThemeToggle />
           </div>
         </header>

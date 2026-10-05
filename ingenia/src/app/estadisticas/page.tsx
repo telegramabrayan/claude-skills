@@ -8,6 +8,7 @@ import { TOPICS, getTopic, SKILL_LABELS } from "@/content/topics";
 import { ACHIEVEMENTS } from "@/content/achievements";
 import { useProgress } from "@/lib/store";
 import { Gate } from "@/components/layout/Gate";
+import { Heatmap } from "@/components/ui/Heatmap";
 import { PageHeader, ProgressBar, SectionTitle, Stat, Empty } from "@/components/ui/primitives";
 import { BarChart } from "@/components/ui/BarChart";
 
@@ -62,6 +63,9 @@ function Stats() {
         <Stat label="Lecciones" value={Object.values(s.lessons).filter((l) => l.status === "completada").length} />
         <Stat label="Logros" value={`${Object.keys(s.achievements).length}/${ACHIEVEMENTS.length}`} />
       </div>
+
+      <SectionTitle>Constancia</SectionTitle>
+      <Heatmap days={s.days} />
 
       <div className="grid gap-4 md:grid-cols-2">
         <section>

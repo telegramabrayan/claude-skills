@@ -2,7 +2,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { LESSONS, getLesson } from "@/content/lessons";
-import { getTopic } from "@/content/topics";
+import { getTopic, ERROR_LABELS, ERROR_REMEDIATION } from "@/content/topics";
+import { GuideSay } from "@/components/guide/Nodo";
 import { store } from "@/lib/store";
 import { exerciseFor } from "@/lib/learning";
 import { localTutor, type TutorAnswer } from "@/lib/tutor";
@@ -14,7 +15,9 @@ import { PageHeader, SectionTitle } from "@/components/ui/primitives";
 import { Icon } from "@/components/ui/Icon";
 
 function Professor() {
-  const [lessonId, setLessonId] = useState<string>("l-ecuaciones");
+  const last = store.getState().lastActivity;
+  const lastTopic = last ? getTopic(last.topicId) : undefined;
+  const [lessonId, setLessonId] = useState<string>(lastTopic?.lessonId && getLesson(lastTopic.lessonId) ? lastTopic.lessonId : "l-ecuaciones");
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState<TutorAnswer | null>(null);
   const [practice, setPractice] = useState<Exercise | null>(null);
@@ -29,6 +32,23 @@ function Professor() {
   return (
     <div>
       <PageHeader title="Preguntarle al profesor" subtitle="Elegí un tema y pedile que te lo explique de la forma que mejor te sirva. Nunca te va a responder solo «incorrecto»." />
+
+      {last && lastTopic && (
+        <GuideSay className="mb-4" mood={last.correct ? "happy" : "thinking"}>
+          Lo último que trabajaste fue <b>{lastTopic.name}</b>
+          {last.correct ? " y lo resolviste bien." : last.errorType ? `, y el error fue de tipo «${ERROR_LABELS[last.errorType].toLowerCase()}».` : ", y no salió."} {lastTopic.lessonId ? "Ya dejé ese tema seleccionado abajo." : ""}
+          {!last.correct && last.errorType && ERROR_REMEDIATION[last.errorType] && ERROR_REMEDIATION[last.errorType] !== last.topicId && (
+            <>
+              {" "}
+              Puede ayudarte repasar{" "}
+              <Link className="font-semibold text-primary" href={`/practicar?tema=${ERROR_REMEDIATION[last.errorType]}`}>
+                {getTopic(ERROR_REMEDIATION[last.errorType]!)?.name.toLowerCase()}
+              </Link>
+              .
+            </>
+          )}
+        </GuideSay>
+      )}
 
       <form onSubmit={ask} className="card flex flex-col gap-2 p-4 sm:flex-row">
         <input className="input" value={question} onChange={(e) => setQuestion(e.target.value)} placeholder="¿Qué querés entender? Ej.: ¿qué es la pendiente?" aria-label="Tu pregunta" />

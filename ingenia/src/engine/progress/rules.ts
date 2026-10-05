@@ -8,15 +8,36 @@ import { addDays, dayKey, daysBetween } from "./dates";
 import { MAX_ATTEMPTS, newTopicState, type Attempt, type DayStats, type ProgressState, type TopicState } from "./state";
 
 export const XP = {
-  correct: 10,
-  correctWithHelp: 5,
-  lesson: 25,
-  unit: 50,
-  challenge: 100,
-  /** Bonus por racha en la primera actividad del día: 5 XP por día de racha, hasta 50. */
-  streakPerDay: 5,
-  streakMax: 50,
+  correct: 5,
+  correctWithHelp: 3,
+  lesson: 20,
+  perfectLesson: 30,
+  unit: 100,
+  challenge: 150,
+  /** Examen: 10 XP por punto de nota (un 7 da 70 XP). */
+  examPerPoint: 10,
+  /** Bonus por racha en la primera actividad del día: 2 XP por día de racha, hasta 20. */
+  streakPerDay: 2,
+  streakMax: 20,
 };
+
+/** ⚙️ Engranajes: se ganan estudiando; solo compran cosméticos y protectores de racha. */
+export const GEARS = { correct: 1, lesson: 5, perfectLesson: 10, unit: 20, challenge: 30 };
+
+const LEVEL_TITLES: [number, string][] = [
+  [1, "Principiante"],
+  [5, "Aprendiz"],
+  [10, "Explorador"],
+  [15, "Constructor"],
+  [20, "Analista"],
+  [30, "Ingeniero en formación"],
+  [40, "Proyectista"],
+  [50, "Maestro"],
+];
+
+export function levelTitle(level: number): string {
+  return [...LEVEL_TITLES].reverse().find(([l]) => level >= l)?.[1] ?? "Principiante";
+}
 
 export const MASTERED = 0.85;
 const SR_LADDER = [1, 2, 4, 8, 16, 32]; // días
@@ -25,7 +46,7 @@ const SR_LADDER = [1, 2, 4, 8, 16, 32]; // días
 
 /** XP necesaria para pasar del nivel n al n+1. */
 export function xpForNext(level: number): number {
-  return 100 + 50 * (level - 1);
+  return 60 + 30 * (level - 1);
 }
 
 export function levelInfo(xp: number): { level: number; into: number; needed: number } {
@@ -53,10 +74,16 @@ function touchStreak(s: ProgressState, today: string): { state: ProgressState; b
   const last = s.streak.lastDay;
   if (last === today) return { state: s, bonus: 0 };
   const gap = last ? daysBetween(last, today) : Infinity;
-  const current = gap === 1 ? s.streak.current + 1 : 1;
+  // Un protector de racha cubre exactamente un día sin estudiar.
+  const useFreeze = gap === 2 && s.streakFreezes > 0;
+  const current = gap === 1 || useFreeze ? s.streak.current + 1 : 1;
   const bonus = current > 1 ? Math.min(XP.streakMax, XP.streakPerDay * current) : 0;
   return {
-    state: { ...s, streak: { current, longest: Math.max(s.streak.longest, current), lastDay: today } },
+    state: {
+      ...s,
+      streakFreezes: useFreeze ? s.streakFreezes - 1 : s.streakFreezes,
+      streak: { current, longest: Math.max(s.streak.longest, current), lastDay: today },
+    },
     bonus,
   };
 }
@@ -65,7 +92,12 @@ function touchStreak(s: ProgressState, today: string): { state: ProgressState; b
 export function currentStreak(s: ProgressState, today = dayKey()): number {
   const last = s.streak.lastDay;
   if (!last) return 0;
-  return daysBetween(last, today) <= 1 ? s.streak.current : 0;
+  const gap = daysBetween(last, today);
+  return gap <= 1 || (gap === 2 && s.streakFreezes > 0) ? s.streak.current : 0;
+}
+
+export function addGears(s: ProgressState, n: number): ProgressState {
+  return n > 0 ? { ...s, gears: s.gears + n } : s;
 }
 
 export function addXp(s: ProgressState, amount: number, today = dayKey()): ProgressState {
@@ -161,6 +193,8 @@ export function recordAttempt(s: ProgressState, input: AttemptInput, now = Date.
     ...afterStreak,
     topics: { ...afterStreak.topics, [input.topicId]: topic },
     attempts: attempts.length > MAX_ATTEMPTS ? attempts.slice(-MAX_ATTEMPTS) : attempts,
+    gears: afterStreak.gears + (input.correct && !input.usedSolution ? GEARS.correct : 0),
+    lastActivity: { topicId: input.topicId, exerciseId: input.exerciseId, errorType: input.errorType, correct: input.correct, ts: now },
   };
   next = withDay(next, today, (d) => ({ ...d, exercises: d.exercises + 1, correct: d.correct + (input.correct ? 1 : 0) }));
   const beforeLevel = levelInfo(next.xp).level;
@@ -174,28 +208,60 @@ export function recordAttempt(s: ProgressState, input: AttemptInput, now = Date.
   };
 }
 
-export function completeLesson(s: ProgressState, lessonId: string, unitLessons: { unitId: string; lessonIds: string[] }[], now = Date.now()): { state: ProgressState; xpGained: number; unitsCompleted: string[] } {
+export function completeLesson(
+  s: ProgressState,
+  lessonId: string,
+  unitLessons: { unitId: string; lessonIds: string[] }[],
+  result: { accuracy: number } = { accuracy: 1 },
+  now = Date.now(),
+): { state: ProgressState; xpGained: number; unitsCompleted: string[]; perfect: boolean } {
   const today = dayKey(new Date(now));
-  const already = s.lessons[lessonId]?.status === "completada";
+  const prev = s.lessons[lessonId];
+  const already = prev?.status === "completada";
+  const perfect = result.accuracy >= 1;
   let next: ProgressState = {
     ...s,
-    lessons: { ...s.lessons, [lessonId]: { status: "completada", card: 0, completedAt: s.lessons[lessonId]?.completedAt ?? new Date(now).toISOString() } },
+    lessons: {
+      ...s.lessons,
+      [lessonId]: {
+        status: "completada",
+        card: 0,
+        completedAt: prev?.completedAt ?? new Date(now).toISOString(),
+        bestAccuracy: Math.max(prev?.bestAccuracy ?? 0, result.accuracy),
+        perfect: prev?.perfect || perfect,
+      },
+    },
   };
-  if (already) return { state: next, xpGained: 0, unitsCompleted: [] };
+  if (already) {
+    // Repetir una lección no vuelve a dar la XP completa, pero una primera vez perfecta suma el bonus.
+    const bonus = perfect && !prev?.perfect ? XP.perfectLesson - XP.lesson : 0;
+    return { state: addXp(next, bonus, today), xpGained: bonus, unitsCompleted: [], perfect };
+  }
   next = touchStreak(next, today).state;
   next = withDay(next, today, (d) => ({ ...d, lessons: d.lessons + 1 }));
-  let xp = XP.lesson;
+  next = addGears(next, perfect ? GEARS.perfectLesson : GEARS.lesson);
+  let xp = perfect ? XP.perfectLesson : XP.lesson;
   const unitsCompleted: string[] = [];
   for (const u of unitLessons) {
     if (next.units[u.unitId] || !u.lessonIds.includes(lessonId)) continue;
     if (u.lessonIds.every((id) => next.lessons[id]?.status === "completada")) {
       unitsCompleted.push(u.unitId);
-      next = { ...next, units: { ...next.units, [u.unitId]: today } };
+      next = addGears({ ...next, units: { ...next.units, [u.unitId]: today } }, GEARS.unit);
       xp += XP.unit;
     }
   }
   next = addXp(next, xp, today);
-  return { state: next, xpGained: xp, unitsCompleted };
+  return { state: next, xpGained: xp, unitsCompleted, perfect };
+}
+
+/** Desafío final de una unidad superado. */
+export function winBoss(s: ProgressState, unitId: string, now = Date.now()): { state: ProgressState; xpGained: number } {
+  const today = dayKey(new Date(now));
+  const first = !s.bosses[unitId];
+  let next: ProgressState = { ...s, bosses: { ...s.bosses, [unitId]: s.bosses[unitId] ?? today }, challengesWon: s.challengesWon + 1 };
+  const xp = first ? XP.challenge : Math.round(XP.challenge / 3);
+  next = addGears(next, first ? GEARS.challenge : 5);
+  return { state: addXp(next, xp, today), xpGained: xp };
 }
 
 export function saveLessonCard(s: ProgressState, lessonId: string, card: number): ProgressState {

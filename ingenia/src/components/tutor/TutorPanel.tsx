@@ -26,6 +26,8 @@ interface Props {
   onSolve?: () => void;
   onClose?: () => void;
   hasExercise?: boolean;
+  /** Modo con el que abre (p. ej. desde la fila "😵 No entiendo"). */
+  initial?: TutorMode;
 }
 
 /**
@@ -33,8 +35,8 @@ interface Props {
  * del contenido curado de cada lección (no inventa); la interfaz está
  * preparada para sumar un proveedor conversacional (ver lib/tutor.ts).
  */
-export function TutorPanel({ script, topicName, onHint, onSolve, onClose, hasExercise }: Props) {
-  const [mode, setMode] = useState<TutorMode | null>(null);
+export function TutorPanel({ script, topicName, onHint, onSolve, onClose, hasExercise, initial }: Props) {
+  const [mode, setMode] = useState<TutorMode | null>(initial ?? null);
   const [hintText, setHintText] = useState<string | null>(null);
 
   const choose = (m: TutorMode) => {

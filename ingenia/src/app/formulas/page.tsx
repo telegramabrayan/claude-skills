@@ -1,5 +1,7 @@
 "use client";
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { actions, useProgress } from "@/lib/store";
 import { FORMULAS } from "@/content/formulas";
 import { getSubject } from "@/content/curriculum";
 import { normalize } from "@/lib/search";
@@ -7,8 +9,30 @@ import { PageHeader } from "@/components/ui/primitives";
 import { MathText } from "@/components/math/MathText";
 import { Icon } from "@/components/ui/Icon";
 
+function FormulaStar({ id, name }: { id: string; name: string }) {
+  const saved = useProgress().saved.some((x) => x.kind === "formula" && x.id === id);
+  return (
+    <button
+      className="btn btn-ghost !min-h-9 !px-2"
+      aria-pressed={saved}
+      aria-label={saved ? `Quitar ${name} de guardados` : `Guardar ${name}`}
+      onClick={() => actions.toggleSaved({ kind: "formula", id, title: name, href: `/formulas?q=${encodeURIComponent(name)}` })}
+    >
+      <span aria-hidden>{saved ? "⭐" : "☆"}</span>
+    </button>
+  );
+}
+
 export default function Page() {
-  const [q, setQ] = useState("");
+  return (
+    <Suspense>
+      <Formulas />
+    </Suspense>
+  );
+}
+
+function Formulas() {
+  const [q, setQ] = useState(useSearchParams().get("q") ?? "");
   const list = useMemo(() => {
     const n = normalize(q);
     return FORMULAS.filter((f) => !n || normalize(`${f.name} ${f.expression} ${f.meaning} ${f.tags.join(" ")}`).includes(n));
@@ -28,7 +52,8 @@ export default function Page() {
                 <p className="text-xs text-muted">{getSubject(f.subjectId)?.shortName}</p>
                 <h2 className="text-lg font-bold">{f.name}</h2>
               </div>
-              <div className="flex flex-wrap gap-1">
+              <div className="flex flex-wrap items-center gap-1">
+                <FormulaStar id={f.id} name={f.name} />
                 {f.tags.map((t) => (
                   <span key={t} className="chip">
                     {t}

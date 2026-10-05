@@ -73,8 +73,9 @@ describe("progreso", () => {
     for (let i = 0; i < 12; i++) {
       s = recordAttempt(s, { exerciseId: `x${i}`, topicId: "t-signos", correct: true, hints: 0, usedSolution: false, difficulty: 3, mode: "practica" }).state;
     }
-    expect(s.xp).toBe(120);
+    expect(s.xp).toBe(60);
     expect(levelInfo(s.xp).level).toBe(2);
+    expect(s.gears).toBe(12);
     expect(s.topics["t-signos"].mastery).toBeGreaterThan(0.6);
     expect(s.topics["t-signos"].level).toBeGreaterThan(2);
     expect(s.streak.current).toBe(1);
@@ -98,7 +99,7 @@ describe("progreso", () => {
       gained += r.xpGained;
     }
     expect(s.units["nivel-1"]).toBeDefined();
-    expect(gained).toBe(unit.lessonIds.length * 25 + 50);
+    expect(gained).toBe(unit.lessonIds.length * 30 + 100);
     expect(nodeStatus(s, "nivel-2")).toBe("disponible");
     expect(nodeStatus(s, "nivel-3")).toBe("bloqueado");
   });

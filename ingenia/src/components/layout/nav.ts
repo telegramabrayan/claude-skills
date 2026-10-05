@@ -8,16 +8,21 @@ export interface NavItem {
 
 export const NAV_MAIN: NavItem[] = [
   { href: "/", label: "Inicio", icon: "home" },
-  { href: "/mapa", label: "Mapa", icon: "map" },
+  { href: "/camino", label: "Camino", icon: "path" },
   { href: "/materias", label: "Materias", icon: "book" },
+  { href: "/mapa", label: "Mapa de carrera", icon: "map" },
   { href: "/practicar", label: "Practicar", icon: "target" },
   { href: "/laboratorio", label: "Laboratorio", icon: "flask" },
   { href: "/examenes", label: "Exámenes", icon: "exam" },
   { href: "/repasar", label: "Repasar", icon: "refresh" },
+  { href: "/tarjetas", label: "Tarjetas", icon: "cards" },
   { href: "/profesor", label: "Profesor", icon: "chat" },
 ];
 
 export const NAV_SECONDARY: NavItem[] = [
+  { href: "/plan", label: "Plan de estudio", icon: "calendar" },
+  { href: "/guardados", label: "Guardados", icon: "bookmark" },
+  { href: "/taller", label: "Taller", icon: "gear" },
   { href: "/estadisticas", label: "Estadísticas", icon: "chart" },
   { href: "/errores", label: "Mis errores", icon: "alert" },
   { href: "/logros", label: "Logros y misiones", icon: "trophy" },
@@ -29,9 +34,9 @@ export const NAV_SECONDARY: NavItem[] = [
 
 export const NAV_MOBILE: NavItem[] = [
   { href: "/", label: "Inicio", icon: "home" },
-  { href: "/mapa", label: "Mapa", icon: "map" },
+  { href: "/camino", label: "Camino", icon: "path" },
   { href: "/practicar", label: "Practicar", icon: "target" },
-  { href: "/laboratorio", label: "Lab", icon: "flask" },
+  { href: "/repasar", label: "Repasar", icon: "refresh" },
 ];
 
 export function isActive(pathname: string, href: string): boolean {

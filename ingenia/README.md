@@ -21,7 +21,28 @@ npm run build      # build de producción (todas las rutas son estáticas)
 Requiere Node 20+. El progreso se guarda en el navegador (con respaldo JSON desde
 Configuración).
 
-## Qué incluye esta primera versión
+## Novedades de la v2 (experiencia tipo app)
+
+- **Camino**: un nodo por lección y un **desafío final** por unidad (10 ejercicios
+  mezclados, sin ayudas, 3 vidas, +150 XP). Siempre hay un único "siguiente paso";
+  nada queda cerrado del todo ("Entrar igual"). "Explorar libremente" sigue disponible.
+- **Inicio rediseñado** con **Nodo**, el guía propio: continuar, objetivo de hoy,
+  racha semanal sin ansiedad (protectores de racha), reforzar, entrenamiento rápido
+  de 5/10/15/30 min, desafíos disponibles, tarjetas visuales por materia y progreso.
+- **Lecciones v2**: fila "😵 No entiendo / Más fácil / Otro ejemplo / Ver dibujo /
+  ¿Para qué sirve?", ⭐ guardar, 📝 notas, pantalla final con XP, precisión y
+  tiempo, lección perfecta (+30 XP) y celebración de fin de unidad.
+- **Ejercicios v2**: ordenar pasos, relacionar, elegir el gráfico, encontrar el
+  error, verdadero/falso; 🔖 "Repasar después"; **remediación automática por
+  prerrequisito** ("El problema parece estar en factorización, no en límites" →
+  repaso de 5 min → vuelta al ejercicio).
+- **Herramientas**: Tarjetas con repetición espaciada (fórmulas, símbolos, ideas
+  clave), Guardados (favoritos, notas, ejercicios para repasar), Plan de estudio
+  con fecha de examen, simulador de 1.er/2.º parcial y final con o sin tiempo,
+  mapa de calor de constancia, Taller de cosméticos con engranajes (nunca bloquea
+  contenido), sonidos discretos con ON/OFF.
+
+## Qué incluía la primera versión
 
 - **Primer ingreso** con elección de carrera y **diagnóstico** por habilidad
   ("Tu punto de partida") que arma una **ruta personalizada**.

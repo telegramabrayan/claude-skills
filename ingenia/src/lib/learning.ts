@@ -2,7 +2,7 @@
  * Lógica pedagógica que combina contenido + progreso:
  * estados del mapa, ruta personalizada, recomendaciones y plan diario.
  */
-import type { Difficulty, Exercise, SkillId, Subject, Unit } from "@/engine/types";
+import type { Difficulty, ErrorType, Exercise, SkillId, Subject, Unit } from "@/engine/types";
 import type { ProgressState } from "@/engine/progress/state";
 import { dayKey } from "@/engine/progress/dates";
 import { isDue, MASTERED, recurringErrors } from "@/engine/progress/rules";
@@ -182,6 +182,32 @@ export function recommendations(s: ProgressState, limit = 3): Recommendation[] {
     .forEach((t) => add(t.id, `Dominio ${Math.round((s.topics[t.id]?.mastery ?? 0) * 100)} %`));
   practiced.filter((t) => isDue(s.topics[t.id])).forEach((t) => add(t.id, "Toca repasarlo para no olvidarlo"));
   return out.slice(0, limit);
+}
+
+/** Todos los prerrequisitos (directos e indirectos) de un tema. */
+export function prerequisiteClosure(topicId: string, extra: string[] = []): Set<string> {
+  const out = new Set<string>();
+  const stack = [...(getTopic(topicId)?.prerequisites ?? []), ...extra];
+  while (stack.length) {
+    const t = stack.pop()!;
+    if (out.has(t)) continue;
+    out.add(t);
+    stack.push(...(getTopic(t)?.prerequisites ?? []));
+  }
+  return out;
+}
+
+/**
+ * ¿El error de este ejercicio parece venir de un tema anterior?
+ * Ej.: fallar un límite por factorizar mal → «el problema está en factorización».
+ */
+export function prerequisiteGap(s: ProgressState, exercise: Exercise, errorType?: ErrorType): string | null {
+  if (!errorType) return null;
+  const target = ERROR_REMEDIATION[errorType];
+  if (!target || target === exercise.topicId || !getTopic(target)) return null;
+  const closure = prerequisiteClosure(exercise.topicId, exercise.prerequisites);
+  if (closure.has(target)) return target;
+  return recurringErrors(s).includes(errorType) ? target : null;
 }
 
 export function dueTopics(s: ProgressState, today = dayKey()): string[] {

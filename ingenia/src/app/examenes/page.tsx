@@ -14,7 +14,85 @@ import { Icon } from "@/components/ui/Icon";
 interface ExamSpec {
   title: string;
   items: SessionItem[];
-  minutes: number;
+  minutes?: number;
+}
+
+type ExamKind = "p1" | "p2" | "final";
+const KIND: Record<ExamKind, { label: string; n: number; minutes: number }> = {
+  p1: { label: "1.er parcial", n: 10, minutes: 60 },
+  p2: { label: "2.º parcial", n: 10, minutes: 60 },
+  final: { label: "Final", n: 14, minutes: 90 },
+};
+
+/** Temas que entran: 1.er parcial = primera mitad de las unidades con ejercicios; 2.º = segunda mitad; final = todo. */
+function examTopics(sub: Subject, kind: ExamKind): string[] {
+  const units = sub.units.filter((u) => u.topicIds.length);
+  const half = Math.ceil(units.length / 2);
+  const chosen = kind === "p1" ? units.slice(0, half) : kind === "p2" ? units.slice(half) : units;
+  const topics = [...new Set((chosen.length ? chosen : units).flatMap((u) => u.topicIds))];
+  return topics.filter((t) => getTopic(t)?.generators.length);
+}
+
+function Simulator({ subjects, onStart }: { subjects: Subject[]; onStart: (e: ExamSpec) => void }) {
+  const s = useProgress();
+  const [subjectId, setSubjectId] = useState(s.plan?.subjectId && subjects.some((x) => x.id === s.plan?.subjectId) ? s.plan.subjectId : subjects[0]?.id);
+  const [kind, setKind] = useState<ExamKind>("p1");
+  const [timed, setTimed] = useState(true);
+  const sub = subjects.find((x) => x.id === subjectId);
+  if (!sub) return null;
+  const topics = examTopics(sub, kind);
+  const units = sub.units.filter((u) => u.topicIds.length);
+  const half = Math.ceil(units.length / 2);
+  const included = kind === "p1" ? units.slice(0, half) : kind === "p2" ? units.slice(half) : units;
+  const k = KIND[kind];
+  return (
+    <div className="card space-y-4 p-5">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <label className="space-y-1 text-sm font-semibold">
+          <span>Materia</span>
+          <select className="input" value={subjectId} onChange={(e) => setSubjectId(e.target.value)}>
+            {subjects.map((x) => (
+              <option key={x.id} value={x.id}>
+                {x.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="space-y-1 text-sm font-semibold">
+          <span>Tipo</span>
+          <div className="grid grid-cols-3 gap-1" role="radiogroup" aria-label="Tipo de examen">
+            {(Object.keys(KIND) as ExamKind[]).map((x) => (
+              <button key={x} type="button" role="radio" aria-checked={kind === x} className={`btn !min-h-10 !px-2 text-xs ${kind === x ? "btn-primary" : "btn-secondary"}`} onClick={() => setKind(x)}>
+                {KIND[x].label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div className="space-y-1 text-sm font-semibold">
+          <span>Tiempo</span>
+          <div className="grid grid-cols-2 gap-1" role="radiogroup" aria-label="Con o sin tiempo">
+            <button type="button" role="radio" aria-checked={timed} className={`btn !min-h-10 text-xs ${timed ? "btn-primary" : "btn-secondary"}`} onClick={() => setTimed(true)}>
+              {k.minutes} min
+            </button>
+            <button type="button" role="radio" aria-checked={!timed} className={`btn !min-h-10 text-xs ${!timed ? "btn-primary" : "btn-secondary"}`} onClick={() => setTimed(false)}>
+              Sin tiempo
+            </button>
+          </div>
+        </div>
+      </div>
+      <p className="text-sm text-muted">
+        Entran: {included.map((u) => u.title).join(" · ") || "las unidades con ejercicios"}. {k.n} ejercicios de nivel parcial.
+        {kind !== "final" && " La división en 1.er y 2.º parcial es orientativa: cada cátedra define qué entra en cada uno."}
+      </p>
+      <button
+        className="btn btn-primary w-full sm:w-auto"
+        disabled={!topics.length}
+        onClick={() => onStart({ title: `${k.label} · ${sub.shortName}`, items: spread(topics, k.n, [4, 5, 4, 3, 5, 6]), minutes: timed ? k.minutes : undefined })}
+      >
+        Empezar simulacro <Icon name="play" size={18} />
+      </button>
+    </div>
+  );
 }
 
 function spread(topicIds: string[], n: number, difficulties: Difficulty[]): SessionItem[] {
@@ -41,28 +119,8 @@ function Exams() {
         Los simulacros usan ejercicios generados por Ingenia en el estilo de los temas del programa. No reproducen parciales oficiales de la UBA: ese material solo se incorporará si su uso está permitido.
       </p>
 
-      <SectionTitle>Simulacros de parcial</SectionTitle>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {subjects.map((sub) => {
-          const topics = subjectTopics(sub);
-          return (
-            <button
-              key={sub.id}
-              className="card flex items-center gap-4 p-4 text-left hover:border-primary"
-              onClick={() => setExam({ title: `Simulacro · ${sub.shortName}`, items: spread(topics, 10, [4, 5, 4, 3, 5]), minutes: 40 })}
-            >
-              <span className="text-2xl" aria-hidden>
-                {sub.icon}
-              </span>
-              <span className="flex-1">
-                <span className="block font-bold">{sub.name}</span>
-                <span className="text-sm text-muted">10 ejercicios · nivel parcial · 40 min</span>
-              </span>
-              <Icon name="play" size={18} className="text-primary" />
-            </button>
-          );
-        })}
-      </div>
+      <SectionTitle>Simulador de parcial</SectionTitle>
+      <Simulator subjects={subjects} onStart={setExam} />
 
       <SectionTitle>Exámenes por unidad</SectionTitle>
       <div className="grid gap-3 sm:grid-cols-2">

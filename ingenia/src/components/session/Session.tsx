@@ -12,6 +12,7 @@ import { exerciseFor } from "@/lib/learning";
 import { ExercisePlayer, type ExerciseOutcome } from "../exercise/ExercisePlayer";
 import { ProgressBar } from "../ui/primitives";
 import { Icon } from "../ui/Icon";
+import { Confetti } from "../ui/Celebrate";
 
 export interface SessionItem {
   topicId: string;
@@ -31,6 +32,12 @@ interface Props {
   minutes?: number;
   onExit?: () => void;
   exitHref?: string;
+  /** Vidas fijas (desafío final): se usan aunque los corazones estén apagados en la configuración. */
+  lives?: number;
+  /** Sin pistas, profesor ni explicaciones. */
+  noHelp?: boolean;
+  /** Reemplaza la recompensa estándar del desafío (p. ej. coronar una unidad). */
+  onWin?: () => void;
 }
 
 interface Log {
@@ -49,8 +56,9 @@ function buildExercise(item: SessionItem): Exercise {
   return exerciseFor(store.getState(), item.topicId, item.adjust ?? 0);
 }
 
-export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/" }: Props) {
-  const hearts0 = kind === "desafio" && store.getState().settings.hearts ? 5 : null;
+export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin }: Props) {
+  const maxHearts = lives ?? 5;
+  const hearts0 = lives ?? (kind === "desafio" && store.getState().settings.hearts ? 5 : null);
   const [index, setIndex] = useState(0);
   const [exercise, setExercise] = useState<Exercise | null>(null);
   const [log, setLog] = useState<Log[]>([]);
@@ -108,7 +116,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
     saved.current = true;
     if (kind === "desafio") {
       const won = hearts === null ? correct >= Math.ceil(items.length * 0.7) : hearts > 0 && log.length === items.length;
-      if (won) actions.winChallenge();
+      if (won) (onWin ?? actions.winChallenge)();
     }
     if (kind === "examen") {
       const byTopic: ExamRecord["byTopic"] = {};
@@ -132,7 +140,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
         errors,
       });
     }
-  }, [done, kind, correct, hearts, items, log, title]);
+  }, [done, kind, correct, hearts, items, log, title, onWin]);
 
   if (done) {
     return <Summary title={title} log={log} items={items} kind={kind} hearts={hearts} xp={store.getState().xp - xpStart.current} seconds={Math.round((Date.now() - started.current) / 1000)} onExit={onExit} exitHref={exitHref} />;
@@ -161,7 +169,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
         </div>
         {hearts !== null && (
           <span className="flex items-center gap-0.5 text-danger" aria-label={`${hearts} corazones`}>
-            {Array.from({ length: 5 }, (_, i) => (
+            {Array.from({ length: maxHearts }, (_, i) => (
               <Icon key={i} name="heart" size={18} className={i < hearts ? "fill-current" : "opacity-30"} />
             ))}
           </span>
@@ -175,8 +183,9 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
       {items[index]?.label && <span className="chip">{items[index].label}</span>}
       <div className="card p-5 sm:p-6">
         {exercise && (
-          <ExercisePlayer key={`${index}-${exercise.id}`} exercise={exercise} mode={mode} onDone={onDone} onWrong={onWrong} exam={kind === "examen"} continueLabel={index + 1 >= items.length ? "Terminar" : "Siguiente"} />
+          <ExercisePlayer key={`${index}-${exercise.id}`} exercise={exercise} mode={mode} onDone={onDone} onWrong={onWrong} exam={kind === "examen"} noHelp={noHelp} continueLabel={index + 1 >= items.length ? "Terminar" : "Siguiente"} />
         )}
+        {noHelp && kind !== "examen" && <p className="mt-4 text-xs text-muted">Desafío: sin pistas ni explicaciones. Al final ves qué repasar.</p>}
         {kind === "examen" && (
           <p className="mt-4 text-xs text-muted">Modo examen: sin pistas ni corrección hasta el final. Si no sabés, escribí tu mejor intento y seguí.</p>
         )}
@@ -208,8 +217,11 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
   const strong = byTopic.filter(([, v]) => v.c / v.t >= 0.8).map(([t]) => t);
   const remediation = errorCounts.map(([e]) => ERROR_REMEDIATION[e]).filter((t): t is string => !!t && !weak.includes(t));
   const outOfHearts = hearts !== null && hearts <= 0;
+  const wonChallenge = kind === "desafio" && hearts !== null && !outOfHearts && log.length === items.length;
   const message = outOfHearts
-    ? "Te quedaste sin corazones. Es parte del desafío: repasá los temas marcados y volvé a intentarlo."
+    ? "Te quedaste sin vidas. Es parte del desafío: repasá los temas marcados y volvé a intentarlo."
+    : wonChallenge
+      ? "¡Desafío superado! Demostraste que podés resolver la unidad sin ayuda."
     : pct >= 0.9
       ? "Excelente. Estás listo para subir la dificultad."
       : pct >= 0.6
@@ -217,7 +229,8 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
         : "Esta sesión costó, y está bien: los errores muestran exactamente qué reforzar.";
 
   return (
-    <div className="anim-pop mx-auto max-w-2xl space-y-5">
+    <div className="anim-pop relative mx-auto max-w-2xl space-y-5">
+      {wonChallenge && <Confetti count={40} />}
       <div className="card p-6 text-center">
         <p className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</p>
         {kind === "examen" ? (

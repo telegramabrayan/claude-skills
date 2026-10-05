@@ -1,10 +1,12 @@
 "use client";
-import { useState } from "react";
+import { Suspense, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { getLesson } from "@/content/lessons";
 import { getTopic } from "@/content/topics";
 import { store, useProgress } from "@/lib/store";
-import { dailyPlan, type QueueItem } from "@/lib/learning";
+import { activeTopics, dailyPlan, dueTopics, recommendations, type QueueItem } from "@/lib/learning";
+import type { SessionItem } from "@/components/session/Session";
 import { Gate } from "@/components/layout/Gate";
 import { Session } from "@/components/session/Session";
 import { PageHeader } from "@/components/ui/primitives";
@@ -80,10 +82,36 @@ function Training() {
   );
 }
 
+const COUNT: Record<number, number> = { 5: 4, 10: 8, 15: 12, 30: 20 };
+
+/** Entrenamiento rápido: repasos vencidos primero, después temas flojos y lo que estás viendo. */
+function quickItems(n: number): SessionItem[] {
+  const st = store.getState();
+  const due = dueTopics(st).map((t) => ({ topicId: t, label: "Repaso" }));
+  const weak = recommendations(st, 4).map((r) => ({ topicId: r.topicId, label: "Reforzar" }));
+  const active = activeTopics(st).map((t) => ({ topicId: t, label: "Práctica" }));
+  const pool = [...due, ...weak, ...active].filter((x) => getTopic(x.topicId)?.generators.length);
+  const base = pool.length ? pool : [{ topicId: "t-signos", label: "Práctica" }, { topicId: "t-fracciones", label: "Práctica" }, { topicId: "t-ecuaciones", label: "Práctica" }];
+  return Array.from({ length: n }, (_, i) => ({ ...base[i % base.length], adjust: i >= n - Math.ceil(n / 5) ? 1 : 0 }));
+}
+
+function Quick({ minutes }: { minutes: number }) {
+  const n = COUNT[minutes] ?? Math.max(3, Math.round(minutes * 0.75));
+  const [items] = useState(() => quickItems(n));
+  return <Session title={`Entrenamiento de ${minutes} min`} items={items} mode="rapido" exitHref="/" />;
+}
+
+function Router() {
+  const min = Number(useSearchParams().get("min"));
+  return min > 0 ? <Quick minutes={Math.min(60, min)} /> : <Training />;
+}
+
 export default function Page() {
   return (
     <Gate>
-      <Training />
+      <Suspense>
+        <Router />
+      </Suspense>
     </Gate>
   );
 }

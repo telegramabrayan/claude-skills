@@ -15,7 +15,12 @@ import type { StudyMode } from "@/engine/progress/state";
 import { XP } from "@/engine/progress/rules";
 import { getTopic, ERROR_LABELS } from "@/content/topics";
 import { getLesson } from "@/content/lessons";
-import { actions } from "@/lib/store";
+import { actions, store, useProgress } from "@/lib/store";
+import { play } from "@/lib/sound";
+import { exerciseFor, prerequisiteGap } from "@/lib/learning";
+import { correctMessage as guideCorrect, wrongMessage as guideWrong } from "@/lib/guide";
+import { GuideSay } from "../guide/Nodo";
+import { MatchInput, OrderInput, PlotOption } from "./Inputs";
 import { MathText } from "../math/MathText";
 import { ExerciseVisual } from "../math/Visuals";
 import { TutorPanel } from "../tutor/TutorPanel";
@@ -42,11 +47,13 @@ interface Props {
   guided?: boolean;
   continueLabel?: string;
   onWrong?: () => void;
+  /** Desafío final: sin pistas, sin profesor y sin explicación automática. */
+  noHelp?: boolean;
 }
 
 const DIFF_LABEL: Record<Difficulty, string> = { 1: "Muy fácil", 2: "Fácil", 3: "Normal", 4: "Difícil", 5: "Nivel parcial", 6: "Desafío" };
 
-export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnostic, record = true, guided, continueLabel = "Continuar", onWrong }: Props) {
+export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnostic, record = true, guided, continueLabel = "Continuar", onWrong, noHelp }: Props) {
   const [exercise, setExercise] = useState(initial);
   useEffect(() => setExercise(initial), [initial]);
 
@@ -63,6 +70,13 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
   const [firstCorrect, setFirstCorrect] = useState<boolean | null>(null);
   const [shake, setShake] = useState(false);
   const activeInput = useRef<HTMLInputElement | null>(null);
+  const [order, setOrder] = useState<string[]>([]);
+  const [match, setMatch] = useState<Record<string, string>>({});
+  const [reviewTopic, setReviewTopic] = useState<string | null>(null);
+  const [levelUp, setLevelUp] = useState(false);
+  const progress = useProgress();
+  const helpless = noHelp || exam || diagnostic;
+  const savedLater = progress.later.some((x) => x.id === exercise.id);
 
   // Reiniciar todo al cambiar de ejercicio.
   useEffect(() => {
@@ -77,6 +91,10 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
     setShowTutor(false);
     setRecorded(false);
     setFirstCorrect(null);
+    setOrder([]);
+    setMatch({});
+    setReviewTopic(null);
+    setLevelUp(false);
   }, [exercise, guided]);
 
   const topic = getTopic(exercise.topicId);
@@ -97,8 +115,10 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
         return { kind: "steps", steps, final: text };
       case "trace":
         return { kind: "trace", values: traceVals };
-      default:
-        return { kind: "order", order: [] };
+      case "order":
+        return { kind: "order", order };
+      case "match":
+        return { kind: "match", pairs: match };
     }
   };
 
@@ -108,10 +128,14 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
         return choiceIdx !== null;
       case "trace":
         return exercise.ask.every((k) => (traceVals[k] ?? "").trim());
+      case "order":
+        return order.length === exercise.items.length;
+      case "match":
+        return exercise.pairs.every(([l]) => match[l]);
       default:
         return text.trim().length > 0;
     }
-  }, [exercise, choiceIdx, text, traceVals]);
+  }, [exercise, choiceIdx, text, traceVals, order, match]);
 
   const submit = (gaveUp = false) => {
     const r: EvaluationResult = gaveUp
@@ -119,6 +143,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
       : evaluateAnswer(exercise, answer());
     setResult(r);
     if (r.invalidInput) return;
+    if (!exam && !diagnostic) play(r.correct ? "correct" : "wrong");
     if (!r.correct) {
       setShake(true);
       setTimeout(() => setShake(false), 450);
@@ -128,7 +153,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
       setRecorded(true);
       setFirstCorrect(r.correct);
       if (record) {
-        actions.recordAttempt({
+        const out = actions.recordAttempt({
           exerciseId: exercise.id,
           topicId: exercise.topicId,
           correct: r.correct,
@@ -138,6 +163,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
           difficulty: exercise.difficulty,
           mode,
         });
+        setLevelUp(out.levelChange > 0);
       }
       if (exam || diagnostic) onDone?.({ correct: r.correct, firstTry: true, errorType: r.errorType, exercise });
     }
@@ -180,6 +206,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
   };
 
   const locked = finished;
+  const gap = result && !result.correct && !helpless ? prerequisiteGap(store.getState(), exercise, result.errorType) : null;
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && canSubmit && !finished) {
       e.preventDefault();
@@ -193,6 +220,16 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
         {topic && <span className="chip">{topic.name}</span>}
         {!diagnostic && <span className="chip">{DIFF_LABEL[exercise.difficulty]}</span>}
         {guided && <span className="chip !bg-accent-soft !text-accent">Guiado</span>}
+        {!helpless && record && (
+          <button
+            type="button"
+            onClick={() => actions.toggleLater({ id: exercise.id, exercise, topicId: exercise.topicId })}
+            className={`chip ml-auto ${savedLater ? "!bg-primary-soft !text-primary" : ""}`}
+            aria-pressed={savedLater}
+          >
+            🔖 {savedLater ? "Para repasar" : "Repasar después"}
+          </button>
+        )}
       </div>
 
       <div className="text-lg">
@@ -202,7 +239,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
       {/* ───── Entrada ───── */}
       <div className={shake ? "anim-shake" : ""}>
         {exercise.kind === "choice" && (
-          <div className="grid gap-2" role="radiogroup" aria-label="Opciones">
+          <div className={`grid gap-2 ${exercise.display === "plot" ? "grid-cols-2" : ""}`} role="radiogroup" aria-label="Opciones">
             {exercise.options.map((o, i) => {
               const picked = choiceIdx === i;
               const showRight = finished && !exam && i === exercise.answer;
@@ -221,8 +258,14 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
                     showRight ? "border-success bg-success-soft" : showWrong ? "border-danger bg-danger-soft" : picked ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/60"
                   }`}
                 >
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface-2 text-sm font-bold">{String.fromCharCode(65 + i)}</span>
-                  <MathText text={o} block={false} />
+                  {exercise.display === "plot" ? (
+                    <PlotOption expr={o} label={`Gráfico ${String.fromCharCode(65 + i)}`} />
+                  ) : (
+                    <>
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface-2 text-sm font-bold">{String.fromCharCode(65 + i)}</span>
+                      {exercise.display === "steps" ? <span className="text-sm">Paso {i + 1}: <MathText text={o} block={false} /></span> : <MathText text={o} block={false} />}
+                    </>
+                  )}
                 </button>
               );
             })}
@@ -327,6 +370,31 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
           </div>
         )}
 
+        {exercise.kind === "order" && (
+          <OrderInput
+            items={exercise.items}
+            value={order}
+            disabled={finished}
+            onChange={(v) => {
+              setOrder(v);
+              if (result && !result.correct) setResult(null);
+            }}
+          />
+        )}
+
+        {exercise.kind === "match" && (
+          <MatchInput
+            pairs={exercise.pairs}
+            value={match}
+            seed={exercise.seed ?? 3}
+            disabled={finished}
+            onChange={(v) => {
+              setMatch(v);
+              if (result && !result.correct) setResult(null);
+            }}
+          />
+        )}
+
         {exercise.kind === "trace" && (
           <div className="space-y-3">
             <pre className="overflow-x-auto rounded-xl border border-line bg-surface-2 p-3 font-mono text-sm leading-6">
@@ -380,7 +448,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
               No sé
             </button>
           )}
-          {!exam && !diagnostic && (
+          {!helpless && (
             <>
               <button className="btn btn-secondary" onClick={() => nextHint()} disabled={hints >= 3}>
                 <Icon name="bulb" size={18} /> Pista {hints < 3 ? `(${hints}/3)` : ""}
@@ -393,8 +461,18 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
         </div>
       )}
 
+      {/* ───── Desafío: corrección breve, sin ayudas ───── */}
+      {result && !result.invalidInput && noHelp && !exam && !diagnostic && (
+        <div className={`anim-pop flex flex-wrap items-center justify-between gap-3 rounded-2xl border p-4 ${result.correct ? "border-success/40 bg-success-soft" : "border-danger/40 bg-danger-soft"}`} role="status" aria-live="polite">
+          <p className="font-bold">{result.correct ? guideCorrect(exercise.seed ?? 0, false) : "No es correcto. Perdés una vida."}</p>
+          <button className="btn btn-primary" autoFocus onClick={() => onDone?.({ correct: result.correct, firstTry: firstCorrect === true, errorType: result.errorType, exercise })}>
+            {continueLabel} <Icon name="arrowRight" size={18} />
+          </button>
+        </div>
+      )}
+
       {/* ───── Corrección ───── */}
-      {result && !result.invalidInput && !exam && !diagnostic && (
+      {result && !result.invalidInput && !helpless && (
         <div className={`anim-pop rounded-2xl border p-4 ${result.correct ? "border-success/40 bg-success-soft" : "border-warn/40 bg-warn-soft"}`} role="status" aria-live="polite">
           <div className="flex items-start gap-3">
             <span className={`grid h-9 w-9 shrink-0 place-items-center rounded-full ${result.correct ? "bg-success text-surface" : "bg-warn text-surface"}`} aria-hidden>
@@ -407,12 +485,33 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
                   <span className="ml-2 rounded-full bg-xp-soft px-2 py-0.5 text-sm text-xp">+{usedSolution ? 0 : hints > (guided ? 1 : 0) ? XP.correctWithHelp : XP.correct} XP</span>
                 )}
               </p>
+              {!result.correct && !result.diagnosis && <p className="text-sm">{guideWrong(exercise.seed ?? 0, false)}</p>}
+              {result.correct && <p className="text-sm text-muted">{guideCorrect(exercise.seed ?? 0, levelUp)}</p>}
               {!result.correct && result.diagnosis && <MathText text={result.diagnosis} />}
               {!result.correct && result.errorType && <p className="text-xs text-muted">Tipo de error: {ERROR_LABELS[result.errorType]} (lo voy a tener en cuenta para tus próximas prácticas)</p>}
               {result.correct && exercise.explanation && <p className="text-sm text-muted">{exercise.explanation}</p>}
             </div>
           </div>
-          {!result.correct && (
+          {!result.correct && gap && !reviewTopic && (
+            <div className="mt-4 rounded-xl border border-line bg-surface p-3">
+              <GuideSay mood="thinking" size={40}>
+                El problema parece estar en <b>{getTopic(gap)?.name.toLowerCase()}</b>, no en {topic?.name.toLowerCase() ?? "este tema"}.
+              </GuideSay>
+              <button className="btn btn-secondary mt-3" onClick={() => setReviewTopic(gap)}>
+                Repasar {getTopic(gap)?.name.toLowerCase()} · 5 min
+              </button>
+            </div>
+          )}
+          {!result.correct && reviewTopic && (
+            <QuickReview
+              topicId={reviewTopic}
+              onDone={() => {
+                setReviewTopic(null);
+                retry();
+              }}
+            />
+          )}
+          {!result.correct && !reviewTopic && (
             <div className="mt-4 flex flex-wrap gap-2">
               <button className="btn btn-primary" onClick={retry}>
                 Intentar nuevamente
@@ -444,7 +543,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
       )}
 
       {/* ───── Pistas ───── */}
-      {!exam && !diagnostic && hints > 0 && (
+      {!helpless && hints > 0 && (
         <div className="space-y-2">
           {exercise.hints.slice(0, hints).map((h, i) => (
             <div key={i} className="anim-pop flex gap-3 rounded-xl border border-line bg-surface p-3">
@@ -461,7 +560,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
       )}
 
       {/* ───── Explicación / solución ───── */}
-      {!exam && !diagnostic && (showExplanation || solutionSteps > 0) && (
+      {!helpless && (showExplanation || solutionSteps > 0) && (
         <div className="anim-pop space-y-3 rounded-2xl border border-line bg-surface p-4">
           {showExplanation && (
             <>
@@ -498,9 +597,40 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
         </div>
       )}
 
-      {showTutor && !exam && !diagnostic && (
+      {showTutor && !helpless && (
         <TutorPanel script={tutorScript} topicName={topic?.name} hasExercise onHint={nextHint} onSolve={revealSolution} onClose={() => setShowTutor(false)} />
       )}
+    </div>
+  );
+}
+
+/** Repaso corto de un prerequisito (4 ejercicios) y vuelta al ejercicio original. */
+function QuickReview({ topicId, onDone }: { topicId: string; onDone: () => void }) {
+  const [items] = useState(() => Array.from({ length: 4 }, () => exerciseFor(store.getState(), topicId, -1)));
+  const [i, setI] = useState(0);
+  const name = getTopic(topicId)?.name ?? topicId;
+  if (i >= items.length) {
+    return (
+      <div className="anim-pop mt-4 rounded-xl border border-success/40 bg-surface p-4">
+        <GuideSay mood="happy" size={40}>Listo. Volvamos al ejercicio.</GuideSay>
+        <button className="btn btn-primary mt-3" onClick={onDone} autoFocus>
+          Volver al ejercicio <Icon name="arrowRight" size={18} />
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="mt-4 space-y-3 rounded-xl border border-line bg-surface p-4">
+      <div className="flex items-center justify-between text-sm">
+        <span className="font-bold">Repaso rápido: {name}</span>
+        <span className="text-muted">
+          {i + 1}/{items.length}
+        </span>
+      </div>
+      <ExercisePlayer key={items[i].id + i} exercise={items[i]} mode="repaso" onDone={() => setI((n) => n + 1)} continueLabel="Siguiente" />
+      <button className="btn btn-ghost !min-h-9 text-sm" onClick={onDone}>
+        Saltar repaso
+      </button>
     </div>
   );
 }

@@ -73,3 +73,15 @@ analítico ICSE (FFyB-UBA), programa UBA XXI de Pensamiento Computacional y
 2. Contenido nuevo donde el camino tenía huecos: factorización (prerrequisito de límites), cuadrática,
    Pitágoras, trigonometría, límites intuitivos y derivadas (pendiente → regla de la potencia).
 3. Estructura de materias actualizada con las unidades encontradas, marcadas para verificar.
+
+## 4. Implementado en la v2 (2026-10-05)
+
+- Camino con nodos y desafío final por unidad (`src/lib/path.ts`, `/camino`, `/desafio`).
+- Guía propio "Nodo" (`src/components/guide/Nodo.tsx`, `src/lib/guide.ts`); inicio rediseñado.
+- XP v2, títulos de nivel, engranajes, protectores de racha y Taller (`rules.ts`, `shop.ts`, `/taller`).
+- Nuevos formatos de ejercicio (`order`, `match`, gráficos, encontrar el error) y remediación por prerrequisito.
+- Lección: ayudas alternativas, favoritos, notas, pantalla final con precisión y tiempo, celebración de unidad.
+- Tarjetas con repetición espaciada, Guardados, Plan de estudio, simulador de parcial 1.º/2.º/final, mapa de calor.
+- Pendiente: más lecciones del CBC (Álgebra A, AM A, Física, IPC, ICSE) y verificar programas contra fuentes UBA
+  (los sitios oficiales siguen bloqueados desde este entorno; nada se marcó "verified").
+- La división 1.er / 2.º parcial del simulador es orientativa (mitad de las unidades) y la interfaz lo aclara.
