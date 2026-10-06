@@ -102,6 +102,8 @@ export interface ProgressState {
     accent: string;
     /** Estilo del guía: "" (original), "noche" o "cobre". */
     guide: string;
+    /** Modo «Enseñame desde cero»: explicaciones desde los fundamentos, chequeo de bases y más guía. */
+    fromZero: boolean;
   };
   xp: number;
   streak: { current: number; longest: number; lastDay: string | null };
@@ -137,7 +139,7 @@ export function initialState(): ProgressState {
   return {
     version: 1,
     profile: { name: "", goal: null, onboarded: false, startMode: null, createdAt: new Date().toISOString() },
-    settings: { theme: "system", hearts: true, dailyMinutes: 15, sound: true, accent: "turquesa", guide: "" },
+    settings: { theme: "system", hearts: true, dailyMinutes: 15, sound: true, accent: "turquesa", guide: "", fromZero: false },
     xp: 0,
     streak: { current: 0, longest: 0, lastDay: null },
     days: {},

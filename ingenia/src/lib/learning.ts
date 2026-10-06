@@ -237,7 +237,8 @@ export function exerciseFor(s: ProgressState, topicId: string, adjust = 0, seed 
   if (!topic) throw new Error(`Tema desconocido: ${topicId}`);
   const r = rng(seed);
   const gen = r.pick(topic.generators);
-  const level = Math.min(6, Math.max(1, topicLevel(s, topicId) + adjust)) as Difficulty;
+  // En «Enseñame desde cero» los ejercicios arrancan un escalón más abajo.
+  const level = Math.min(6, Math.max(1, topicLevel(s, topicId) + adjust - (s.settings.fromZero ? 1 : 0))) as Difficulty;
   return generate(gen, level, seed);
 }
 

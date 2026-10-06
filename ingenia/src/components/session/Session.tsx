@@ -38,6 +38,8 @@ interface Props {
   noHelp?: boolean;
   /** Reemplaza la recompensa estándar del desafío (p. ej. coronar una unidad). */
   onWin?: () => void;
+  /** Práctica guiada: cada ejercicio arranca con la primera pista a la vista. */
+  guided?: boolean;
 }
 
 interface Log {
@@ -56,7 +58,7 @@ function buildExercise(item: SessionItem): Exercise {
   return exerciseFor(store.getState(), item.topicId, item.adjust ?? 0);
 }
 
-export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin }: Props) {
+export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin, guided }: Props) {
   const maxHearts = lives ?? 5;
   const hearts0 = lives ?? (kind === "desafio" && store.getState().settings.hearts ? 5 : null);
   const [index, setIndex] = useState(0);
@@ -183,7 +185,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
       {items[index]?.label && <span className="chip">{items[index].label}</span>}
       <div className="card p-5 sm:p-6">
         {exercise && (
-          <ExercisePlayer key={`${index}-${exercise.id}`} exercise={exercise} mode={mode} onDone={onDone} onWrong={onWrong} exam={kind === "examen"} noHelp={noHelp} continueLabel={index + 1 >= items.length ? "Terminar" : "Siguiente"} />
+          <ExercisePlayer key={`${index}-${exercise.id}`} exercise={exercise} mode={mode} onDone={onDone} onWrong={onWrong} exam={kind === "examen"} noHelp={noHelp} guided={guided} continueLabel={index + 1 >= items.length ? "Terminar" : "Siguiente"} />
         )}
         {noHelp && kind !== "examen" && <p className="mt-4 text-xs text-muted">Desafío: sin pistas ni explicaciones. Al final ves qué repasar.</p>}
         {kind === "examen" && (

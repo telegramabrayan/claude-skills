@@ -114,6 +114,7 @@ export const actions = {
     commit({
       ...state,
       profile: { ...state.profile, goal, startMode, name, onboarded: true },
+      settings: { ...state.settings, fromZero: startMode === "cero" },
       route: startMode === "cero" ? fullRoute() : state.route,
     });
   },

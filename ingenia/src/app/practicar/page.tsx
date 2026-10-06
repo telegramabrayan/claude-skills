@@ -6,7 +6,13 @@ import { MASTERED } from "@/engine/progress/rules";
 import { TOPICS, getTopic, SKILL_LABELS } from "@/content/topics";
 import { findUnit } from "@/content/curriculum";
 import { store, useProgress } from "@/lib/store";
-import { activeTopics, recommendations } from "@/lib/learning";
+import { activeTopics, exerciseFor, recommendations } from "@/lib/learning";
+import { getGenerator } from "@/engine/generators";
+import { newSeed } from "@/engine/generators/rng";
+import { ExercisePlayer } from "@/components/exercise/ExercisePlayer";
+import { Whiteboard } from "@/components/board/Whiteboard";
+import { MathText } from "@/components/math/MathText";
+import Link from "next/link";
 import { Gate } from "@/components/layout/Gate";
 import { Session, type SessionItem } from "@/components/session/Session";
 import { PageHeader, Ring, SectionTitle } from "@/components/ui/primitives";
@@ -47,6 +53,61 @@ function buildSession(kind: Kind, arg: string | null): { title: string; items: S
   }
 }
 
+type Style = "ejemplo" | "guiado" | "independiente" | "desafio";
+
+const STYLES: { id: Style; title: string; text: string; icon: string }[] = [
+  { id: "ejemplo", title: "Ejemplo resuelto", text: "Te muestro todo el procedimiento en la pizarra y después probás uno parecido.", icon: "📖" },
+  { id: "guiado", title: "Ejercicio guiado", text: "Lo resolvés vos, con la primera pista a la vista y ayuda escalonada.", icon: "🧭" },
+  { id: "independiente", title: "Independiente", text: "Sin ayudas a la vista. Si te trabás, pedí una pista.", icon: "✏️" },
+  { id: "desafio", title: "Desafío", text: "Más difícil y combinando ideas.", icon: "⚔️" },
+];
+
+/** Ejemplo resuelto → uno parecido guiado → otro ejemplo… */
+function WorkedLoop({ topicId, onExit }: { topicId: string; onExit: () => void }) {
+  const [round, setRound] = useState(0);
+  const [phase, setPhase] = useState<"ver" | "hacer">("ver");
+  const example = useMemo(() => exerciseFor(store.getState(), topicId, -1), [topicId, round]); // eslint-disable-line react-hooks/exhaustive-deps
+  const twin = useMemo(() => (example.generator ? getGenerator(example.generator).generate(newSeed(), example.difficulty) : exerciseFor(store.getState(), topicId)), [example, topicId]);
+  const topic = getTopic(topicId);
+  return (
+    <div className="mx-auto max-w-3xl space-y-4">
+      <div className="flex items-center gap-3">
+        <button className="btn btn-ghost !px-2" onClick={onExit} aria-label="Salir">
+          <Icon name="x" />
+        </button>
+        <p className="font-semibold">Ejemplos resueltos · {topic?.name}</p>
+      </div>
+      {phase === "ver" ? (
+        <div className="card space-y-4 p-5 sm:p-6">
+          <span className="chip">Ejemplo resuelto</span>
+          <MathText text={example.prompt} className="text-lg" />
+          <Whiteboard steps={example.solution.map((x) => ({ expr: x }))} title="Resolución" />
+          <div className="rounded-xl bg-primary-soft p-3 text-sm">
+            <b>¿Por qué así?</b> <MathText text={example.explanation} block={false} />
+          </div>
+          <button className="btn btn-primary" onClick={() => setPhase("hacer")}>
+            Ahora probá uno parecido <Icon name="arrowRight" />
+          </button>
+        </div>
+      ) : (
+        <div className="card p-5 sm:p-6">
+          <ExercisePlayer
+            key={twin.id}
+            exercise={twin}
+            mode="practica"
+            guided
+            continueLabel="Otro ejemplo"
+            onDone={() => {
+              setPhase("ver");
+              setRound((r) => r + 1);
+            }}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Practice() {
   const params = useSearchParams();
   const router = useRouter();
@@ -61,6 +122,9 @@ function Practice() {
     return null;
   }, [params]);
   const [session, setSession] = useState(initial);
+  const [chooser, setChooser] = useState<string | null>(null);
+  const [worked, setWorked] = useState<string | null>(null);
+  const [guided, setGuided] = useState(false);
   const [sessionKey, setSessionKey] = useState(0);
   const active = session ?? initial;
 
@@ -68,6 +132,24 @@ function Practice() {
     setSession(buildSession(kind, arg));
     setSessionKey((k) => k + 1);
   };
+
+  const startStyle = (topicId: string, style: Style) => {
+    setChooser(null);
+    if (style === "ejemplo") {
+      setWorked(topicId);
+      return;
+    }
+    const t = getTopic(topicId)!;
+    setGuided(style === "guiado");
+    if (style === "desafio") {
+      setSession({ title: `Desafío · ${t.name}`, items: Array.from({ length: 8 }, () => ({ topicId, adjust: 2 })), kind: "desafio", mode: "desafio" });
+    } else {
+      setSession({ title: t.name, items: Array.from({ length: 8 }, (_, i) => ({ topicId, adjust: style === "guiado" ? -1 : i > 5 ? 1 : 0 })), kind: "practica", mode: "practica" });
+    }
+    setSessionKey((k) => k + 1);
+  };
+
+  if (worked) return <WorkedLoop topicId={worked} onExit={() => setWorked(null)} />;
 
   if (active) {
     return (
@@ -77,8 +159,10 @@ function Practice() {
         items={active.items}
         mode={active.mode}
         kind={active.kind}
+        guided={guided}
         onExit={() => {
           setSession(null);
+          setGuided(false);
           router.replace("/practicar");
         }}
       />
@@ -122,6 +206,36 @@ function Practice() {
         </button>
       </div>
 
+      {chooser && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center" role="dialog" aria-modal="true" aria-label="Elegí cómo practicar">
+          <button className="absolute inset-0 bg-black/40" onClick={() => setChooser(null)} aria-label="Cerrar" />
+          <div className="anim-pop relative w-full max-w-md space-y-3 rounded-t-3xl bg-surface p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:rounded-3xl">
+            <p className="text-sm font-semibold uppercase tracking-wide text-muted">{getTopic(chooser)?.name}</p>
+            <h2 className="text-xl font-black">¿Cómo querés practicar?</h2>
+            {STYLES.map((st) => (
+              <button key={st.id} className="card flex w-full items-center gap-3 p-3 text-left hover:border-primary" onClick={() => startStyle(chooser, st.id)}>
+                <span className="text-2xl" aria-hidden>
+                  {st.icon}
+                </span>
+                <span>
+                  <span className="block font-bold">{st.title}</span>
+                  <span className="text-sm text-muted">{st.text}</span>
+                </span>
+              </button>
+            ))}
+            <Link href="/repasar" className="card flex w-full items-center gap-3 p-3 hover:border-primary">
+              <span className="text-2xl" aria-hidden>
+                🔁
+              </span>
+              <span>
+                <span className="block font-bold">Repaso</span>
+                <span className="text-sm text-muted">Ejercicios de temas anteriores que te tocan hoy, para no olvidarlos.</span>
+              </span>
+            </Link>
+          </div>
+        </div>
+      )}
+
       {recs.length > 0 && (
         <>
           <SectionTitle>Necesitás reforzar</SectionTitle>
@@ -144,7 +258,7 @@ function Practice() {
               const ts = s.topics[t.id];
               const m = ts?.mastery ?? 0;
               return (
-                <button key={t.id} onClick={() => start("tema", t.id)} className="card flex items-center gap-4 p-4 text-left transition hover:border-primary">
+                <button key={t.id} onClick={() => setChooser(t.id)} className="card flex items-center gap-4 p-4 text-left transition hover:border-primary">
                   <Ring value={m} color={m >= MASTERED ? "var(--xp)" : "var(--primary)"}>
                     {m >= MASTERED ? "⭐" : `${Math.round(m * 100)}%`}
                   </Ring>

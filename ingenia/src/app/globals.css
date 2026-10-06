@@ -263,3 +263,22 @@ body {
 .node-current { animation: node-pulse 2s ease-in-out infinite; }
 @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
 .guide-bob { animation: bob 3s ease-in-out infinite; }
+
+/* ───── Pizarra ───── */
+:root { --board-bg: #f8fafc; --board-ink: #0f172a; --board-muted: #64748b; --board-line: #e2e8f0; --board-hl: #fde68a; --board-note: #0f766e; }
+.dark { --board-bg: #10231f; --board-ink: #ecfdf5; --board-muted: #8fb3aa; --board-line: #1f3a34; --board-hl: #b45309; --board-note: #5eead4; }
+.board {
+  background-color: var(--board-bg);
+  background-image: linear-gradient(var(--board-line) 1px, transparent 1px);
+  background-size: 100% 2.6rem;
+  color: var(--board-ink);
+  border: 1px solid var(--board-line);
+}
+.board-note { color: var(--board-note); }
+.board-changed { background: color-mix(in srgb, var(--board-hl) 70%, transparent); color: inherit; border-radius: 4px; padding: 0 2px; }
+.board-write .board-expr { display: inline-block; animation: board-write 0.7s steps(18, end) both; clip-path: inset(0 100% 0 0); }
+.board-note-in { animation: pop-in 0.3s 0.6s both; }
+@keyframes board-write { to { clip-path: inset(0 0 0 0); } }
+.board-btn { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.5rem; border-radius: 0.75rem; padding: 0 0.9rem; font-weight: 700; font-size: 0.9rem; background: var(--primary); color: var(--on-primary); }
+.board-btn-ghost { background: transparent; color: var(--board-ink); border: 1px solid var(--board-line); }
+@media (prefers-reduced-motion: reduce) { .board-write .board-expr, .board-note-in { animation: none; clip-path: none; } }

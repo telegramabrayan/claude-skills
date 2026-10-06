@@ -4,6 +4,7 @@ import { CodeStepper } from "../code/CodeStepper";
 import { FractionBarsWidget, NumberLineWidget, PercentWidget, PowerWidget, UnitsWidget } from "./Simple";
 import { BalanceWidget, KinematicsWidget, PlotWidget, VectorWidget } from "./Interactive";
 import { FunctionPointWidget, TangentWidget, TrigWidget } from "./Calculus";
+import { BuoyancyWidget, ForcesWidget, MatrixWidget, MotionWidget, ParamFunctionWidget, ProjectileWidget, RiemannWidget, TangentSweepWidget, VectorComponentsWidget } from "./Animated";
 
 /** Despacha la especificación de un widget (dato del contenido) a su componente. */
 export function Widget({ widget }: { widget: WidgetSpec }) {
@@ -34,5 +35,23 @@ export function Widget({ widget }: { widget: WidgetSpec }) {
       return <TangentWidget initial={widget.initial} />;
     case "function-point":
       return <FunctionPointWidget expr={widget.expr} />;
+    case "motion":
+      return <MotionWidget v0={widget.v0} a={widget.a} />;
+    case "forces":
+      return <ForcesWidget angle={widget.angle} mu={widget.mu} mass={widget.mass} />;
+    case "projectile":
+      return <ProjectileWidget v0={widget.v0} angle={widget.angle} h0={widget.h0} />;
+    case "buoyancy":
+      return <BuoyancyWidget body={widget.body} liquid={widget.liquid} />;
+    case "vector-components":
+      return <VectorComponentsWidget mag={widget.mag} angle={widget.angle} />;
+    case "tangent-sweep":
+      return <TangentSweepWidget expr={widget.expr} />;
+    case "riemann":
+      return <RiemannWidget expr={widget.expr} a={widget.a} b={widget.b} />;
+    case "param-function":
+      return <ParamFunctionWidget family={widget.family} />;
+    case "matrix":
+      return <MatrixWidget a={widget.a} b={widget.b} c={widget.c} d={widget.d} />;
   }
 }

@@ -6,6 +6,7 @@ import { actions, store, useHydrated, useProgress } from "@/lib/store";
 import { currentStreak, levelInfo, levelTitle } from "@/engine/progress/rules";
 import { Icon } from "../ui/Icon";
 import { Toaster } from "./Toaster";
+import { TutorChat } from "../tutor/TutorChat";
 import { isActive, NAV_MAIN, NAV_MOBILE, NAV_SECONDARY, type NavItem } from "./nav";
 
 const BARE_ROUTES = ["/bienvenida"];
@@ -221,6 +222,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </div>
       )}
+      {onboarded && <TutorChat />}
       <Toaster />
     </div>
   );

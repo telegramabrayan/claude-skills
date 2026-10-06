@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Lesson, LessonCard } from "@/engine/types";
 import { actions, useProgress } from "@/lib/store";
@@ -10,12 +10,14 @@ import { XP } from "@/engine/progress/rules";
 import { Nodo, GuideSay } from "../guide/Nodo";
 import { Confetti } from "../ui/Celebrate";
 import type { ExerciseOutcome } from "../exercise/ExercisePlayer";
-import type { TutorMode } from "../tutor/TutorPanel";
-import { getLesson } from "@/content/lessons";
+import { getLesson, lessonCards } from "@/content/lessons";
+import { getTopic } from "@/content/topics";
 import { MathText } from "../math/MathText";
 import { Widget } from "../widgets/Widget";
 import { ExercisePlayer } from "../exercise/ExercisePlayer";
-import { TutorPanel } from "../tutor/TutorPanel";
+import { LessonExplain, PrereqCheck, type Strategy } from "../tutor/ExplainPanel";
+import { Whiteboard } from "../board/Whiteboard";
+import { setStudyContext } from "@/lib/studyContext";
 import { ProgressBar } from "../ui/primitives";
 import { Icon } from "../ui/Icon";
 
@@ -23,18 +25,33 @@ const TAGS = { intuitivo: "Idea intuitiva", cotidiano: "En la vida real", matema
 
 const CHEERS = ["Bien. Ya entendiste la idea.", "Buen progreso.", "Perfecto. Sigamos.", "Vas muy bien."];
 
-const HELP: { mode: TutorMode | "why" | "yo"; label: string }[] = [
-  { mode: "nino", label: "😵 No entiendo" },
-  { mode: "simple", label: "Más fácil" },
-  { mode: "ejemplo", label: "Otro ejemplo" },
-  { mode: "visual", label: "Ver dibujo" },
-  { mode: "why", label: "¿Para qué sirve?" },
+const HELP: { strategy: Strategy; label: string }[] = [
+  { strategy: "simple", label: "😵 No entendí" },
+  { strategy: "cero", label: "Desde cero" },
+  { strategy: "numerico", label: "Otro ejemplo" },
+  { strategy: "pasos", label: "Paso a paso" },
+  { strategy: "visual", label: "Visualmente" },
+  { strategy: "porque", label: "¿Por qué?" },
+  { strategy: "origen", label: "¿De dónde sale?" },
+  { strategy: "antes", label: "¿Qué necesito antes?" },
+  { strategy: "juntos", label: "Practiquemos juntos" },
 ];
 
 function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: Lesson; onNext: (o?: ExerciseOutcome) => void; isLast: boolean }) {
   const [revealed, setRevealed] = useState(1);
-  const [tutor, setTutor] = useState<TutorMode | "why" | null>(null);
-  const intro = lesson.cards.find((c) => c.kind === "intro");
+  const [tutor, setTutor] = useState<Strategy | null>(null);
+  const [boardDone, setBoardDone] = useState(false);
+  const prog = useProgress();
+  const basesOk = card.kind === "check" && !prog.settings.fromZero && card.topics.every((t) => (prog.topics[t]?.mastery ?? 0) >= 0.75);
+  const helps = HELP.filter((h) => (h.strategy !== "pasos" || lesson.tutor.board) && (h.strategy !== "origen" || lesson.tutor.origin) && (h.strategy !== "visual" || lesson.tutor.visual || lesson.tutor.board));
+
+  // El profesor sabe qué pantalla está leyendo.
+  useEffect(() => {
+    const text =
+      card.kind === "explain" ? card.body : card.kind === "example" ? `${card.problem}\n${card.steps.join("\n")}\nResultado: ${card.result}` : card.kind === "summary" ? card.points.join("\n") : card.kind === "board" ? card.steps.map((x) => `${x.expr}${x.note ? ` (${x.note})` : ""}`).join("\n") : card.kind === "intro" ? `${card.learn}\n${card.why}` : "";
+    const ctx = lessonContext(lesson.id);
+    setStudyContext({ lessonId: lesson.id, subjectId: ctx?.subject.id, unitId: ctx?.unit.id, topicId: lesson.topicIds[0], reading: { title: card.title, text }, exercise: undefined, answer: undefined, result: undefined }, true);
+  }, [card, lesson]);
   const exercise = useMemo(() => (card.kind === "exercise" ? resolveExercise(card.exercise) : null), [card]);
 
   switch (card.kind) {
@@ -59,6 +76,12 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
     case "explain":
       return (
         <div className="space-y-4">
+          {prog.settings.fromZero && lesson.tutor.fromZero && card === lesson.cards.find((c) => c.kind === "explain") && (
+            <details className="rounded-2xl border border-accent/40 bg-accent-soft/40 p-4" open>
+              <summary className="cursor-pointer font-bold text-accent">Antes de empezar, desde cero</summary>
+              <MathText text={lesson.tutor.fromZero} className="mt-2" />
+            </details>
+          )}
           {card.tag && <span className="chip">{TAGS[card.tag]}</span>}
           <h2 className="text-2xl font-bold">{card.title}</h2>
           <MathText text={card.body} className="text-lg" />
@@ -73,22 +96,13 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
             </button>
           </div>
           <div className="flex flex-wrap gap-1.5" aria-label="Otras formas de explicarlo">
-            {HELP.map((h) => (
-              <button key={h.mode} className={`chip !py-1.5 hover:!bg-primary-soft ${tutor === h.mode ? "!bg-primary-soft !text-primary" : ""}`} onClick={() => setTutor(tutor === h.mode ? null : h.mode)}>
+            {helps.map((h) => (
+              <button key={h.strategy} className={`chip !py-1.5 hover:!bg-primary-soft ${tutor === h.strategy ? "!bg-primary-soft !text-primary" : ""}`} onClick={() => setTutor(tutor === h.strategy ? null : h.strategy === "simple" && prog.settings.fromZero ? "cero" : h.strategy)}>
                 {h.label}
               </button>
             ))}
           </div>
-          {tutor === "why" && intro?.kind === "intro" && (
-            <div className="anim-pop rounded-2xl bg-accent-soft p-4">
-              <p className="text-sm font-bold uppercase tracking-wide text-accent">¿Para qué sirve?</p>
-              <MathText text={intro.why} className="mt-1" />
-              <button className="btn btn-ghost mt-2 !min-h-9 text-sm" onClick={() => setTutor(null)}>
-                Déjame intentarlo
-              </button>
-            </div>
-          )}
-          {tutor && tutor !== "why" && <TutorPanel key={tutor} initial={tutor} script={lesson.tutor} topicName={lesson.title} onClose={() => setTutor(null)} />}
+          {tutor && <LessonExplain key={tutor} lesson={lesson} initial={tutor} onClose={() => setTutor(null)} />}
         </div>
       );
     case "example":
@@ -99,25 +113,56 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
           <div className="rounded-xl bg-surface-2 p-4 text-lg">
             <MathText text={card.problem} />
           </div>
-          <ol className="space-y-2">
-            {card.steps.slice(0, revealed).map((st, i) => (
-              <li key={i} className="anim-pop flex gap-3">
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-primary-soft text-sm font-bold text-primary">{i + 1}</span>
-                <MathText text={st} />
-              </li>
-            ))}
-          </ol>
-          {revealed < card.steps.length ? (
-            <button className="btn btn-secondary" onClick={() => setRevealed((r) => r + 1)} autoFocus>
-              Siguiente paso
-            </button>
-          ) : (
+          <Whiteboard steps={card.steps.map((x) => ({ expr: x }))} title="Resolución" onDone={() => setRevealed(card.steps.length)} />
+          {revealed >= card.steps.length && (
             <>
               <p className="anim-pop rounded-xl bg-success-soft p-3 font-semibold">
                 Resultado: <MathText text={card.result} block={false} />
               </p>
               <button className="btn btn-primary" onClick={() => onNext()} autoFocus>
                 Continuar <Icon name="arrowRight" />
+              </button>
+            </>
+          )}
+        </div>
+      );
+    case "board":
+      return (
+        <div className="space-y-4">
+          <span className="chip">Pizarra</span>
+          <h2 className="text-2xl font-bold">{card.title}</h2>
+          {card.intro && <MathText text={card.intro} className="text-lg" />}
+          <Whiteboard steps={card.steps} onDone={() => setBoardDone(true)} />
+          {boardDone && card.outro && <MathText text={card.outro} className="anim-pop" />}
+          <div className="flex flex-wrap gap-2">
+            <button className="btn btn-primary" onClick={() => onNext()} disabled={!boardDone} autoFocus={boardDone}>
+              Continuar <Icon name="arrowRight" />
+            </button>
+            <button className="btn btn-ghost" onClick={() => setTutor(tutor ? null : "simple")}>
+              😵 No entendí
+            </button>
+          </div>
+          {tutor && <LessonExplain key={tutor} lesson={lesson} initial={tutor} onClose={() => setTutor(null)} />}
+        </div>
+      );
+    case "check":
+      return (
+        <div className="space-y-4">
+          <span className="chip">Antes de empezar</span>
+          <h2 className="text-2xl font-bold">{card.title}</h2>
+          <p className="text-muted">Unas preguntas rápidas sobre lo que este tema necesita. Si alguna falla, la repasamos antes de seguir: así no te perdés después.</p>
+          {basesOk ? (
+            <>
+              <GuideSay mood="happy">Ya dominás lo que este tema necesita ({card.topics.map((t) => getTopic(t)?.name.toLowerCase()).filter(Boolean).join(", ")}). Seguimos.</GuideSay>
+              <button className="btn btn-primary" onClick={() => onNext()} autoFocus>
+                Continuar <Icon name="arrowRight" />
+              </button>
+            </>
+          ) : (
+            <>
+              <PrereqCheck prereqs={card.topics} onPassed={() => onNext()} />
+              <button className="btn btn-ghost" onClick={() => onNext()}>
+                Saltar comprobación
               </button>
             </>
           )}
@@ -162,7 +207,8 @@ interface Done {
   perfect: boolean;
 }
 
-export function LessonPlayer({ lesson }: { lesson: Lesson }) {
+export function LessonPlayer({ lesson: raw }: { lesson: Lesson }) {
+  const lesson = useMemo(() => ({ ...raw, cards: lessonCards(raw) }), [raw]);
   const s = useProgress();
   const saved = s.lessons[lesson.id];
   const [index, setIndex] = useState(saved?.status === "en-curso" ? Math.min(saved.card, lesson.cards.length - 1) : 0);

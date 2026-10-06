@@ -7,7 +7,7 @@
  * multiplicar en vez de dividir, etc.) contra la solución que produce el paso
  * del alumno para explicar exactamente qué pasó.
  */
-import type { EvaluationResult, ErrorType, FrequentError, StepFeedback } from "../types";
+import type { BoardStep, EvaluationResult, ErrorType, FrequentError, StepFeedback } from "../types";
 import { evaluate, fmt, nearlyEqual, parse, ParseError, solveLinear, splitEquation, variablesOf } from "../math/parser";
 import { correctMessage } from "./messages";
 
@@ -48,6 +48,35 @@ export function linText(p: number, q: number): string {
     else parts.push(q > 0 ? `+ ${fmt(q)}` : `− ${fmt(-q)}`);
   }
   return parts.join(" ");
+}
+
+/**
+ * Resolución estándar de una ecuación lineal, renglón por renglón y con la
+ * operación que justifica cada paso. Se usa en la pizarra y para mostrar
+ * "cómo sigue correctamente" desde el último paso bien hecho.
+ */
+export function solveLinearSteps(eq: string): BoardStep[] {
+  const sides = sidesOf(eq);
+  if (!sides) return [];
+  let [{ p: pL, q: qL }, { p: pR, q: qR }] = sides;
+  const out: BoardStep[] = [{ expr: `${linText(pL, qL)} = ${linText(pR, qR)}` }];
+  const P = pL - pR;
+  if (Math.abs(P) < 1e-12) return out;
+  if (Math.abs(pR) > 1e-12) {
+    const t = linText(pR, 0);
+    pL = P;
+    pR = 0;
+    out.push({ expr: `${linText(pL, qL)} = ${linText(0, qR)}`, note: `${t.startsWith("−") ? "sumamos " + t.slice(1) : "restamos " + t} en ambos lados` });
+  }
+  if (Math.abs(qL) > 1e-12) {
+    const shown = qL > 0 ? `${fmt(qR)} − ${fmt(qL)}` : `${fmt(qR)} + ${fmt(-qL)}`;
+    out.push({ expr: `${linText(pL, 0)} = ${shown}`, note: qL > 0 ? `+${fmt(qL)} pasa restando (restamos ${fmt(qL)} en ambos lados)` : `−${fmt(-qL)} pasa sumando (sumamos ${fmt(-qL)} en ambos lados)` });
+    qR = qR - qL;
+    qL = 0;
+    out.push({ expr: `${linText(pL, 0)} = ${fmt(qR)}`, note: "hacemos la cuenta" });
+  }
+  if (!nearlyEqual(pL, 1)) out.push({ expr: `x = ${fmt(qR / pL)}`, note: `dividimos ambos lados por ${fmt(pL)}` });
+  return out;
 }
 
 interface Diagnosis {
@@ -209,7 +238,14 @@ export function checkLinearSteps(
   if (firstWrong === undefined && !finalOk) {
     // Pasos bien, respuesta final mal: el error está en el último paso (el que no escribió).
     const d = diagnose(lastGood, finalValue, root, frequent);
+    let comparison: EvaluationResult["comparison"];
+    try {
+      comparison = { previous: lastGood, yours: `x = ${final.replace(/^\s*x\s*=\s*/i, "")}`, correct: solveLinearSteps(lastGood).slice(1) };
+    } catch {
+      comparison = undefined;
+    }
     return {
+      comparison,
       correct: false,
       message: steps.length ? "Casi. Todos tus pasos están bien; el problema está al final." : "Casi. Veamos dónde está el problema.",
       errorType: d.type,
@@ -220,7 +256,15 @@ export function checkLinearSteps(
 
   // Hubo un paso con error.
   const idx = firstWrong as number;
+  const comparison = (() => {
+    try {
+      return { previous: lastGood, yours: steps[idx], correct: solveLinearSteps(lastGood).slice(1) };
+    } catch {
+      return undefined;
+    }
+  })();
   return {
+    comparison,
     correct: false,
     message: finalOk
       ? `Llegaste al resultado, pero el paso ${idx + 1} no es correcto (dos errores se compensaron).`

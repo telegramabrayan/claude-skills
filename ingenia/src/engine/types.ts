@@ -275,6 +275,17 @@ export interface EvaluationResult {
   diagnosis?: string;
   /** La respuesta no se pudo interpretar (no cuenta como intento fallido). */
   invalidInput?: boolean;
+  /**
+   * Comparación para enseñar con el error: el último paso correcto, lo que
+   * escribió el alumno y cómo sigue correctamente desde ahí.
+   */
+  comparison?: { previous: string; yours: string; correct: BoardStep[] };
+}
+
+/** Un renglón de pizarra: una expresión y, opcionalmente, qué se hizo para llegar a ella. */
+export interface BoardStep {
+  expr: string;
+  note?: string;
 }
 
 // ───────────────────────── Lecciones ─────────────────────────
@@ -293,14 +304,27 @@ export type Widget =
   | { type: "units"; value: number }
   | { type: "trig"; angle: number; hyp: number }
   | { type: "tangent"; initial: string }
-  | { type: "function-point"; expr: string };
+  | { type: "function-point"; expr: string }
+  | { type: "motion"; v0: number; a: number }
+  | { type: "forces"; angle: number; mu: number; mass: number }
+  | { type: "projectile"; v0: number; angle: number; h0: number }
+  | { type: "buoyancy"; body: number; liquid: number }
+  | { type: "vector-components"; mag: number; angle: number }
+  | { type: "tangent-sweep"; expr: string }
+  | { type: "riemann"; expr: string; a: number; b: number }
+  | { type: "param-function"; family: "parabola" | "lineal" | "seno" | "exponencial" }
+  | { type: "matrix"; a: number; b: number; c: number; d: number };
 
 export type LessonCard =
   | { kind: "intro"; title: string; learn: string; why: string }
   | { kind: "explain"; title: string; body: string; widget?: Widget; tag?: "intuitivo" | "cotidiano" | "matematico" }
   | { kind: "example"; title: string; problem: string; steps: string[]; result: string }
   | { kind: "exercise"; title: string; exercise: Exercise | { generator: string; difficulty: Difficulty; seed: number }; guided?: boolean }
-  | { kind: "summary"; title: string; points: string[] };
+  | { kind: "summary"; title: string; points: string[] }
+  /** Pizarra: un procedimiento que se escribe renglón por renglón. */
+  | { kind: "board"; title: string; intro?: string; steps: BoardStep[]; outro?: string }
+  /** Comprobación rápida de conocimientos previos antes de un tema nuevo. */
+  | { kind: "check"; title: string; topics: string[] };
 
 /** Explicaciones del profesor para un concepto, en distintos registros. */
 export interface TutorScript {
@@ -310,6 +334,14 @@ export interface TutorScript {
   ejemplo: string;
   visual?: Widget;
   visualText?: string;
+  /** Desde cero: sin suponer nada, partiendo de lo más básico. */
+  fromZero?: string;
+  /** ¿Por qué se hace esto? (la idea detrás del procedimiento). */
+  why?: string;
+  /** ¿De dónde sale esta fórmula? (deducción o justificación). */
+  origin?: string;
+  /** Procedimiento modelo para la pizarra, renglón por renglón. */
+  board?: BoardStep[];
 }
 
 export interface Lesson {

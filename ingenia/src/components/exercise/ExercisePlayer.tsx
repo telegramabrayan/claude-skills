@@ -23,7 +23,10 @@ import { GuideSay } from "../guide/Nodo";
 import { MatchInput, OrderInput, PlotOption } from "./Inputs";
 import { MathText } from "../math/MathText";
 import { ExerciseVisual } from "../math/Visuals";
-import { TutorPanel } from "../tutor/TutorPanel";
+import { Whiteboard } from "../board/Whiteboard";
+import { LessonExplain } from "../tutor/ExplainPanel";
+import { ErrorComparison } from "./ErrorComparison";
+import { openTutor, setStudyContext } from "@/lib/studyContext";
 import { Icon } from "../ui/Icon";
 import { SymbolBar } from "./SymbolBar";
 
@@ -73,7 +76,10 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
   const [order, setOrder] = useState<string[]>([]);
   const [match, setMatch] = useState<Record<string, string>>({});
   const [reviewTopic, setReviewTopic] = useState<string | null>(null);
-  const [levelUp, setLevelUp] = useState(false);
+  const [levelChange, setLevelChange] = useState(0);
+  const levelUp = levelChange > 0;
+  const [concept, setConcept] = useState(false);
+  const [wrongCount, setWrongCount] = useState(0);
   const progress = useProgress();
   const helpless = noHelp || exam || diagnostic;
   const savedLater = progress.later.some((x) => x.id === exercise.id);
@@ -94,11 +100,15 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
     setOrder([]);
     setMatch({});
     setReviewTopic(null);
-    setLevelUp(false);
+    setLevelChange(0);
+    setConcept(false);
+    setWrongCount(0);
+    // El profesor sabe qué ejercicio está en pantalla.
+    setStudyContext({ exercise, topicId: exercise.topicId, answer: undefined, result: undefined });
   }, [exercise, guided]);
 
   const topic = getTopic(exercise.topicId);
-  const tutorScript = topic?.lessonId ? getLesson(topic.lessonId)?.tutor : undefined;
+  const lessonForTopic = topic?.lessonId ? getLesson(topic.lessonId) : undefined;
   const usedSolution = solutionSteps > 0;
   const solved = result?.correct === true;
   const finished = solved || (exam && result !== null);
@@ -143,6 +153,8 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
       : evaluateAnswer(exercise, answer());
     setResult(r);
     if (r.invalidInput) return;
+    if (!r.correct) setWrongCount((n) => n + 1);
+    setStudyContext({ answer: gaveUp ? "(no sabe)" : answerText(), result: { correct: r.correct, message: r.message, diagnosis: r.diagnosis, errorType: r.errorType } });
     if (!exam && !diagnostic) play(r.correct ? "correct" : "wrong");
     if (!r.correct) {
       setShake(true);
@@ -163,7 +175,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
           difficulty: exercise.difficulty,
           mode,
         });
-        setLevelUp(out.levelChange > 0);
+        setLevelChange(out.levelChange);
       }
       if (exam || diagnostic) onDone?.({ correct: r.correct, firstTry: true, errorType: r.errorType, exercise });
     }
@@ -183,6 +195,37 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
   };
 
   const revealSolution = () => setSolutionSteps((n) => Math.max(1, n));
+
+  /** Respuesta del alumno en texto, para el profesor. */
+  const answerText = (): string => {
+    switch (exercise.kind) {
+      case "choice":
+        return choiceIdx === null ? "" : `opción ${String.fromCharCode(65 + choiceIdx)}: ${exercise.options[choiceIdx]}`;
+      case "steps":
+        return [...steps.filter((x) => x.trim()), `x = ${text}`].join(" ; ");
+      case "trace":
+        return Object.entries(traceVals).map(([k, v]) => `${k} = ${v}`).join(", ");
+      case "order":
+        return order.join(" → ");
+      case "match":
+        return Object.entries(match).map(([a, b]) => `${a} ↔ ${b}`).join(", ");
+      default:
+        return text;
+    }
+  };
+
+  /**
+   * Ayuda escalonada: pista → pista más clara → el concepto relacionado →
+   * recién entonces la solución completa.
+   */
+  const maxHints = Math.min(2, exercise.hints.length);
+  const helpStage: "hint" | "concept" | "solution" | "done" = hints < maxHints ? "hint" : !concept ? "concept" : solutionSteps === 0 ? "solution" : "done";
+  const helpLabel = { hint: hints === 0 ? "Ver una pista" : "Una pista más clara", concept: "Ver el concepto relacionado", solution: "Ver la solución completa", done: "" }[helpStage];
+  const moreHelp = () => {
+    if (helpStage === "hint") setHints((h) => h + 1);
+    else if (helpStage === "concept") setConcept(true);
+    else if (helpStage === "solution") revealSolution();
+  };
 
   const similar = () => {
     if (!exercise.generator) return;
@@ -450,10 +493,12 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
           )}
           {!helpless && (
             <>
-              <button className="btn btn-secondary" onClick={() => nextHint()} disabled={hints >= 3}>
-                <Icon name="bulb" size={18} /> Pista {hints < 3 ? `(${hints}/3)` : ""}
-              </button>
-              <button className="btn btn-ghost" onClick={() => setShowTutor((v) => !v)}>
+              {helpStage !== "done" && (
+                <button className="btn btn-secondary" onClick={moreHelp}>
+                  <Icon name="bulb" size={18} /> {helpLabel}
+                </button>
+              )}
+              <button className="btn btn-ghost" onClick={() => openTutor()}>
                 <Icon name="chat" size={18} /> Preguntarle al profesor
               </button>
             </>
@@ -486,12 +531,24 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
                 )}
               </p>
               {!result.correct && !result.diagnosis && <p className="text-sm">{guideWrong(exercise.seed ?? 0, false)}</p>}
-              {result.correct && <p className="text-sm text-muted">{guideCorrect(exercise.seed ?? 0, levelUp)}</p>}
-              {!result.correct && result.diagnosis && <MathText text={result.diagnosis} />}
+              {result.correct && <p className="text-sm text-muted">{levelUp ? "Perfecto. Ahora aumentemos un poco la dificultad." : guideCorrect(exercise.seed ?? 0, false)}</p>}
+              {!result.correct && levelChange < 0 && (
+                <p className="rounded-lg bg-surface/70 p-2 text-sm">Parece que este paso todavía está generando dificultades. Antes de avanzar, practiquemos esta parte: los próximos ejercicios van a ser un poco más sencillos.</p>
+              )}
+              {!result.correct && result.diagnosis && !result.comparison && <MathText text={result.diagnosis} />}
               {!result.correct && result.errorType && <p className="text-xs text-muted">Tipo de error: {ERROR_LABELS[result.errorType]} (lo voy a tener en cuenta para tus próximas prácticas)</p>}
               {result.correct && exercise.explanation && <p className="text-sm text-muted">{exercise.explanation}</p>}
             </div>
           </div>
+          {!result.correct && result.comparison && !reviewTopic && (
+            <ErrorComparison
+              comparison={result.comparison}
+              step={result.firstWrongStep}
+              problem={result.diagnosis}
+              onSimilar={exercise.generator ? similar : undefined}
+              onRetry={retry}
+            />
+          )}
           {!result.correct && gap && !reviewTopic && (
             <div className="mt-4 rounded-xl border border-line bg-surface p-3">
               <GuideSay mood="thinking" size={40}>
@@ -516,11 +573,18 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
               <button className="btn btn-primary" onClick={retry}>
                 Intentar nuevamente
               </button>
-              <button className="btn btn-secondary" onClick={() => nextHint()} disabled={hints >= 3}>
-                Ver una pista
-              </button>
-              <button className="btn btn-secondary" onClick={() => setShowExplanation(true)}>
-                Ver explicación
+              {helpStage !== "done" && (
+                <button className="btn btn-secondary" onClick={moreHelp}>
+                  {helpLabel}
+                </button>
+              )}
+              {wrongCount >= 2 && !showExplanation && (
+                <button className="btn btn-secondary" onClick={() => setShowExplanation(true)}>
+                  ¿Por qué?
+                </button>
+              )}
+              <button className="btn btn-ghost" onClick={() => openTutor("¿Dónde me equivoqué en este ejercicio? No me des la respuesta: guiame.")}>
+                💬 Preguntar
               </button>
               {exercise.generator && (
                 <button className="btn btn-secondary" onClick={similar}>
@@ -551,9 +615,26 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
               <MathText text={h} />
             </div>
           ))}
-          {hints >= 3 && solutionSteps === 0 && !solved && (
+        </div>
+      )}
+
+      {/* ───── Concepto relacionado (tercer nivel de ayuda) ───── */}
+      {!helpless && concept && (
+        <div className="anim-pop space-y-3">
+          {exercise.hints[2] && (
+            <div className="flex gap-3 rounded-xl border border-line bg-surface p-3">
+              <span className="chip shrink-0 !bg-accent-soft !text-accent">Concepto</span>
+              <MathText text={exercise.hints[2]} />
+            </div>
+          )}
+          {lessonForTopic ? (
+            <LessonExplain lesson={lessonForTopic} initial="simple" onClose={() => setConcept(true)} />
+          ) : (
+            <MathText text={exercise.explanation} />
+          )}
+          {solutionSteps === 0 && !solved && (
             <button className="btn btn-secondary" onClick={revealSolution}>
-              Ver solución paso a paso
+              Todavía no me sale: ver la solución completa
             </button>
           )}
         </div>
@@ -576,36 +657,19 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
           )}
           {solutionSteps > 0 && (
             <div>
-              <p className="mb-2 font-bold">Resolución</p>
-              <ol className="space-y-2">
-                {exercise.solution.slice(0, solutionSteps).map((s, i) => (
-                  <li key={i} className="anim-pop flex gap-3">
-                    <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary-soft text-xs font-bold text-primary">{i + 1}</span>
-                    <MathText text={asMath(s)} />
-                  </li>
-                ))}
-              </ol>
-              {solutionSteps < exercise.solution.length && (
-                <button className="btn btn-ghost mt-2" onClick={() => setSolutionSteps((n) => n + 1)}>
-                  Siguiente paso →
-                </button>
-              )}
-              {solutionSteps >= exercise.solution.length && !solved && <p className="mt-2 text-sm text-muted">Ahora probá escribirlo vos. No suma XP, pero fija el procedimiento.</p>}
+              <Whiteboard steps={exercise.solution.map((x) => ({ expr: x }))} title="Resolución completa" />
+              {!solved && <p className="mt-2 text-sm text-muted">Ahora probá escribirlo vos. No suma XP, pero fija el procedimiento.</p>}
             </div>
           )}
           {exercise.kind === "trace" && (showExplanation || solutionSteps > 0) && <TraceReplay code={exercise.code} />}
         </div>
-      )}
-
-      {showTutor && !helpless && (
-        <TutorPanel script={tutorScript} topicName={topic?.name} hasExercise onHint={nextHint} onSolve={revealSolution} onClose={() => setShowTutor(false)} />
       )}
     </div>
   );
 }
 
 /** Repaso corto de un prerequisito (4 ejercicios) y vuelta al ejercicio original. */
-function QuickReview({ topicId, onDone }: { topicId: string; onDone: () => void }) {
+export function QuickReview({ topicId, onDone }: { topicId: string; onDone: () => void }) {
   const [items] = useState(() => Array.from({ length: 4 }, () => exerciseFor(store.getState(), topicId, -1)));
   const [i, setI] = useState(0);
   const name = getTopic(topicId)?.name ?? topicId;

@@ -74,6 +74,17 @@ function Settings() {
         ))}
       </div>
 
+      <SectionTitle>Cómo aprendés</SectionTitle>
+      <div className="card space-y-4 p-4">
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="block font-semibold">Enseñame desde cero</span>
+            <span className="text-sm text-muted">Para cuando hace tiempo que no estudiás: antes de cada tema comprobamos las bases, los ejercicios empiezan más fáciles y las explicaciones arrancan desde los fundamentos. Se puede apagar cuando quieras.</span>
+          </span>
+          <input type="checkbox" className="h-6 w-6 accent-[var(--primary)]" checked={s.settings.fromZero} onChange={(e) => actions.updateSettings({ fromZero: e.target.checked })} />
+        </label>
+      </div>
+
       <SectionTitle>Juego</SectionTitle>
       <div className="card space-y-4 p-4">
         <label className="flex items-center justify-between gap-4">

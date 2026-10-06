@@ -103,6 +103,25 @@ function Dashboard() {
         </Link>
       )}
 
+      {!s.settings.fromZero ? (
+        <button onClick={() => actions.updateSettings({ fromZero: true })} className="card mt-3 flex w-full items-center gap-4 p-4 text-left hover:border-primary">
+          <span className="text-3xl" aria-hidden>
+            🌱
+          </span>
+          <span className="flex-1">
+            <span className="block font-bold">¿Hace mucho que no estudiás? Activá «Enseñame desde cero»</span>
+            <span className="text-sm text-muted">Comprobamos las bases antes de cada tema, explicamos desde los fundamentos y los ejercicios arrancan más fáciles.</span>
+          </span>
+        </button>
+      ) : (
+        <p className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+          <span className="chip !bg-success-soft !text-success">🌱 Modo «Enseñame desde cero» activo</span>
+          <button className="text-muted underline" onClick={() => actions.updateSettings({ fromZero: false })}>
+            Desactivar
+          </button>
+        </p>
+      )}
+
       {/* Continuar */}
       <section className="card mt-4 overflow-hidden" aria-labelledby="continuar">
         <div className="p-5 sm:p-6">
