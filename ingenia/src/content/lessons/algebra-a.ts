@@ -413,4 +413,340 @@ export const polinomiosRaicesLesson: Lesson = {
   },
 };
 
-export const algebraALessons: Lesson[] = [conjuntosLesson, valorAbsolutoLesson, complejosLesson, complejosPolarLesson, polinomiosDivisionLesson, polinomiosRaicesLesson];
+// ═════════════════════════ alg-1 · Vectores en ℝ² y ℝ³ (complemento) ═════════════════════════
+
+const vectorialBoard: BoardStep[] = [
+  { expr: "u = (2, −1, 1),  v = (1, 3, 0)", note: "Datos" },
+  { expr: "x: (−1)·0 − 1·3 = −3", note: "Tapamos la columna de x: u₂v₃ − u₃v₂" },
+  { expr: "y: −(2·0 − 1·1) = 1", note: "Columna de y, con el signo menos adelante" },
+  { expr: "z: 2·3 − (−1)·1 = 7", note: "Columna de z: u₁v₂ − u₂v₁" },
+  { expr: "u × v = (−3, 1, 7)", note: "Resultado" },
+  { expr: "(u × v)·u = −6 − 1 + 7 = 0", note: "Verificación: es perpendicular a u (y también a v)" },
+];
+
+export const productoVectorialLesson: Lesson = {
+  id: "l-alg-producto-vectorial",
+  title: "Producto vectorial",
+  subtitle: "Un vector perpendicular a otros dos",
+  subjectId: S,
+  topicIds: ["t-alg-producto-vectorial"],
+  estimatedMinutes: 11,
+  prerequisites: ["t-producto-escalar", "t-vec-operaciones"],
+  cards: [
+    intro("Producto vectorial", "Cómo calcular u × v en ℝ³, qué dirección tiene y cómo da el área de un paralelogramo o un triángulo.", "Es la herramienta para conseguir la normal de un plano, calcular áreas y, en Física, momentos y fuerzas magnéticas."),
+    explain(
+      "La regla de la mano derecha",
+      "Apuntá los dedos de la mano derecha según $u$ y cerralos hacia $v$: el pulgar marca $u × v$. Es como un tornillo: girar de $u$ a $v$ lo hace avanzar en esa dirección.\n\n$u × v$ es **perpendicular** a $u$ y a $v$, y su longitud es el área del paralelogramo que forman.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-vectorial-orden",
+      subjectId: S,
+      topicId: "t-alg-producto-vectorial",
+      prompt: "Si $u × v = (2, −1, 4)$, ¿cuánto vale $v × u$?",
+      options: ["$(−2, 1, −4)$", "$(2, −1, 4)$", "$(4, −1, 2)$"],
+      answer: 0,
+      explanation: "El producto vectorial es anticonmutativo: v × u = −(u × v). Cambia el sentido (el tornillo gira al revés).",
+      hints: ["Pensá en la regla de la mano derecha.", "Si girás de v a u, el pulgar apunta al otro lado.", "v × u = −(u × v)."],
+      errors: { 1: ["vectores", "El producto vectorial no es conmutativo: invertir el orden cambia el sentido."], 2: ["vectores", "No se reordenan componentes: se cambia el signo de todas."] },
+    }, true),
+    explain(
+      "La cuenta",
+      "Para $u = (u_1, u_2, u_3)$ y $v = (v_1, v_2, v_3)$:\n\n$u × v = (u_2v_3 − u_3v_2, −(u_1v_3 − u_3v_1), u_1v_2 − u_2v_1)$\n\nEs el desarrollo de un determinante con $i, j, k$ en la primera fila. Además $|u × v| = |u||v| sen θ$. En el plano, la flecha de la suma muestra el paralelogramo cuya área mide $|u × v|$.",
+      { tag: "matematico", widget: { type: "vector", x: 3, y: 1, showSum: true } },
+    ),
+    board("Calcular u × v", vectorialBoard),
+    example("Ejemplo resuelto", "Área del paralelogramo de lados $u = (2, 0, 0)$ y $v = (1, 3, 0)$.", ["$u × v = (0·0 − 0·3, −(2·0 − 0·1), 2·3 − 0·1) = (0, 0, 6)$", "$|u × v| = 6$", "Tiene sentido: base 2 y altura 3."], "6"),
+    practice("Ejercicio guiado", "alg-producto-vectorial", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "1. **El signo de la j**: la componente del medio lleva un menos adelante.\n2. **El orden**: $u × v = −(v × u)$.\n3. **Triángulo vs. paralelogramo**: el triángulo de lados $u$ y $v$ tiene la mitad del área: $|u × v|/2$.\n\nVerificá siempre que el resultado tenga producto escalar 0 con $u$ y con $v$.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-producto-vectorial", 3, 6),
+    practice("Tu turno", "alg-producto-vectorial", 4, 8),
+    practice("Desafío", "alg-producto-vectorial", 6, 12),
+    summary(["u × v es perpendicular a u y a v (regla de la mano derecha).", "u × v = (u₂v₃ − u₃v₂, −(u₁v₃ − u₃v₁), u₁v₂ − u₂v₁).", "v × u = −(u × v).", "|u × v| = área del paralelogramo; la mitad es el triángulo.", "u × v = 0 ⇔ u y v son paralelos."]),
+  ],
+  tutor: {
+    normal: "El producto vectorial de u, v ∈ ℝ³ es el vector u × v, ortogonal a ambos, con sentido dado por la regla de la mano derecha y módulo |u||v| sen θ, igual al área del paralelogramo que determinan.",
+    simple: "Le das dos vectores y te devuelve un tercero que es perpendicular a los dos. Su largo es el área del paralelogramo que forman.",
+    nino: "Al abrir una puerta empujás con la mano y la puerta gira alrededor de las bisagras. El eje de giro (vertical) es perpendicular a tu empujón y a la puerta: eso es lo que calcula el producto vectorial.",
+    ejemplo: "(1, 0, 0) × (0, 1, 0) = (0, 0, 1): el eje x «cruz» el eje y da el eje z.",
+    visual: { type: "vector", x: 3, y: 1, showSum: true },
+    visualText: "Las dos flechas y su suma arman un paralelogramo; |u × v| es su área.",
+    fromZero: "En ℝ³ un vector tiene tres componentes. Con dos vectores que no son paralelos podés armar un paralelogramo; el producto vectorial te da una flecha «parada» sobre él, con largo igual a su área.",
+    why: "Porque muchas veces necesitás una dirección perpendicular a otras dos: la normal de un plano que pasa por tres puntos, el eje de una rotación o la dirección de un momento.",
+    origin: "Se pide un vector w con w·u = 0 y w·v = 0. Resolviendo ese sistema se obtienen las fórmulas de los cofactores; luego se verifica que |w|² = |u|²|v|² − (u·v)² = |u|²|v|² sen²θ.",
+    board: vectorialBoard,
+  },
+};
+
+const proyBoard: BoardStep[] = [
+  { expr: "v = (3, 1, 2),  u = (1, 2, 2)", note: "Proyectamos v sobre u" },
+  { expr: "v·u = 3 + 2 + 4 = 9", note: "Producto escalar" },
+  { expr: "|u|^2 = 1 + 4 + 4 = 9", note: "Norma al cuadrado de u" },
+  { expr: "p = (9/9)·(1, 2, 2) = (1, 2, 2)", note: "p = (v·u / |u|²)·u" },
+  { expr: "w = v − p = (2, −1, 0)", note: "La parte perpendicular" },
+  { expr: "w·u = 2 − 2 + 0 = 0", note: "Comprobación: w es perpendicular a u" },
+];
+
+export const anguloProyeccionLesson: Lesson = {
+  id: "l-alg-angulo-proyeccion",
+  title: "Norma, ángulo y proyección",
+  subtitle: "Medir y descomponer vectores con el producto escalar",
+  subjectId: S,
+  topicIds: ["t-alg-angulo-proyeccion"],
+  estimatedMinutes: 11,
+  prerequisites: ["t-producto-escalar"],
+  cards: [
+    intro("Ángulo y proyección", "Cómo calcular la norma de un vector en ℝ³, el ángulo entre dos vectores y la proyección ortogonal de uno sobre otro.", "La proyección es la base de las distancias a rectas y planos, y en Física de descomponer una fuerza en una dirección."),
+    explain(
+      "La sombra de un vector",
+      "Si el sol cae perpendicular sobre una vara inclinada, su **sombra** en el piso es la proyección de la vara sobre el piso.\n\nCon vectores: la proyección de $v$ sobre $u$ es la parte de $v$ que va en la dirección de $u$. Lo que sobra es perpendicular a $u$.",
+      { tag: "cotidiano", widget: { type: "vector-components", mag: 5, angle: 35 } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-angulo-signo",
+      subjectId: S,
+      topicId: "t-alg-angulo-proyeccion",
+      prompt: "Si $u·v = −4$, ¿cómo es el ángulo entre u y v?",
+      options: ["Obtuso (entre 90° y 180°)", "Agudo (menor que 90°)", "Recto"],
+      answer: 0,
+      explanation: "u·v = |u||v| cos θ y las normas son positivas: el signo de u·v es el de cos θ. Negativo ⇒ θ > 90°.",
+      hints: ["u·v = |u||v| cos θ.", "Las normas son positivas.", "¿Cuándo es negativo el coseno?"],
+      errors: { 1: ["trigonometria", "Si u·v < 0 entonces cos θ < 0, y eso pasa con ángulos obtusos."], 2: ["vectores", "Recto sería u·v = 0."] },
+    }, true),
+    explain(
+      "Las fórmulas",
+      "• Norma: $|v| = √(v_1^2 + v_2^2 + v_3^2)$\n• Ángulo: $cos θ = \\frac{u·v}{|u|·|v|}$, con $0° ≤ θ ≤ 180°$\n• Proyección de $v$ sobre $u$: $p = \\frac{v·u}{|u|^2}·u$\n\nY $w = v − p$ es perpendicular a $u$: así $v = p + w$.",
+      { tag: "matematico" },
+    ),
+    board("Proyectar y descomponer", proyBoard),
+    example("Ejemplo resuelto", "Ángulo entre $u = (1, 0, 1)$ y $v = (0, 1, 1)$.", ["$u·v = 0 + 0 + 1 = 1$", "$|u| = √2$, $|v| = √2$", "$cos θ = 1/2$", "$θ = 60°$"], "60°"),
+    practice("Ejercicio guiado", "alg-angulo-vectores", 1, 4, true),
+    explain(
+      "Errores típicos",
+      "1. Dividir por $|u|$ en lugar de $|u|^2$ en la proyección (o hacerlo y olvidar el versor).\n2. Confundir proyectar $v$ sobre $u$ con proyectar $u$ sobre $v$: el resultado va en la dirección del vector sobre el que proyectás.\n3. Calculadora en radianes al usar $arccos$.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-proyeccion", 2, 5),
+    practice("Tu turno", "alg-angulo-vectores", 3, 7),
+    practice("Desafío", "alg-proyeccion", 5, 10),
+    summary(["|v| = √(v₁² + v₂² + v₃²).", "cos θ = u·v / (|u||v|), θ ∈ [0°, 180°].", "proy_u(v) = (v·u / |u|²)·u.", "v − proy_u(v) es perpendicular a u.", "u·v < 0 ⇒ obtuso; = 0 ⇒ recto; > 0 ⇒ agudo."]),
+  ],
+  tutor: {
+    normal: "De u·v = |u||v| cos θ se obtiene el ángulo entre vectores. La proyección ortogonal de v sobre u es el único múltiplo de u tal que v − p es ortogonal a u, y vale (v·u/|u|²)u.",
+    simple: "El producto escalar te dice cuánto apuntan para el mismo lado. Dividiendo por los largos sacás el coseno del ángulo. La proyección es la «sombra» de v sobre la dirección de u.",
+    nino: "Si arrastrás una valija tirando de la manija inclinada, solo una parte de tu fuerza la mueve hacia adelante: esa parte es la proyección de tu fuerza sobre el piso.",
+    ejemplo: "v = (2, 3), u = (1, 0): proyección = (2, 0); lo que sobra, (0, 3), es perpendicular a u.",
+    visual: { type: "vector-components", mag: 5, angle: 35 },
+    visualText: "La componente horizontal es la proyección del vector sobre el eje x.",
+    fromZero: "Un vector tiene largo (norma) y dirección. Para comparar dos direcciones se usa el ángulo entre ellas, y el producto escalar es la forma de calcularlo sin dibujar.",
+    why: "Porque descomponer un vector en «lo que va en una dirección» y «lo perpendicular» simplifica muchísimos problemas: distancias, fuerzas, mínimos cuadrados.",
+    origin: "Se busca p = λu con (v − λu)·u = 0. Despejando: v·u − λ|u|² = 0 ⇒ λ = v·u/|u|². La fórmula del ángulo sale del teorema del coseno aplicado al triángulo de lados u, v y u − v.",
+    board: proyBoard,
+  },
+};
+
+// ═════════════════════════ alg-2 · Rectas y planos ═════════════════════════
+
+const rectaBoard: BoardStep[] = [
+  { expr: "P = (1, −2, 3),  Q = (4, 0, 2)", note: "Dos puntos de la recta" },
+  { expr: "d = Q − P = (3, 2, −1)", note: "Vector director" },
+  { expr: "X = (1, −2, 3) + t·(3, 2, −1)", note: "Ecuación vectorial" },
+  { expr: "x = 1 + 3t,  y = −2 + 2t,  z = 3 − t", note: "Paramétricas: una ecuación por coordenada" },
+  { expr: "t = 2  ⇒  (7, 2, 1)", note: "Cada valor de t da un punto de la recta" },
+];
+
+export const rectasLesson: Lesson = {
+  id: "l-alg-rectas",
+  title: "Rectas en ℝ³",
+  subtitle: "Ecuación vectorial y paramétrica",
+  subjectId: S,
+  topicIds: ["t-alg-rectas"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-vectores"],
+  cards: [
+    intro("Rectas en el espacio", "Cómo escribir una recta con un punto y un vector director, y cómo saber si un punto está en ella.", "En ℝ³ una recta no tiene «pendiente»: se describe con un punto y una dirección. Es la base de toda la geometría de la unidad."),
+    explain(
+      "Punto de partida y dirección",
+      "Un dron sale del punto $P$ y vuela siempre en la dirección $d$. Después de $t$ segundos está en $P + t·d$.\n\nTodos los lugares por donde pasa (con $t$ positivo, negativo o cero) forman una **recta**. $P$ es un punto de paso y $d$ el **vector director**.",
+      { tag: "cotidiano", widget: { type: "vector", x: 2, y: 1, showSum: true } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-director",
+      subjectId: S,
+      topicId: "t-alg-rectas",
+      prompt: "¿Qué vector director tiene la recta que pasa por $A = (1, 1, 0)$ y $B = (3, 0, 2)$?",
+      options: ["$(2, −1, 2)$", "$(4, 1, 2)$", "$(1, 1, 0)$"],
+      answer: 0,
+      explanation: "El director es B − A = (3 − 1, 0 − 1, 2 − 0) = (2, −1, 2) (o cualquier múltiplo no nulo).",
+      hints: ["La dirección va de un punto al otro.", "Restá coordenada a coordenada.", "B − A."],
+      errors: { 1: ["vectores", "Sumaste los puntos. La dirección de A a B es B − A."], 2: ["vectores", "Ese es el punto A, no una dirección."] },
+    }, true),
+    explain(
+      "Ecuaciones de la recta",
+      "**Vectorial**: $X = P + t·d$, con $t ∈ ℝ$.\n\n**Paramétricas**: $x = p_1 + t d_1$, $y = p_2 + t d_2$, $z = p_3 + t d_3$.\n\n**Simétrica** (si $d_i ≠ 0$): $\\frac{x − p_1}{d_1} = \\frac{y − p_2}{d_2} = \\frac{z − p_3}{d_3}$.\n\nUn punto está en la recta si existe **un mismo** $t$ que da sus tres coordenadas.",
+      { tag: "matematico" },
+    ),
+    board("Recta por dos puntos", rectaBoard),
+    example("Ejemplo resuelto", "¿El punto $(4, 1, 2)$ está en $X = (1, −2, 3) + t·(3, 2, −1)$?", ["x: $1 + 3t = 4 ⇒ t = 1$", "y: $−2 + 2·1 = 0 ≠ 1$", "No hay un mismo t para todas las coordenadas."], "No pertenece"),
+    practice("Ejercicio guiado", "alg-recta-pertenencia", 1, 2, true),
+    explain(
+      "Error típico: un t distinto por coordenada",
+      "Para que un punto esté en la recta, el valor de $t$ tiene que ser **el mismo** en las tres ecuaciones. Si de $x$ sale $t = 1$ y de $y$ sale $t = 2$, el punto no está.\n\nOtro error: confundir el punto de paso con el director. El director es una **diferencia** de puntos.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-recta-pertenencia", 3, 5),
+    practice("Tu turno", "alg-recta-pertenencia", 4, 8),
+    practice("Desafío", "alg-recta-pertenencia", 6, 11),
+    summary(["Recta = punto de paso P + dirección d.", "Vectorial: X = P + t·d.", "Paramétricas: una ecuación por coordenada.", "Director por dos puntos: d = Q − P.", "Pertenencia: el mismo t para las tres coordenadas."]),
+  ],
+  tutor: {
+    normal: "Una recta en ℝ³ es el conjunto {P + t·d : t ∈ ℝ}, con P un punto y d ≠ 0 un vector director. Las ecuaciones paramétricas se obtienen igualando coordenada a coordenada.",
+    simple: "Elegís un punto donde empieza y una flecha que marca hacia dónde va. Moviendo t te desplazás por la recta.",
+    nino: "Un tren que sale de la estación P y avanza siempre por la misma vía: con t indicás cuántos «tramos» avanzó (o retrocedió, si t es negativo).",
+    ejemplo: "X = (0, 0, 0) + t·(1, 1, 1): para t = 2 da (2, 2, 2).",
+    visual: { type: "vector", x: 2, y: 1, showSum: true },
+    visualText: "Pensalo en el plano: sumarle al punto de partida varias veces el director te mueve por la recta.",
+    fromZero: "Un punto en el espacio tiene tres coordenadas. Una dirección también se describe con tres números (un vector). Sumándole al punto múltiplos de esa dirección se recorre la recta.",
+    why: "En el espacio una sola ecuación como y = mx + b no alcanza para describir una recta; con un punto y una dirección se describe cualquier recta, en cualquier dimensión.",
+    origin: "Un punto X está en la recta si X − P es paralelo a d, es decir, X − P = t·d para algún t. Despejando X queda la ecuación vectorial.",
+    board: rectaBoard,
+  },
+};
+
+const planoBoard: BoardStep[] = [
+  { expr: "P = (1, 2, −1),  n = (2, −1, 3)", note: "Punto del plano y vector normal" },
+  { expr: "n·(X − P) = 0", note: "X − P está en el plano, entonces es perpendicular a n" },
+  { expr: "2x − y + 3z = d", note: "Los coeficientes son la normal" },
+  { expr: "d = 2·1 − 2 + 3·(−1) = −3", note: "Reemplazamos el punto P" },
+  { expr: "π: 2x − y + 3z = −3", note: "Ecuación del plano" },
+];
+
+export const planosLesson: Lesson = {
+  id: "l-alg-planos",
+  title: "Planos en ℝ³",
+  subtitle: "La normal manda",
+  subjectId: S,
+  topicIds: ["t-alg-planos"],
+  estimatedMinutes: 11,
+  prerequisites: ["t-alg-rectas", "t-producto-escalar"],
+  cards: [
+    intro("Planos", "Cómo escribir la ecuación de un plano a partir de un punto y su vector normal, y cómo intersecar un plano con una recta.", "La ecuación ax + by + cz = d es el plano en ℝ³; vas a usarla en sistemas lineales, distancias y transformaciones."),
+    explain(
+      "Una mesa y su pata",
+      "Una mesa es un plano y una pata bien derecha es perpendicular a ella. Esa dirección perpendicular es el **vector normal** $n$.\n\nUn plano queda determinado por un punto $P$ y su normal: son todos los puntos $X$ tales que la flecha de $P$ a $X$ es perpendicular a $n$.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-normal",
+      subjectId: S,
+      topicId: "t-alg-planos",
+      prompt: "¿Cuál es un vector normal del plano $3x − y + 5z = 2$?",
+      options: ["$(3, −1, 5)$", "$(3, −1, 5, 2)$", "$(2, 0, 0)$"],
+      answer: 0,
+      explanation: "En ax + by + cz = d, la normal es (a, b, c): los coeficientes de x, y, z.",
+      hints: ["La normal está escondida en la ecuación.", "Mirá los coeficientes de x, y, z.", "El término independiente no forma parte de la normal."],
+      errors: { 1: ["vectores", "La normal tiene 3 componentes (estamos en ℝ³): el término independiente no va."], 2: ["vectores", "El 2 es el término independiente; la normal son los coeficientes."] },
+    }, true),
+    explain(
+      "Ecuación del plano",
+      "$n·(X − P) = 0$ ⇔ $ax + by + cz = d$, con $(a, b, c) = n$ y $d = n·P$.\n\n• Si pasa por tres puntos $A, B, C$: $n = AB × AC$.\n• Para cortar con la recta $X = P_0 + t·v$: reemplazá $x, y, z$ en función de $t$ y despejá $t$.",
+      { tag: "matematico", widget: { type: "vector", x: 0, y: 3 } },
+    ),
+    board("Plano por un punto con normal dada", planoBoard),
+    example("Ejemplo resuelto: recta y plano", "Intersección de $L: X = (1, 0, 2) + t·(1, 1, −1)$ con $π: x + 2y + z = 9$.", ["Punto genérico: $(1 + t, t, 2 − t)$", "$(1 + t) + 2t + (2 − t) = 9$", "$3 + 2t = 9 ⇒ t = 3$", "$Q = (4, 3, −1)$"], "(4, 3, −1)"),
+    practice("Ejercicio guiado", "alg-plano-ecuacion", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "1. Usar el término independiente como parte de la normal.\n2. En planos paralelos, copiar también el $d$: la normal es la misma pero el $d$ se recalcula con el punto.\n3. En la intersección, contestar el valor de $t$ en lugar del punto: hay que reemplazarlo en la recta.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-recta-plano-interseccion", 2, 5),
+    practice("Tu turno", "alg-plano-ecuacion", 3, 7),
+    practice("Desafío", "alg-plano-ecuacion", 6, 10),
+    summary(["Plano: punto P + normal n.", "π: ax + by + cz = d, con (a, b, c) = n y d = n·P.", "Por tres puntos: n = AB × AC.", "Paralelos: misma normal.", "Recta ∩ plano: reemplazar la paramétrica y despejar t."]),
+  ],
+  tutor: {
+    normal: "El plano que pasa por P con normal n ≠ 0 es {X ∈ ℝ³ : n·(X − P) = 0}. Desarrollando el producto escalar se obtiene la ecuación implícita ax + by + cz = d.",
+    simple: "La ecuación del plano tiene adelante de x, y, z las componentes de la normal. El número d se encuentra reemplazando un punto del plano.",
+    nino: "Una pared y un clavo clavado derecho: el clavo marca la dirección normal. Cualquier punto de la pared, unido con el agujero del clavo, forma ángulo recto con el clavo.",
+    ejemplo: "Normal (1, 1, 1) y punto (1, 2, 3): x + y + z = 6.",
+    visual: { type: "vector", x: 0, y: 3 },
+    visualText: "En el plano xy, la flecha vertical sería normal a la «recta» horizontal; en ℝ³ pasa lo mismo con planos.",
+    fromZero: "Un plano es una superficie chata infinita, como un piso. Para describirla alcanza con un punto del piso y la dirección perpendicular a él.",
+    why: "Porque una sola ecuación lineal en x, y, z describe un plano completo; por eso los sistemas de tres ecuaciones con tres incógnitas son intersecciones de planos.",
+    origin: "X está en el plano si X − P es perpendicular a n, es decir, si n·(X − P) = 0. Distribuyendo: n·X = n·P, que escrito en coordenadas es ax + by + cz = d.",
+    board: planoBoard,
+  },
+};
+
+const distBoard: BoardStep[] = [
+  { expr: "P = (2, 1, −1),  π: 2x − y + 2z = 6", note: "Punto y plano" },
+  { expr: "n·P − d = 4 − 1 − 2 − 6 = −5", note: "Reemplazamos P en ax + by + cz − d" },
+  { expr: "|n| = √(4 + 1 + 4) = 3", note: "Norma de la normal" },
+  { expr: "d(P, π) = |−5| / 3 = 5/3", note: "Valor absoluto y dividimos" },
+  { expr: "d(P, π) ≈ 1,67", note: "Resultado" },
+];
+
+export const posicionesDistanciasLesson: Lesson = {
+  id: "l-alg-posiciones-distancias",
+  title: "Posiciones relativas y distancias",
+  subtitle: "Paralelos, perpendiculares y qué tan lejos",
+  subjectId: S,
+  topicIds: ["t-alg-posiciones-distancias"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-alg-planos"],
+  cards: [
+    intro("Posiciones y distancias", "Cómo decidir si dos planos (o una recta y un plano) son paralelos, perpendiculares o se cortan, y cómo medir la distancia de un punto a un plano.", "Todo se decide comparando vectores normales y directores con el producto escalar y el paralelismo: no hace falta dibujar en 3D."),
+    explain(
+      "Mirá las flechas, no los planos",
+      "Dos planos son paralelos si sus normales apuntan igual (son múltiplos). Son perpendiculares si sus normales lo son ($n_1·n_2 = 0$).\n\nPara una recta y un plano: si el director $d$ es perpendicular a la normal ($d·n = 0$), la recta «corre» a lo largo del plano: o está adentro o es paralela.",
+      { tag: "intuitivo" },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-planos-paralelos",
+      subjectId: S,
+      topicId: "t-alg-posiciones-distancias",
+      prompt: "¿Cómo son $π_1: x + 2y − z = 3$ y $π_2: 2x + 4y − 2z = 5$?",
+      options: ["Paralelos, no coincidentes", "Coincidentes", "Perpendiculares"],
+      answer: 0,
+      explanation: "n₂ = 2·n₁: normales paralelas. Pero 5 ≠ 2·3 = 6, así que no es la misma ecuación: son paralelos distintos.",
+      hints: ["Compará las normales.", "(2, 4, −2) = 2·(1, 2, −1).", "¿También el término independiente es el doble?"],
+      errors: { 1: ["vectores", "Para ser coincidentes, toda la ecuación tiene que ser proporcional: 5 debería ser 6."], 2: ["vectores", "n₁·n₂ = 2 + 8 + 2 = 12 ≠ 0: no son perpendiculares."] },
+    }, true),
+    explain(
+      "Distancia punto–plano",
+      "La distancia más corta de $P = (x_0, y_0, z_0)$ al plano $ax + by + cz = d$ se mide sobre la normal:\n\n$d(P, π) = \\frac{|a x_0 + b y_0 + c z_0 − d|}{√(a^2 + b^2 + c^2)}$\n\nEntre dos planos paralelos $n·X = d_1$ y $n·X = d_2$: $\\frac{|d_1 − d_2|}{|n|}$.",
+      { tag: "matematico", widget: { type: "vector-components", mag: 4, angle: 50 } },
+    ),
+    board("Distancia de un punto a un plano", distBoard),
+    example("Ejemplo resuelto", "Posición de $L: X = (1, 0, 0) + t·(1, 1, 0)$ y $π: x − y + 2z = 1$.", ["$d·n = 1 − 1 + 0 = 0$: paralela o contenida.", "¿$(1, 0, 0)$ cumple la ecuación? $1 − 0 + 0 = 1$ ✓", "La recta está contenida en el plano."], "Contenida"),
+    practice("Ejercicio guiado", "alg-distancia-punto-plano", 1, 2, true),
+    explain(
+      "Errores típicos",
+      "1. Olvidar dividir por $|n|$ (o dividir por $|n|^2$).\n2. Olvidar el valor absoluto: una distancia nunca es negativa.\n3. Declarar «coincidentes» solo porque las normales son proporcionales: falta comparar el término independiente.\n4. Recta perpendicular al plano: $d$ paralelo a $n$, no $d·n = 0$.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-posicion-relativa", 2, 4),
+    practice("Tu turno", "alg-posicion-relativa", 4, 7),
+    practice("Desafío", "alg-distancia-punto-plano", 6, 9),
+    summary(["Planos: normales proporcionales ⇒ paralelos o coincidentes.", "n₁·n₂ = 0 ⇒ planos perpendiculares.", "Recta–plano: d·n = 0 ⇒ paralela o contenida; d ∥ n ⇒ perpendicular.", "d(P, π) = |ax₀ + by₀ + cz₀ − d| / |n|.", "Planos paralelos: |d₁ − d₂| / |n|."]),
+  ],
+  tutor: {
+    normal: "Las posiciones relativas se deciden con los vectores asociados: normales para planos, directores para rectas. La distancia de P a π es la longitud de la proyección de P − P₀ sobre n, con P₀ ∈ π, lo que da |n·P − d|/|n|.",
+    simple: "Para saber cómo están dos planos, mirás sus normales: si son múltiplos, son paralelos; si su producto escalar da 0, son perpendiculares. Para la distancia, reemplazás el punto en la ecuación y dividís por el largo de la normal.",
+    nino: "La distancia de una lámpara al techo se mide con una cinta bien vertical, no inclinada: esa dirección vertical es la normal del techo.",
+    ejemplo: "P = (0, 0, 5) y π: z = 0: |5 − 0| / 1 = 5.",
+    visual: { type: "vector-components", mag: 4, angle: 50 },
+    visualText: "La distancia es solo la componente en la dirección perpendicular.",
+    fromZero: "Dos planos en el espacio pueden ser el mismo, no tocarse nunca (paralelos) o cortarse a lo largo de una recta. Las normales te dicen cuál de las tres cosas pasa.",
+    why: "Porque comparar vectores es una cuenta, y dibujar en 3D es difícil y engañoso. La distancia sobre la normal es la mínima, como la perpendicular en el plano.",
+    origin: "Tomando P₀ en el plano, la distancia es |proy_n(P − P₀)| = |n·(P − P₀)|/|n| = |n·P − n·P₀|/|n| = |n·P − d|/|n|.",
+    board: distBoard,
+  },
+};
+
+export const algebraALessons: Lesson[] = [conjuntosLesson, valorAbsolutoLesson, complejosLesson, complejosPolarLesson, polinomiosDivisionLesson, polinomiosRaicesLesson, productoVectorialLesson, anguloProyeccionLesson, rectasLesson, planosLesson, posicionesDistanciasLesson];

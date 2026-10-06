@@ -1612,8 +1612,641 @@ export const ipcDarwinVF: Generator = {
 
 const U2: Generator[] = [ipcAntecedentesDarwin, ipcExplicacionEvolutiva, ipcDarwinVF];
 
-// @@U3-U4@@
+// ───────────────────────── U3 · Términos y enunciados científicos ─────────────────────────
+
+type EnLabel = "basico" | "generalizacion" | "teorico-puro" | "teorico-mixto";
+const EN_NAMES: Record<EnLabel, string> = {
+  basico: "Empírico básico",
+  generalizacion: "Generalización empírica",
+  "teorico-puro": "Teórico puro",
+  "teorico-mixto": "Teórico mixto",
+};
+
+const EN_BANK: Labeled<EnLabel>[] = [
+  { text: "La rana del estanque del parque Saavedra tiene manchas verdes en el lomo.", label: "basico", why: "Es singular y solo usa términos observacionales: empírico básico." },
+  { text: "Todos los perros que se vacunaron ayer en la veterinaria del barrio ladraron al ver la jeringa.", label: "basico", why: "Habla de un conjunto finito y accesible (muestral) con vocabulario observacional: sigue siendo empírico básico, aunque diga «todos»." },
+  { text: "En el frasco 3 del laboratorio hay un líquido turbio de color amarillo.", label: "basico", why: "Singular y observacional: empírico básico." },
+  { text: "Las 20 plantas del cantero norte florecieron en octubre.", label: "basico", why: "Muestral (conjunto finito y accesible) con términos observacionales: empírico básico." },
+  { text: "Los metales se dilatan cuando se los calienta.", label: "generalizacion", why: "Habla de una clase potencialmente infinita y solo con términos observacionales: generalización empírica (universal)." },
+  { text: "Uno de cada 80 embarazos es múltiple.", label: "generalizacion", why: "Generalización empírica estadística: clase abierta, vocabulario observacional." },
+  { text: "Existen seres vivos que viven sin oxígeno.", label: "generalizacion", why: "Generalización empírica existencial: observacional y sobre una clase no acotada." },
+  { text: "Los cuervos son negros.", label: "generalizacion", why: "Universal sobre una clase abierta, con términos observacionales: generalización empírica." },
+  { text: "Los quarks son partículas subatómicas.", label: "teorico-puro", why: "Todos sus términos no lógicos (quark, partícula subatómica) son teóricos: teórico puro." },
+  { text: "Los genes están formados por segmentos de ADN.", label: "teorico-puro", why: "Gen y ADN no se observan directamente: teórico puro." },
+  { text: "Los electrones tienen carga eléctrica negativa.", label: "teorico-puro", why: "Electrón y carga eléctrica son términos teóricos: teórico puro." },
+  { text: "Las partículas subatómicas cargadas dejan un rastro visible en la cámara de niebla.", label: "teorico-mixto", why: "Combina un término teórico (partícula subatómica) con uno observacional (rastro visible): teórico mixto, una regla de correspondencia." },
+  { text: "Cuando aumenta la bilirrubina en la sangre, la piel se pone amarilla.", label: "teorico-mixto", why: "Bilirrubina es teórico; piel amarilla, observacional: teórico mixto." },
+  { text: "Pablo tiene la piel amarilla por sus altos niveles de bilirrubina.", label: "teorico-mixto", why: "Aunque es singular, incluye un término teórico (bilirrubina): teórico mixto, no básico." },
+  { text: "Las personas con una mutación en ese gen tienen los ojos de distinto color.", label: "teorico-mixto", why: "Mezcla un término teórico (mutación, gen) con uno observacional (color de ojos): teórico mixto." },
+];
+
+type TermLabel = "observacional" | "teorico" | "logico";
+const TERM_NAMES: Record<TermLabel, string> = { observacional: "Término observacional", teorico: "Término teórico", logico: "Término lógico" };
+const TERM_BANK: Labeled<TermLabel>[] = [
+  ...["balanza", "rojo", "cuello", "mono", "hoja", "termómetro", "lluvia", "piedra"].map((w) => ({ text: w, label: "observacional" as const, why: `«${w}» refiere a algo accesible directamente por los sentidos.` })),
+  ...["electrón", "gen", "quark", "bilirrubina", "campo magnético", "átomo", "virus"].map((w) => ({ text: w, label: "teorico" as const, why: `«${w}» refiere a algo accesible solo indirectamente, con instrumentos o teorías.` })),
+  ...["todos", "algunos", "y", "si… entonces", "no"].map((w) => ({ text: w, label: "logico" as const, why: `«${w}» es una expresión lógica (conectiva o cuantificador): no refiere a nada del mundo.` })),
+];
+
+export const ipcTipoEnunciadoCientifico: Generator = {
+  id: "ipc-tipo-enunciado-cientifico",
+  topicId: "t-ipc-contrastacion",
+  description: "Clasificar términos y enunciados de las teorías científicas",
+  generate(seed, d) {
+    const r = rng(seed);
+    const hints: [string, string, string] = [
+      "Primero mirá el vocabulario: ¿hay algún término teórico (gen, electrón, bilirrubina…)?",
+      "Si hay teóricos: solo teóricos → puro; teóricos + observacionales → mixto.",
+      "Si es todo observacional: singular o muestral (finito y accesible) → básico; clase abierta → generalización empírica.",
+    ];
+    if (d <= 2 && r.bool()) {
+      return classifyChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId, item: r.pick(TERM_BANK), labels: ["observacional", "teorico", "logico"], names: TERM_NAMES,
+        prompt: (t) => `¿Qué tipo de término es «${t}»?`,
+        hints: ["¿Se puede percibir directamente con los sentidos?", "Los términos teóricos refieren a lo que solo se conoce con instrumentos o teorías.", "Los lógicos son conectivas y cuantificadores."],
+        explanation: "Términos lógicos (conectivas, cuantificadores) y no lógicos: observacionales (accesibles por los sentidos) y teóricos (accesibles indirectamente). La frontera entre estos dos es gradual.",
+      });
+    }
+    if (d >= 4 && r.bool()) {
+      return matchByLabel(r, {
+        gen: this.id, seed, d, topicId: this.topicId, bank: EN_BANK, labels: ["basico", "generalizacion", "teorico-puro", "teorico-mixto"], names: EN_NAMES,
+        prompt: "Relacioná cada enunciado con su tipo.", hints,
+        explanation: "Básicos y generalizaciones solo tienen vocabulario observacional y se distinguen por su alcance; los teóricos incluyen términos teóricos (puros: solo teóricos; mixtos: teóricos y observacionales).",
+      });
+    }
+    return classifyChoice(r, {
+      gen: this.id, seed, d, topicId: this.topicId, item: r.pick(EN_BANK), labels: ["basico", "generalizacion", "teorico-puro", "teorico-mixto"], names: EN_NAMES,
+      prompt: (t) => `¿Qué tipo de enunciado es?\n\n«${t}»`, hints,
+      explanation: "Básicos y generalizaciones solo tienen vocabulario observacional y se distinguen por su alcance; los teóricos incluyen términos teóricos.",
+    });
+  },
+};
+
+// ───────────────────────── U3 · Contrastación de hipótesis ─────────────────────────
+
+type Role = "H" | "CI" | "HA" | "CO";
+const ROLE_NAMES: Record<Role, string> = { H: "Hipótesis a contrastar", CI: "Condición inicial", HA: "Hipótesis auxiliar", CO: "Consecuencia observacional" };
+const ROLE_WHY: Record<Role, string> = {
+  H: "es el enunciado general que se pone a prueba y del que no se sabe si es verdadero",
+  CI: "es un enunciado empírico básico (singular o muestral) que describe la situación concreta de la prueba",
+  HA: "es un enunciado general ya aceptado que se presupone (por ejemplo, que el instrumento funciona)",
+  CO: "es un enunciado empírico básico que se deduce y describe lo que debería observarse si la hipótesis fuera verdadera",
+};
+
+const CASES: Record<Role, string>[] = [
+  { H: "Las plantas de lechuga iluminadas con luz LED azul crecen más rápido que las iluminadas con luz blanca.", CI: "Se colocaron 12 plantas de lechuga bajo luz azul y 12 bajo luz blanca, en la misma cámara de cultivo.", HA: "Las lámparas LED de ambos colores emiten la misma cantidad de calor.", CO: "Al cabo de tres semanas, las 12 plantas bajo luz azul miden más que las 12 bajo luz blanca." },
+  { H: "El período de un péndulo no depende de la masa que cuelga de él.", CI: "De un hilo de 1 m se colgó primero una pesa de 50 g y luego una de 200 g, y se midieron 20 oscilaciones con cada una.", HA: "El cronómetro digital mide el tiempo con precisión de centésimas de segundo.", CO: "Las 20 oscilaciones duran lo mismo con la pesa de 50 g que con la de 200 g." },
+  { H: "El insecticida X desorienta a las abejas melíferas.", CI: "Se expuso a 50 abejas marcadas de una colmena a una dosis baja del insecticida X y se las liberó a 1 km de la colmena.", HA: "Las marcas de pintura no alteran la capacidad de orientación de las abejas.", CO: "Menos de la mitad de las 50 abejas marcadas regresa a la colmena." },
+  { H: "Los gorriones urbanos cantan más agudo que los rurales para hacerse oír sobre el ruido de baja frecuencia.", CI: "Se grabó el canto de 15 gorriones en Plaza Once y de 15 gorriones en un campo de Chascomús, en la misma semana.", HA: "Los micrófonos usados registran con igual fidelidad todas las frecuencias del canto.", CO: "La frecuencia promedio de los cantos grabados en Plaza Once es más alta que la de los grabados en Chascomús." },
+];
+
+export const ipcComponentesContrastacion: Generator = {
+  id: "ipc-componentes-contrastacion",
+  topicId: "t-ipc-contrastacion",
+  description: "Identificar H, CI, HA y CO, y la lógica de la refutación y la confirmación",
+  generate(seed, d) {
+    const r = rng(seed);
+    const cs = r.pick(CASES);
+    const hints: [string, string, string] = [
+      "Distinguí lo general (H, HA) de lo singular o muestral (CI, CO).",
+      "La HA ya está aceptada y se presupone; la H es lo que se pone a prueba. La CI describe el montaje; la CO, lo que se espera observar.",
+      "La CO se deduce de H junto con CI y HA: Si (H y CI y HA), entonces CO.",
+    ];
+    const story = `Un equipo quiere poner a prueba esta hipótesis: «${cs.H}»`;
+    if (d >= 4 && r.bool()) {
+      const refuted = r.bool();
+      const opts: Option[] = refuted
+        ? [
+            { text: "Que es falsa la conjunción de H, CI y HA: al menos uno de esos enunciados es falso (modus tollens).", correct: true },
+            { text: "Que la hipótesis H es falsa.", error: { type: "logica", message: "El modus tollens refuta la conjunción (H y CI y HA). La lógica no dice cuál de los conyuntos falló: podría fallar una CI o una HA." } },
+            { text: "Que la hipótesis auxiliar es falsa y la hipótesis queda a salvo.", error: { type: "logica", message: "Eso sería culpar a la HA sin razón independiente (riesgo de hipótesis ad hoc). La lógica solo dice que algún conyunto es falso." } },
+            { text: "Nada: un resultado negativo no tiene valor lógico.", error: { type: "logica", message: "Sí lo tiene: por modus tollens, si no se cumple la CO, la conjunción de H, CI y HA es falsa." } },
+          ]
+        : [
+            { text: "Que la hipótesis no queda probada: concluir H a partir de CO sería afirmar el consecuente.", correct: true },
+            { text: "Que la hipótesis queda verificada: es verdadera.", error: { type: "logica", message: "Si (H…) entonces CO; CO; ∴ H es la falacia de afirmación del consecuente. Un resultado favorable no prueba la hipótesis." } },
+            { text: "Que la hipótesis es falsa.", error: { type: "logica", message: "Un resultado favorable no refuta nada: la CO se cumplió." } },
+            { text: "Que las hipótesis auxiliares son falsas.", error: { type: "logica", message: "No hay nada que lo indique: la CO se cumplió." } },
+          ];
+      return choice(
+        r,
+        base({
+          gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+          prompt: `${story}\n\nDeducen la consecuencia observacional «${cs.CO}», y al hacer la prueba **${refuted ? "no se cumple" : "se cumple"}**. Desde la lógica, ¿qué se puede concluir?`,
+          hints: ["Escribí el esquema: Si (H y CI y HA), entonces CO.", refuted ? "La segunda premisa es «no CO». ¿Qué forma válida usa la negación del consecuente?" : "La segunda premisa es «CO». ¿Qué pasa si concluís el antecedente?", "Refutar = modus tollens (válido). «Confirmar» = afirmación del consecuente (inválido): de ahí la asimetría de la contrastación."],
+          solution: refuted
+            ? ["Si (H y CI y HA), entonces CO.", "No CO.", "Por lo tanto, no (H y CI y HA): al menos uno es falso, pero la lógica no dice cuál."]
+            : ["Si (H y CI y HA), entonces CO.", "CO.", "Concluir H sería afirmar el consecuente: no es válido. La hipótesis no queda verificada."],
+          explanation: "Asimetría de la contrastación: una hipótesis universal puede refutarse (modus tollens), pero no verificarse con resultados favorables.",
+        }),
+        opts,
+      );
+    }
+    if (d >= 3 && r.bool()) {
+      const roles: Role[] = ["H", "CI", "HA", "CO"];
+      const pairs: [string, string][] = r.shuffle(roles).map((ro) => [cs[ro], ROLE_NAMES[ro]]);
+      const ex: MatchExercise = {
+        ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Relacioná cada enunciado de esta contrastación con la función que cumple.", hints, solution: roles.map((ro) => `${ROLE_NAMES[ro]}: «${cs[ro]}» — ${ROLE_WHY[ro]}.`), explanation: "Estructura: Si (H y CI y HA), entonces CO. H y HA son generales; CI y CO, empíricas básicas." }),
+        kind: "match",
+        pairs,
+      };
+      return ex;
+    }
+    const role = r.pick(["CI", "HA", "CO"] as const);
+    return choice(
+      fixed(r),
+      base({
+        gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+        prompt: `${story}\n\n¿Qué función cumple este enunciado?\n«${cs[role]}»`,
+        hints, solution: [`Es ${ROLE_NAMES[role].toLowerCase()}: ${ROLE_WHY[role]}.`],
+        explanation: "Si (H y CI y HA), entonces CO. La CI es singular; la HA, general; la CO, empírica básica y deducida.",
+      }),
+      (["H", "CI", "HA", "CO"] as Role[]).map((ro) => ({
+        text: ROLE_NAMES[ro],
+        correct: ro === role,
+        error: ro === role ? undefined : { type: "conceptual" as ErrorType, message: `No: ese enunciado ${ROLE_WHY[role]}. Una ${ROLE_NAMES[ro].toLowerCase()} ${ROLE_WHY[ro]}.` },
+      })),
+    );
+  },
+};
+
+// ───────────────────────── U3 · Positivismo lógico y falsacionismo ─────────────────────────
+
+type Escuela = "pl" | "popper" | "ambos" | "kuhn";
+const ESC_NAMES: Record<Escuela, string> = { pl: "Positivismo lógico (inductivismo crítico)", popper: "Falsacionismo (Popper)", ambos: "Ambos (filosofía clásica)", kuhn: "Kuhn" };
+
+const ESC_BANK: Labeled<Escuela>[] = [
+  { text: "Cada caso favorable aumenta el grado de probabilidad (confirmación) de una hipótesis.", label: "pl", why: "La confirmación probabilística es la tesis del inductivismo crítico (Hempel, Carnap)." },
+  { text: "Un enunciado tiene sentido cognoscitivo solo si es formal o traducible a un lenguaje observacional.", label: "pl", why: "El criterio de demarcación del positivismo lógico es a la vez criterio de sentido." },
+  { text: "La metafísica carece de sentido: no es ni verdadera ni falsa.", label: "pl", why: "Para el positivismo lógico, lo no traducible a lo observacional es un sinsentido." },
+  { text: "La inducción no cumple ningún papel en la ciencia, ni en el descubrimiento ni en la justificación.", label: "popper", why: "Popper rechaza la inducción en todas sus instancias." },
+  { text: "Una hipótesis es científica si se pueden formular enunciados básicos incompatibles con ella.", label: "popper", why: "La falsabilidad como criterio de demarcación es de Popper." },
+  { text: "Que una hipótesis resista un intento de refutación no la vuelve más probable: solo queda corroborada, de modo provisorio.", label: "popper", why: "La corroboración es un concepto negativo, no probabilístico: Popper." },
+  { text: "Los enunciados básicos se aceptan por decisión de la comunidad: la experiencia motiva esa decisión pero no la justifica.", label: "popper", why: "La falibilidad de la base empírica es una tesis de Popper." },
+  { text: "Lo que no es ciencia empírica puede tener sentido; simplemente no es ciencia.", label: "popper", why: "El criterio de Popper no es criterio de sentido." },
+  { text: "La ciencia progresa por acumulación: las teorías nuevas conservan y amplían el contenido verdadero de las anteriores.", label: "pl", why: "El progreso acumulativo y continuo es la imagen del positivismo lógico." },
+  { text: "Hay que distinguir el contexto de descubrimiento del contexto de justificación.", label: "ambos", why: "Es un rasgo compartido por toda la filosofía clásica de la ciencia." },
+  { text: "No hay una lógica que reglamente cómo se inventan las hipótesis.", label: "ambos", why: "Ambos ubican la invención de hipótesis en el contexto de descubrimiento, sin reglas lógicas." },
+  { text: "Las teorías son sistemas de enunciados que pueden reconstruirse lógicamente, y su cambio se explica sin factores extracientíficos.", label: "ambos", why: "Reconstrucción racional y cambio sin factores extracientíficos: rasgos de toda la filosofía clásica." },
+  { text: "Toda observación está cargada de teoría, y los criterios de racionalidad cambian históricamente.", label: "kuhn", why: "La carga teórica y la racionalidad históricamente situada son críticas de Kuhn a la filosofía clásica." },
+  { text: "El agente de la ciencia es la comunidad científica, y la historia de la ciencia es imprescindible para entenderla.", label: "kuhn", why: "Es el giro historicista de la nueva filosofía de la ciencia (Kuhn)." },
+];
+
+interface FalsCase {
+  h: string;
+  fals: string;
+  compat: string;
+  prob: string;
+  univ: string;
+}
+const FALS_CASES: FalsCase[] = [
+  { h: "Todos los metales se dilatan al ser calentados.", fals: "En el laboratorio 3 de la facultad, el 5 de mayo a las 10 h, hay una barra de cobre que, al ser calentada, no se dilató.", compat: "En el laboratorio 3 de la facultad, el 5 de mayo a las 10 h, hay una barra de cobre que, al ser calentada, se dilató.", prob: "Es muy probable que los metales se dilaten al ser calentados.", univ: "Ningún metal se dilata al ser calentado." },
+  { h: "Todos los cisnes son blancos.", fals: "En la laguna de Chascomús, el 3 de marzo a las 8 h, hay un cisne negro.", compat: "En la laguna de Chascomús, el 3 de marzo a las 8 h, hay un cisne blanco.", prob: "La mayoría de los cisnes son blancos.", univ: "Ningún cisne es blanco." },
+  { h: "Todos los mamíferos respiran con pulmones.", fals: "En el acuario de Mar del Plata, el 12 de enero, hay un mamífero que respira sin pulmones.", compat: "En el acuario de Mar del Plata, el 12 de enero, hay un delfín que respira con pulmones.", prob: "El 99% de los mamíferos respiran con pulmones.", univ: "Ningún mamífero respira con pulmones." },
+  { h: "El agua pura, a nivel del mar, hierve a 100 °C.", fals: "En la cocina de la escuela de Quilmes, el 2 de junio a las 15 h, hay una muestra de agua pura a nivel del mar que hierve a 90 °C.", compat: "En la cocina de la escuela de Quilmes, el 2 de junio a las 15 h, hay una muestra de agua pura a nivel del mar que hierve a 100 °C.", prob: "Probablemente el agua pura hierva a 100 °C a nivel del mar.", univ: "El agua pura nunca hierve a 100 °C." },
+];
+
+const FALSABLE: { text: string; value: boolean; why: string }[] = [
+  { text: "Mañana lloverá o no lloverá en Rosario.", value: false, why: "Es una tautología: ningún enunciado básico lógicamente posible la contradice." },
+  { text: "Todos los planetas giran alrededor de una estrella.", value: true, why: "Es universal: se puede formular un falsador potencial (un planeta, en tal lugar y momento, que no gira alrededor de una estrella)." },
+  { text: "El 70% de los fumadores desarrolla alguna enfermedad respiratoria.", value: false, why: "Es probabilístico: ningún caso aislado lo contradice, así que no tiene falsadores potenciales." },
+  { text: "Detrás de los fenómenos hay una fuerza vital imperceptible que no deja ninguna huella observable.", value: false, why: "Ningún enunciado básico observacional es incompatible con ella: es metafísica, no ciencia empírica." },
+  { text: "El hierro se oxida al estar expuesto a la humedad.", value: true, why: "Prohíbe algo observable: un trozo de hierro expuesto a la humedad que no se oxida." },
+  { text: "Todo lo que ocurre, ocurre por alguna razón.", value: false, why: "No prohíbe ningún hecho observable: no hay falsadores potenciales." },
+];
+
+export const ipcPlPopper: Generator = {
+  id: "ipc-pl-popper",
+  topicId: "t-ipc-pl-popper",
+  description: "Atribuir tesis al positivismo lógico, a Popper o a ambos",
+  generate(seed, d) {
+    const r = rng(seed);
+    const labels: Escuela[] = d >= 4 ? ["pl", "popper", "ambos", "kuhn"] : ["pl", "popper", "ambos"];
+    const item = r.pick(ESC_BANK.filter((e) => labels.includes(e.label)));
+    return classifyChoice(r, {
+      gen: this.id, seed, d, topicId: this.topicId, item, labels, names: ESC_NAMES,
+      prompt: (t) => `¿Quién sostiene esta tesis?\n\n«${t}»`,
+      hints: [
+        "Inducción y confirmación probabilística → positivismo lógico. Falsabilidad, corroboración, rechazo total de la inducción → Popper.",
+        "Criterio de SENTIDO → positivismo lógico; el de Popper no niega sentido a lo no científico.",
+        "Descubrimiento/justificación, reconstrucción lógica y cobertura legal son compartidos.",
+      ],
+      explanation: "Positivismo lógico: confirmación inductiva y demarcación como criterio de sentido. Popper: falsabilidad, corroboración, base empírica falible. Ambos: reconstrucción racional, distinción descubrimiento/justificación.",
+    });
+  },
+};
+
+function falsableItem(r: Rng) {
+  const f = r.pick(FALSABLE);
+  return { text: `Este enunciado es falsable según Popper: ${f.text}`, value: f.value, why: f.why };
+}
+
+export const ipcFalsador: Generator = {
+  id: "ipc-falsador",
+  topicId: "t-ipc-pl-popper",
+  description: "Reconocer falsadores potenciales y enunciados falsables",
+  generate(seed, d) {
+    const r = rng(seed);
+    if (d >= 3 && r.bool()) {
+      return vfChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId,
+        st: falsableItem(r),
+        hints: ["Preguntate: ¿qué observación concreta lo contradiría?", "Si ninguna observación lógicamente posible lo contradice, no es falsable.", "Tautologías, enunciados probabilísticos y metafísica no tienen falsadores potenciales."],
+      });
+    }
+    const c = r.pick(FALS_CASES);
+    return choice(
+      r,
+      base({
+        gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+        prompt: `Hipótesis: «${c.h}»\n\n¿Cuál es un **falsador potencial** de esta hipótesis?`,
+        hints: [
+          "Un falsador potencial es un enunciado básico: singular (lugar y momento), existencial («hay un…») y observacional.",
+          "Además tiene que ser lógicamente posible e INCOMPATIBLE con la hipótesis.",
+          "Descartá lo compatible, lo probabilístico y lo general.",
+        ],
+        solution: [`«${c.fals}»: es singular, existencial, observacional, lógicamente posible e incompatible con la hipótesis.`],
+        explanation: "Para Popper, una hipótesis es empírica si tiene falsadores potenciales. Demarcar es un análisis lógico: no hace falta observar nada.",
+      }),
+      [
+        { text: c.fals, correct: true },
+        { text: c.compat, error: { type: "conceptual", message: "Es un enunciado básico, pero COMPATIBLE con la hipótesis: no podría refutarla." } },
+        { text: c.prob, error: { type: "conceptual", message: "Es probabilístico (o general), no un enunciado básico singular: no puede funcionar como falsador." } },
+        { text: c.univ, error: { type: "conceptual", message: "No es singular ni se refiere a un lugar y momento: no es un enunciado básico." } },
+      ],
+    );
+  },
+};
+
+// ───────────────────────── U3 · Explicación científica ─────────────────────────
+
+type ExpRole = "ley" | "condicion" | "explanandum" | "irrelevante";
+const EXP_NAMES: Record<ExpRole, string> = { ley: "Ley (en el explanans)", condicion: "Condición antecedente (en el explanans)", explanandum: "Explanandum", irrelevante: "No forma parte de la explicación" };
+const EXP_CASES: Record<ExpRole, string>[] = [
+  { explanandum: "El agua de la botella que quedó en el freezer se congeló.", ley: "El agua a presión normal se congela por debajo de 0 °C.", condicion: "La botella estuvo seis horas en un freezer a −18 °C, a presión normal.", irrelevante: "La botella era de plástico verde." },
+  { explanandum: "La barra de hierro del puente se alargó unos milímetros al mediodía.", ley: "Los metales se dilatan cuando aumenta su temperatura.", condicion: "Al mediodía, la barra de hierro pasó de 15 °C a 35 °C.", irrelevante: "El puente se inauguró en 1990." },
+  { explanandum: "Los glóbulos rojos de la muestra se hincharon.", ley: "Las células animales colocadas en agua destilada absorben agua y se hinchan.", condicion: "La muestra de glóbulos rojos se colocó en agua destilada.", irrelevante: "La muestra se tomó un martes." },
+  { explanandum: "La manteca que quedó sobre la mesada se derritió.", ley: "La manteca se derrite a temperaturas superiores a unos 32 °C.", condicion: "La mesada estuvo toda la tarde a 36 °C.", irrelevante: "La manteca era de una marca nacional." },
+];
+
+const EXP_FAILS: { text: string; fail: string }[] = [
+  { text: "Bajó la cantidad de turistas en la costa porque bajaron los turistas extranjeros, los de otras provincias y todos los que visitan la costa.", fail: "peticion" },
+  { text: "La cosecha fue mala porque los espíritus del campo estaban enojados con el productor.", fail: "empirico" },
+  { text: "El vidrio de la ventana se rompió porque ayer cayó granizo del tamaño de una nuez.", fail: "ley" },
+  { text: "La manteca se derritió porque la manteca se derrite a más de 32 °C.", fail: "condicion" },
+  { text: "El paciente se recuperó porque una fuerza curativa invisible, que no deja rastros, actuó sobre él.", fail: "empirico" },
+  { text: "El hielo del vaso se derritió porque el agua congelada que había en el vaso pasó al estado líquido.", fail: "peticion" },
+];
+const FAIL_NAMES: Record<string, string> = {
+  peticion: "Petición de principio: el explanandum ya está en el explanans",
+  empirico: "Falta de contenido empírico en el explanans",
+  ley: "No hay ninguna ley en el explanans",
+  condicion: "Faltan condiciones antecedentes: el explanandum no se deduce",
+};
+const FAIL_WHY: Record<string, string> = {
+  peticion: "El explanandum reaparece (tal cual o reformulado) en el explanans: hay deducción, pero no explicación.",
+  empirico: "El explanans apela a entidades no contrastables: no tiene contenido empírico.",
+  ley: "Solo hay un dato particular (una condición); sin una ley general no hay explicación por cobertura legal.",
+  condicion: "Hay una ley, pero falta el dato particular que diga que el caso cumplió las condiciones: el explanandum no se sigue.",
+};
+
+const EXP_VF: { text: string; value: boolean; why: string }[] = [
+  { text: "Según el modelo de cobertura legal, explicación y predicción tienen la misma estructura lógica.", value: true, why: "La diferencia es temporal: en la predicción el explanandum todavía no ocurrió o no se conoce." },
+  { text: "El explanans debe contener al menos una ley.", value: true, why: "Explicar es mostrar el hecho como caso de una ley." },
+  { text: "Para explicar una regularidad siempre hacen falta condiciones antecedentes.", value: false, why: "Una regularidad puede explicarse subsumiéndola en leyes más generales, sin condiciones antecedentes." },
+  { text: "En una explicación, se desconoce si el explanandum ocurrió.", value: false, why: "En la explicación el explanandum se sabe ocurrido; si todavía no ocurrió, es una predicción." },
+  { text: "Los enunciados del explanans deben tener contenido empírico.", value: true, why: "Es uno de los requisitos: nada de entidades no contrastables." },
+  { text: "En una explicación inductivo-estadística, el explanans hace solo probable el explanandum.", value: true, why: "Usa al menos una ley estadística: el vínculo no es deductivo." },
+];
+
+export const ipcExplicacionCientifica: Generator = {
+  id: "ipc-explicacion-cientifica",
+  topicId: "t-ipc-explicacion",
+  description: "Componentes y requisitos del modelo de cobertura legal",
+  generate(seed, d) {
+    const r = rng(seed);
+    const hints: [string, string, string] = [
+      "El explanandum describe lo que se quiere explicar; el explanans, lo que lo explica.",
+      "En el explanans hay leyes (generales) y condiciones antecedentes (datos particulares del caso).",
+      "Requisitos: al menos una ley, relevancia, contenido empírico, verdad (o alta confirmación) y, en las nomológico-deductivas, deducción.",
+    ];
+    const mode = d <= 2 ? 0 : d <= 4 ? r.pick([0, 1, 2] as const) : r.pick([1, 2, 3] as const);
+    const cs = r.pick(EXP_CASES);
+    if (mode === 1) {
+      return matchByLabel(r, {
+        gen: this.id, seed, d, topicId: this.topicId,
+        bank: (Object.keys(cs) as ExpRole[]).map((k) => ({ text: cs[k], label: k, why: "" })),
+        labels: ["ley", "condicion", "explanandum", "irrelevante"], names: EXP_NAMES,
+        prompt: "Relacioná cada enunciado con el lugar que ocupa en una explicación nomológico-deductiva.", hints,
+        explanation: "Explanans = leyes + condiciones antecedentes; explanandum = el hecho que se explica. Lo que no contribuye a deducirlo no forma parte de la explicación.",
+      });
+    }
+    if (mode === 2) {
+      const f = r.pick(EXP_FAILS);
+      return choice(
+        fixed(r),
+        base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `¿Qué requisito del modelo de cobertura legal **no** cumple esta explicación?\n\n«${f.text}»`, hints, solution: [FAIL_WHY[f.fail]], explanation: "Una explicación por cobertura legal muestra el hecho como caso de una ley, con condiciones antecedentes, contenido empírico y sin repetir el explanandum." }),
+        Object.keys(FAIL_NAMES).map((k) => ({ text: FAIL_NAMES[k], correct: k === f.fail, error: k === f.fail ? undefined : { type: "conceptual" as ErrorType, message: FAIL_WHY[f.fail] } })),
+      );
+    }
+    if (mode === 3) return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: EXP_VF[(seed + d) % EXP_VF.length], hints });
+    const role = r.pick(["ley", "condicion", "irrelevante"] as const);
+    return classifyChoice(r, {
+      gen: this.id, seed, d, topicId: this.topicId,
+      item: { text: cs[role], label: role, why: role === "ley" ? "Es un enunciado general que expresa una regularidad: una ley." : role === "condicion" ? "Es un dato particular del caso, sin el cual el hecho no habría ocurrido: condición antecedente." : "No contribuye a deducir el explanandum: es irrelevante." },
+      labels: ["ley", "condicion", "explanandum", "irrelevante"], names: EXP_NAMES,
+      prompt: (t) => `Queremos explicar por qué «${cs.explanandum}»\n\n¿Qué lugar ocupa este enunciado?\n«${t}»`,
+      hints, explanation: "Explanans = leyes + condiciones antecedentes; explanandum = el hecho que se explica.",
+    });
+  },
+};
+
+// ───────────────────────── U3 · Kuhn ─────────────────────────
+
+type KuhnLabel = "pre" | "normal" | "anomalia" | "crisis" | "revolucion" | "incon";
+const KUHN_NAMES: Record<KuhnLabel, string> = { pre: "Período preparadigmático", normal: "Ciencia normal (resolución de enigmas)", anomalia: "Anomalía", crisis: "Crisis", revolucion: "Revolución científica", incon: "Inconmensurabilidad" };
+const KUHN_BANK: Labeled<KuhnLabel>[] = [
+  { text: "Varias escuelas compiten sin ponerse de acuerdo en qué estudiar ni cómo, y cada investigador empieza desde los cimientos.", label: "pre", why: "Sin consenso en supuestos, métodos ni problemas: período preparadigmático." },
+  { text: "Una astrónoma no logra que sus cálculos coincidan con las observaciones; la comunidad atribuye el fracaso a errores de ella y nadie duda de la teoría vigente.", label: "normal", why: "Se culpa al científico y no al paradigma: es un enigma de la ciencia normal." },
+  { text: "Los investigadores aplican las soluciones modelo de los manuales para resolver problemas nuevos con resultado asegurado.", label: "normal", why: "Resolver enigmas imitando ejemplares es la actividad de la ciencia normal." },
+  { text: "Un fenómeno se resiste persistentemente a ser explicado con el paradigma vigente y viola sus expectativas.", label: "anomalia", why: "Eso es una anomalía: algo que el paradigma no logra absorber." },
+  { text: "Se acumulan anomalías, la comunidad pierde confianza en el paradigma y aparecen teorías alternativas aisladas.", label: "crisis", why: "Acumulación de anomalías, escepticismo e inseguridad profesional: crisis." },
+  { text: "La comunidad abandona el viejo paradigma y adopta uno nuevo e incompatible; Kuhn lo compara con una conversión.", label: "revolucion", why: "Reemplazo no acumulativo de un paradigma por otro: revolución científica." },
+  { text: "Un mismo término, como «masa», cambia de significado de un paradigma a otro y no hay una medida neutral para compararlos.", label: "incon", why: "Sin medida común y con cambio de significado: inconmensurabilidad (lingüística)." },
+  { text: "Partidarios de paradigmas distintos «ven» cosas distintas al mirar el mismo fenómeno, como en una figura ambigua.", label: "incon", why: "Es el aspecto perceptual de la inconmensurabilidad." },
+];
+const KUHN_ORDER = ["Período preparadigmático", "Ciencia normal", "Anomalías", "Crisis", "Revolución científica", "Nueva ciencia normal"];
+const MATRIZ: [string, string][] = [
+  ["«F = m·a»", "Generalización simbólica"],
+  ["Pensar el átomo como un sistema solar en miniatura", "Modelo"],
+  ["Preferir teorías con predicciones cuantitativas", "Valor"],
+  ["El mundo está formado por partículas en movimiento", "Principio metafísico (ontológico)"],
+];
+
+export const ipcKuhn: Generator = {
+  id: "ipc-kuhn",
+  topicId: "t-ipc-kuhn",
+  description: "Etapas del desarrollo científico, matriz disciplinar e inconmensurabilidad según Kuhn",
+  generate(seed, d) {
+    const r = rng(seed);
+    const hints: [string, string, string] = [
+      "¿Hay un paradigma aceptado? ¿Se culpa al científico o al paradigma?",
+      "Enigma: tiene solución dentro del paradigma. Anomalía: se resiste y viola expectativas. Crisis: se acumulan anomalías.",
+      "Revolución: cambio no acumulativo a un paradigma incompatible. Inconmensurabilidad: no hay medida neutral para comparar.",
+    ];
+    const mode = d <= 2 ? 0 : d <= 4 ? r.pick([0, 0, 1] as const) : r.pick([0, 1, 2] as const);
+    if (mode === 1) {
+      const ex: OrderExercise = {
+        ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Ordená las etapas del desarrollo de una disciplina según Kuhn.", hints, solution: KUHN_ORDER, explanation: "Preciencia → ciencia normal → anomalías → crisis → revolución → nueva ciencia normal. El progreso es acumulativo dentro de un paradigma, pero no entre paradigmas." }),
+        kind: "order",
+        items: rng(seed + 5).shuffle(KUHN_ORDER),
+        answer: KUHN_ORDER,
+      };
+      return ex;
+    }
+    if (mode === 2) {
+      const ex: MatchExercise = {
+        ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Relacioná cada ejemplo con el componente de la matriz disciplinar al que pertenece.", hints: ["La matriz disciplinar es el paradigma en sentido sociológico.", "Generalizaciones: leyes formalizables. Modelos: analogías. Valores: cómo debe ser una buena teoría.", "Principios metafísicos: qué hay en el mundo."], solution: MATRIZ.map(([a, b]) => `${a} → ${b}`), explanation: "Componentes de la matriz disciplinar: generalizaciones simbólicas, modelos, valores y principios metafísicos." }),
+        kind: "match",
+        pairs: r.shuffle(MATRIZ),
+      };
+      return ex;
+    }
+    const labels: KuhnLabel[] = ["pre", "normal", "anomalia", "crisis", "revolucion", "incon"];
+    const item = r.pick(KUHN_BANK);
+    const opts = [item.label, ...sample(r, labels.filter((l) => l !== item.label), 3)];
+    return choice(
+      r,
+      base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `Desde Kuhn, ¿cómo se describe mejor esta situación?\n\n«${item.text}»`, hints, solution: [item.why], explanation: "Kuhn describe la ciencia como una práctica histórica de comunidades que comparten un paradigma." }),
+      opts.map((l, i) => ({ text: KUHN_NAMES[l], correct: i === 0, error: i === 0 ? undefined : { type: "conceptual" as ErrorType, message: item.why } })),
+    );
+  },
+};
+
+// ───────────────────────── U3 · Epistemología feminista ─────────────────────────
+
+type Trad = "punto" | "posmo" | "empirismo";
+const TRAD_NAMES: Record<Trad, string> = { punto: "Teoría del punto de vista", posmo: "Posmodernismo feminista", empirismo: "Empirismo feminista" };
+const TRAD_BANK: Labeled<Trad>[] = [
+  { text: "La perspectiva de los grupos desfavorecidos es epistémicamente privilegiada para estudiar los fenómenos sociales que los involucran.", label: "punto", why: "El privilegio epistémico de los grupos oprimidos es la tesis de la teoría del punto de vista." },
+  { text: "Quienes ocupan posiciones desfavorecidas pueden ver como contingente lo que el orden dominante presenta como natural.", label: "punto", why: "Es uno de los argumentos de la teoría del punto de vista." },
+  { text: "Las identidades son inestables y múltiples; no hay un concepto unitario de «mujer», y hay que atender a la interseccionalidad.", label: "posmo", why: "El rechazo de una identidad unitaria y la interseccionalidad caracterizan al posmodernismo feminista." },
+  { text: "El conocimiento es una construcción discursiva plural, y elegir un lenguaje es ejercer poder.", label: "posmo", why: "Es una tesis del posmodernismo feminista." },
+  { text: "La objetividad es intersubjetividad crítica: requiere ámbitos públicos de crítica, respuesta a la crítica y igualdad de autoridad intelectual.", label: "empirismo", why: "Es la propuesta de Longino, dentro del empirismo feminista." },
+  { text: "Se mantienen la evidencia y la lógica, pero el sujeto del conocimiento es la comunidad y los valores que guían la elección de teorías deben revisarse.", label: "empirismo", why: "Mantener el empirismo reconociendo la carga teórica y el sujeto comunitario es el empirismo feminista." },
+];
+
+type Manif = "omision" | "exclusion" | "aplicacion" | "teoria" | "concepto";
+const MANIF_NAMES: Record<Manif, string> = { omision: "Omisiones selectivas en la historia de la ciencia", exclusion: "Exclusión y marginación de las mujeres", aplicacion: "Aplicaciones sexistas", teoria: "Teorías o estereotipos sexistas", concepto: "Conceptualizaciones sexistas" };
+const MANIF_BANK: Labeled<Manif>[] = [
+  { text: "El aporte decisivo de una investigadora a un descubrimiento se atribuye a sus colegas varones, que reciben el premio.", label: "omision", why: "Atribuir a varones el trabajo de mujeres (efecto Matilda) es una omisión selectiva en la historia de la ciencia." },
+  { text: "Hasta entrado el siglo XX, las universidades no admitían mujeres en ciertas carreras.", label: "exclusion", why: "Es un mecanismo institucional explícito de exclusión." },
+  { text: "En un instituto, a las investigadoras se les asignan sistemáticamente tareas secundarias y casi no llegan a cargos de dirección.", label: "exclusion", why: "Mecanismos implícitos y techo de cristal: exclusión y marginación." },
+  { text: "Los síntomas de un infarto se describen tomando como modelo el cuerpo masculino, y en mujeres se diagnostica tarde.", label: "aplicacion", why: "Es una aplicación sexista del conocimiento: diagnósticos basados en cuerpos masculinos." },
+  { text: "Una teoría sobre la evolución humana atribuye todos los avances técnicos a la caza practicada por los varones y presenta a las mujeres como pasivas.", label: "teoria", why: "Es una teoría sexista (como la del «hombre cazador»)." },
+  { text: "Un manual describe la menopausia como un «fallo funcional total» del organismo.", label: "concepto", why: "Es una conceptualización sexista: una metáfora que patologiza un tránsito vital." },
+];
+
+const SITUADO_VF: { text: string; value: boolean; why: string }[] = [
+  { text: "Que el conocimiento sea situado implica que todas las perspectivas valen lo mismo.", value: false, why: "Como advierte Elizabeth Anderson, conocimiento situado no implica relativismo." },
+  { text: "El género es un modo de situación social.", value: true, why: "Resulta de cómo una sociedad opera con las diferencias sexuales y distribuye roles y poder." },
+  { text: "Reconocer que el conocimiento es situado obliga a abandonar la objetividad como meta.", value: false, why: "No: conocimiento situado no implica que la objetividad sea indeseable." },
+  { text: "La epistemología feminista profundiza el análisis de factores extracientíficos que habilitó la crítica de Kuhn.", value: true, why: "Kuhn mostró que la racionalidad está históricamente situada; eso habilitó el análisis de sesgos como los de género." },
+];
+
+export const ipcFeminismo: Generator = {
+  id: "ipc-feminismo",
+  topicId: "t-ipc-feminismo",
+  description: "Tradiciones de la epistemología feminista, manifestaciones del sexismo y conocimiento situado",
+  generate(seed, d) {
+    const r = rng(seed);
+    const mode = d <= 2 ? r.pick([0, 1] as const) : r.pick([0, 1, 2] as const);
+    if (mode === 0) {
+      return classifyChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId, item: r.pick(TRAD_BANK), labels: ["punto", "posmo", "empirismo"], names: TRAD_NAMES,
+        prompt: (t) => `¿Qué tradición de la epistemología feminista sostiene esta tesis?\n\n«${t}»`,
+        hints: ["Privilegio epistémico de los grupos desfavorecidos → punto de vista.", "Identidades inestables, interseccionalidad, discurso y poder → posmodernismo.", "Evidencia, comunidad como sujeto, objetividad como crítica intersubjetiva (Longino) → empirismo feminista."],
+        explanation: "Las tres tradiciones (según Sandra Harding) comparten hoy el pluralismo y la situacionalidad del conocimiento.",
+      });
+    }
+    if (mode === 1) {
+      const item = r.pick(MANIF_BANK);
+      const labels: Manif[] = ["omision", "exclusion", "aplicacion", "teoria", "concepto"];
+      const opts = [item.label, ...sample(r, labels.filter((l) => l !== item.label), 3)];
+      return choice(
+        r,
+        base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `¿Qué manifestación del sexismo o el androcentrismo en la ciencia ilustra este caso?\n\n«${item.text}»`, hints: ["¿Afecta a la historia, a quiénes pueden investigar, a los usos del conocimiento o al contenido de las teorías?", "Historia → omisiones. Acceso y carrera → exclusión. Usos → aplicaciones. Contenido → teorías o conceptos.", "Las conceptualizaciones sexistas son metáforas o definiciones que desvalorizan."], solution: [item.why], explanation: "La epistemología feminista busca visibilizar el sexismo y el androcentrismo en la producción, validación y aplicación del conocimiento." }),
+        opts.map((l, i) => ({ text: MANIF_NAMES[l], correct: i === 0, error: i === 0 ? undefined : { type: "conceptual" as ErrorType, message: item.why } })),
+      );
+    }
+    return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: SITUADO_VF[(seed + d) % SITUADO_VF.length], hints: ["Pensá en la idea de cognoscente situado.", "La situación social (y el género) influye en lo que se conoce.", "Situado no significa relativista."] });
+  },
+};
+
+const U3: Generator[] = [ipcTipoEnunciadoCientifico, ipcComponentesContrastacion, ipcPlPopper, ipcFalsador, ipcExplicacionCientifica, ipcKuhn, ipcFeminismo];
+
+// ───────────────────────── U4 · Ética de la ciencia ─────────────────────────
+
+type Postura = "cientificismo" | "anticientificismo";
+const POST_NAMES: Record<Postura, string> = { cientificismo: "Cientificismo", anticientificismo: "Anticientificismo" };
+const POST_BANK: Labeled<Postura>[] = [
+  { text: "Los químicos que estudiaron las reacciones de combustión no son responsables de que se fabriquen explosivos con ese conocimiento.", label: "cientificismo", why: "Ubicar la responsabilidad solo en quienes usan el conocimiento es la tesis cientificista." },
+  { text: "El conocimiento científico es como un martillo: no es bueno ni malo, depende de quién lo empuñe.", label: "cientificismo", why: "Es la imagen de la «ciencia martillo», con la que el anticientificismo caricaturiza al cientificismo." },
+  { text: "La ciencia pura busca conocimiento de manera desinteresada y es valorativamente neutral; la tecnología sí debe someterse a controles morales.", label: "cientificismo", why: "Neutralidad de la ciencia pura y control ético solo para la tecnología: cientificismo (Bunge)." },
+  { text: "La búsqueda de la verdad y la búsqueda de utilidad son independientes.", label: "cientificismo", why: "Separar ciencia pura de aplicaciones es la tesis cientificista." },
+  { text: "La agenda de qué se investiga está orientada desde el comienzo por los intereses de quienes financian la investigación.", label: "anticientificismo", why: "Afirmar que la investigación está atravesada por intereses es anticientificista." },
+  { text: "Distinguir entre ciencia básica, aplicada y tecnología es una abstracción: se trata de una sola tecnociencia orientada al control de la naturaleza.", label: "anticientificismo", why: "La noción de tecnociencia es de la crítica anticientificista (Marí)." },
+  { text: "Los científicos, junto con otros actores, son responsables de los usos y consecuencias previsibles de lo que investigan.", label: "anticientificismo", why: "Extender la responsabilidad a los científicos es la posición anticientificista." },
+  { text: "La ciencia es una institución de saber y poder, y no puede considerarse neutral.", label: "anticientificismo", why: "Negar la neutralidad valorativa es la tesis anticientificista." },
+];
+
+type Enfoque = "internalista" | "externalista";
+const ENF_NAMES: Record<Enfoque, string> = { internalista: "Enfoque internalista (ética de la investigación)", externalista: "Enfoque externalista (ética de los usos y del impacto social)" };
+const ENF_BANK: Labeled<Enfoque>[] = [
+  { text: "Un comité discute si un investigador debe declarar que su estudio sobre un edulcorante fue pagado por la empresa que lo fabrica.", label: "internalista", why: "Los conflictos de interés durante la investigación son un tema internalista." },
+  { text: "Una revista retira un artículo porque se comprobó que los datos habían sido fabricados.", label: "internalista", why: "El fraude es una falta a la integridad científica durante la investigación: enfoque internalista." },
+  { text: "Se debate si es aceptable engañar a los participantes de un experimento psicológico sobre su verdadero propósito.", label: "internalista", why: "La ética de la investigación con personas mira la conducta durante el proceso de investigar." },
+  { text: "Se discute quién debe figurar como autor de un trabajo y cómo reconocer el aporte de cada integrante del equipo.", label: "internalista", why: "El reconocimiento de méritos dentro de la comunidad es internalista." },
+  { text: "Una mesa de diálogo analiza los efectos de la automatización sobre el empleo en una región.", label: "externalista", why: "El impacto social de la ciencia y la tecnología es el tema del enfoque externalista." },
+  { text: "Organizaciones vecinales reclaman participar en la evaluación de riesgos de una nueva planta de energía.", label: "externalista", why: "El impacto social y la participación de actores no técnicos son temas externalistas." },
+  { text: "Se discute si deben permitirse los usos militares de un desarrollo en inteligencia artificial.", label: "externalista", why: "Los usos de la ciencia y sus consecuencias sociales: enfoque externalista." },
+];
+
+const ETICA_VF: { text: string; value: boolean; why: string }[] = [
+  { text: "Ser responsable de algo es lo mismo que ser culpable.", value: false, why: "Responsabilidad no es culpabilidad: se puede responder por las consecuencias de los propios actos sin que eso implique culpa." },
+  { text: "Para atribuir responsabilidad hace falta un agente capaz de prever consecuencias y con libertad para actuar de otro modo.", value: true, why: "La responsabilidad requiere un agente intencional y libertad." },
+  { text: "Concluir que los padres no deben criar a sus hijos porque en cierta especie los machos no crían es una inferencia correcta.", value: false, why: "Es una falacia naturalista: deriva una conclusión normativa (qué se debe hacer) de un hecho natural." },
+  { text: "El cientificismo niega que la tecnología deba someterse a cualquier control ético.", value: false, why: "El cientificismo acepta controles morales y sociales para la tecnología; lo que considera neutral es la ciencia pura." },
+  { text: "Se puede hacer ciencia sin ser cientificista.", value: true, why: "El cientificismo es una posición filosófica sobre la ciencia, no una condición para hacerla." },
+  { text: "La presión por publicar mucho puede funcionar como un incentivo perverso que afecta la integridad científica.", value: true, why: "Es uno de los problemas éticos asociados al sistema de publicación y revisión por pares." },
+];
+
+export const ipcEticaCiencia: Generator = {
+  id: "ipc-etica-ciencia",
+  topicId: "t-ipc-etica",
+  description: "Cientificismo vs anticientificismo, enfoques internalista y externalista, responsabilidad",
+  generate(seed, d) {
+    const r = rng(seed);
+    const mode = d <= 2 ? r.pick([0, 1] as const) : r.pick([0, 1, 2] as const);
+    if (mode === 0) {
+      return classifyChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId, item: r.pick(POST_BANK), labels: ["cientificismo", "anticientificismo"], names: POST_NAMES,
+        prompt: (t) => `¿Quién sostendría esta afirmación?\n\n«${t}»`,
+        hints: ["¿Afirma que la ciencia es neutral o que está atravesada por intereses?", "Cientificismo: ciencia pura neutral, responsables son quienes la usan. Anticientificismo: tecnociencia, ciencia como saber/poder.", "Ojo: la imagen del martillo es la caricatura que el anticientificismo hace del cientificismo."],
+        explanation: "Cientificismo (Bunge): la ciencia pura es neutral; la responsabilidad está en los usos. Anticientificismo (Marí): no hay neutralidad y los científicos también son responsables.",
+      });
+    }
+    if (mode === 1) {
+      return classifyChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId, item: r.pick(ENF_BANK), labels: ["internalista", "externalista"], names: ENF_NAMES,
+        prompt: (t) => `¿Qué enfoque ético corresponde a esta discusión?\n\n«${t}»`,
+        hints: ["¿Mira la conducta de quienes investigan o el impacto de la ciencia en la sociedad?", "Internalista: honestidad, fraude, plagio, conflictos de interés, trato a participantes.", "Externalista: usos, riesgos y consecuencias sociales de la ciencia y la tecnología."],
+        explanation: "El enfoque internalista mira la conducta durante la investigación; el externalista, el impacto social de la ciencia y la tecnología.",
+      });
+    }
+    return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: ETICA_VF[(seed + d) % ETICA_VF.length], hints: ["Separá los planos: describir hechos no es decir qué se debe hacer.", "Responsabilidad requiere agente intencional y libertad.", "El cientificismo distingue ciencia pura (neutral) de tecnología (controlable)."] });
+  },
+};
+
+// ───────────────────────── U4 · Políticas científicas ─────────────────────────
+
+type PolLabel = "practicista" | "cientificista";
+const POL_NAMES: Record<PolLabel, string> = { practicista: "Postura practicista", cientificista: "Postura cientificista" };
+const POL_BANK: Labeled<PolLabel>[] = [
+  { text: "Con recursos escasos, la investigación debe dirigirse a resolver los problemas sanitarios y productivos urgentes del país.", label: "practicista", why: "Priorizar la ciencia aplicada a las demandas sociales es practicista." },
+  { text: "La ciencia básica que la hagan los países ricos; nosotros tenemos que aplicar ese conocimiento.", label: "practicista", why: "Dejar la ciencia básica a los países centrales es la tesis practicista." },
+  { text: "La autonomía de los científicos debe subordinarse a las necesidades sociales y económicas del país.", label: "practicista", why: "Subordinar la autonomía a las demandas sociales es practicista." },
+  { text: "Hay que financiar prioritariamente la ciencia básica, porque de ella surgen beneficios futuros que no pueden anticiparse.", label: "cientificista", why: "Priorizar la ciencia básica por sus beneficios no especificados es la postura cientificista (Bunge)." },
+  { text: "Muchos de los avances más importantes surgieron de investigaciones que no buscaban ninguna aplicación inmediata.", label: "cientificista", why: "Es un argumento cientificista contra el practicismo." },
+  { text: "Si un país periférico solo aplica ciencia ajena, queda dependiente de agendas definidas en otros países.", label: "cientificista", why: "El argumento de la dependencia defiende la ciencia básica también en países periféricos." },
+];
+
+type InvLabel = "basica" | "aplicada";
+const INV_NAMES: Record<InvLabel, string> = { basica: "Ciencia básica", aplicada: "Ciencia aplicada" };
+const INV_BANK: Labeled<InvLabel>[] = [
+  { text: "Descubrir que una proteína del organismo favorece el crecimiento de ciertos tumores.", label: "basica", why: "Busca conocimiento sobre cómo funciona algo, sin una aplicación práctica inmediata: ciencia básica." },
+  { text: "Desarrollar un anticuerpo que bloquee esa proteína para usarlo en un tratamiento.", label: "aplicada", why: "Aplica conocimiento previo a un problema práctico: ciencia aplicada." },
+  { text: "Estudiar cómo se comunican entre sí las neuronas de un gusano microscópico.", label: "basica", why: "Busca comprender un fenómeno: ciencia básica." },
+  { text: "Mejorar una variedad de trigo para que resista sequías en la región pampeana.", label: "aplicada", why: "Orientada a resolver un problema productivo concreto: ciencia aplicada." },
+  { text: "Investigar las propiedades radiactivas de un mineral recién descubierto.", label: "basica", why: "Estudio de propiedades de la naturaleza sin un fin práctico definido: ciencia básica." },
+  { text: "Diseñar un método para potabilizar el agua de pozos contaminados con arsénico.", label: "aplicada", why: "Usa conocimientos disponibles para resolver un problema práctico: ciencia aplicada." },
+];
+
+const LINEAL = ["Ciencia básica", "Ciencia aplicada", "Desarrollo tecnológico", "Bienestar social"];
+
+export const ipcPoliticasCientificas: Generator = {
+  id: "ipc-politicas-cientificas",
+  topicId: "t-ipc-politicas",
+  description: "Practicismo vs cientificismo, ciencia básica vs aplicada, modelo lineal e inversión relativa",
+  generate(seed, d) {
+    const r = rng(seed);
+    const mode = d <= 2 ? r.pick([0, 1] as const) : r.pick([0, 1, 2, 3, 3] as const);
+    if (mode === 0) {
+      return classifyChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId, item: r.pick(POL_BANK), labels: ["practicista", "cientificista"], names: POL_NAMES,
+        prompt: (t) => `¿Qué postura sobre el financiamiento de la ciencia expresa esta afirmación?\n\n«${t}»`,
+        hints: ["¿Prioriza lo aplicado y urgente o la ciencia básica?", "Practicista: ciencia aplicada al servicio de los problemas del país.", "Cientificista: prioridad de la básica por sus beneficios futuros no especificados."],
+        explanation: "La discusión sobre qué financiar enfrenta al practicismo (prioridad de lo aplicado) y al cientificismo (prioridad de lo básico).",
+      });
+    }
+    if (mode === 1) {
+      return classifyChoice(r, {
+        gen: this.id, seed, d, topicId: this.topicId, item: r.pick(INV_BANK), labels: ["basica", "aplicada"], names: INV_NAMES,
+        prompt: (t) => `¿Qué tipo de investigación es?\n\n«${t}»`,
+        hints: ["¿Busca entender algo o resolver un problema práctico concreto?", "La básica amplía el conocimiento sin una aplicación inmediata.", "La aplicada usa conocimiento previo para un fin práctico."],
+        explanation: "La ciencia básica busca conocimiento; la aplicada lo usa para resolver problemas prácticos.",
+      });
+    }
+    if (mode === 2) {
+      const ex: OrderExercise = {
+        ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Según el **modelo lineal** (Vannevar Bush, *Ciencia, la frontera sin fin*, 1945), ordená cómo se pasaría de la investigación al bienestar.", hints: ["El modelo justifica financiar primero la investigación sin fines prácticos.", "De lo básico se pasa a lo aplicado.", "Lo último es el beneficio para la sociedad."], solution: LINEAL, explanation: "El modelo lineal supone que la ciencia básica lleva a la aplicada, luego a la tecnología y finalmente al bienestar; por eso recomienda financiar prioritariamente la básica." }),
+        kind: "order",
+        items: rng(seed + 3).shuffle(LINEAL),
+        answer: LINEAL,
+      };
+      return ex;
+    }
+    // Medida absoluta vs relativa: inversión en I+D como % del PBI (calculado).
+    let a: { inv: number; pbi: number };
+    let b: { inv: number; pbi: number };
+    let pa: number;
+    let pb: number;
+    let guard = 0;
+    do {
+      a = { inv: r.int(2, 30) * 100, pbi: r.int(5, 60) * 10000 };
+      b = { inv: r.int(2, 30) * 100, pbi: r.int(5, 60) * 10000 };
+      pa = (100 * a.inv) / a.pbi;
+      pb = (100 * b.inv) / b.pbi;
+      guard++;
+      // Interesante: el que invierte más en términos absolutos invierte menos en términos relativos.
+    } while (guard < 200 && (Math.abs(pa - pb) < 0.2 || pa > 5 || pb > 5 || pa < 0.1 || pb < 0.1 || (d >= 4 && (a.inv > b.inv) === (pa > pb)) || a.inv === b.inv));
+    const fmtN = (n: number) => n.toLocaleString("es-AR");
+    const fmtP = (n: number) => (Math.round(n * 100) / 100).toString().replace(".", ",");
+    const relA = pa > pb;
+    const absA = a.inv > b.inv;
+    return choice(
+      r,
+      base({
+        gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+        prompt: `El país A invierte ${fmtN(a.inv)} millones en I+D y tiene un PBI de ${fmtN(a.pbi)} millones. El país B invierte ${fmtN(b.inv)} millones con un PBI de ${fmtN(b.pbi)} millones. ¿Qué afirmación es correcta?`,
+        hints: ["Medida absoluta: el dinero total invertido. Medida relativa: el porcentaje del PBI.", "Porcentaje del PBI = inversión / PBI × 100.", `A: ${fmtN(a.inv)} / ${fmtN(a.pbi)} × 100. B: ${fmtN(b.inv)} / ${fmtN(b.pbi)} × 100.`],
+        solution: [`A: ${fmtN(a.inv)} / ${fmtN(a.pbi)} × 100 ≈ ${fmtP(pa)}% del PBI.`, `B: ${fmtN(b.inv)} / ${fmtN(b.pbi)} × 100 ≈ ${fmtP(pb)}% del PBI.`, `En términos relativos invierte más ${relA ? "A" : "B"}; en términos absolutos, ${absA ? "A" : "B"}.`],
+        explanation: "La medida relativa (porcentaje del PBI) permite comparar el esfuerzo de países de distinto tamaño; la absoluta solo mira el monto total.",
+      }),
+      ([
+        { text: `${relA ? "A" : "B"} invierte relativamente más (${fmtP(relA ? pa : pb)}% del PBI contra ${fmtP(relA ? pb : pa)}%).`, correct: true },
+        { text: `${relA ? "B" : "A"} invierte relativamente más (${fmtP(relA ? pb : pa)}% del PBI contra ${fmtP(relA ? pa : pb)}%).`, error: { type: "calculo", message: `Revisá la cuenta: A invierte ${fmtP(pa)}% y B ${fmtP(pb)}% de su PBI.` } },
+        { text: `${absA ? "A" : "B"} invierte relativamente más, porque invierte más dinero.`, correct: false, error: absA === relA ? undefined : { type: "interpretacion", message: "Invertir más dinero (medida absoluta) no implica invertir más en proporción al PBI (medida relativa)." } },
+        { text: "Invierten relativamente lo mismo.", error: { type: "calculo", message: `No: A invierte ${fmtP(pa)}% y B ${fmtP(pb)}% de su PBI.` } },
+      ] as Option[]).filter((o) => o.correct || o.error),
+    );
+  },
+};
+
+const U4: Generator[] = [ipcEticaCiencia, ipcPoliticasCientificas];
 
 
-export const IPC_GENERATORS: Generator[] = [...U1, ...U2];
+
+
+export const IPC_GENERATORS: Generator[] = [...U1, ...U2, ...U3, ...U4];
 

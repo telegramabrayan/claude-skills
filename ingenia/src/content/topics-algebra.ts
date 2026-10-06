@@ -23,4 +23,11 @@ export const ALGEBRA_TOPICS: Topic[] = [
   t("t-alg-complejos-polar", "Forma trigonométrica y De Moivre", "trigonometria", ["alg-complejo-polar", "alg-de-moivre"], "l-alg-complejos-polar", ["t-alg-complejos", "t-trigonometria", "t-pitagoras"]),
   t("t-alg-polinomios-division", "División de polinomios, Ruffini y teorema del resto", "algebra", ["alg-teorema-resto", "alg-ruffini-cociente"], "l-alg-polinomios-division", ["t-expresiones", "t-potencias"]),
   t("t-alg-polinomios-raices", "Raíces y factorización de polinomios", "algebra", ["alg-polinomio-factorizar"], "l-alg-polinomios-raices", ["t-alg-polinomios-division", "t-cuadratica", "t-factorizacion"]),
+  // alg-1 · Vectores en ℝ² y ℝ³ (complementa t-vectores y t-producto-escalar)
+  t("t-alg-producto-vectorial", "Producto vectorial en ℝ³", "vectores", ["alg-producto-vectorial"], "l-alg-producto-vectorial", ["t-producto-escalar", "t-vec-operaciones"]),
+  t("t-alg-angulo-proyeccion", "Norma, ángulo y proyección ortogonal", "vectores", ["alg-angulo-vectores", "alg-proyeccion"], "l-alg-angulo-proyeccion", ["t-producto-escalar"]),
+  // alg-2 · Rectas y planos
+  t("t-alg-rectas", "Rectas en ℝ³", "vectores", ["alg-recta-pertenencia"], "l-alg-rectas", ["t-vectores"]),
+  t("t-alg-planos", "Ecuación del plano e intersección con rectas", "vectores", ["alg-plano-ecuacion", "alg-recta-plano-interseccion"], "l-alg-planos", ["t-alg-rectas", "t-producto-escalar"]),
+  t("t-alg-posiciones-distancias", "Posiciones relativas y distancia punto–plano", "vectores", ["alg-posicion-relativa", "alg-distancia-punto-plano"], "l-alg-posiciones-distancias", ["t-alg-planos"]),
 ];
