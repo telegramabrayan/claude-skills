@@ -297,7 +297,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
                     setChoiceIdx(i);
                     if (result && !result.correct) setResult(null);
                   }}
-                  className={`flex min-h-12 items-center gap-3 rounded-xl border-2 px-4 py-2 text-left transition ${
+                  className={`flex min-h-12 min-w-0 items-center gap-3 rounded-xl border-2 px-4 py-2 text-left transition ${
                     showRight ? "border-success bg-success-soft" : showWrong ? "border-danger bg-danger-soft" : picked ? "border-primary bg-primary-soft" : "border-line bg-surface hover:border-primary/60"
                   }`}
                 >
@@ -306,7 +306,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
                   ) : (
                     <>
                       <span className="grid h-7 w-7 shrink-0 place-items-center rounded-lg bg-surface-2 text-sm font-bold">{String.fromCharCode(65 + i)}</span>
-                      {exercise.display === "steps" ? <span className="text-sm">Paso {i + 1}: <MathText text={o} block={false} /></span> : <MathText text={o} block={false} />}
+                      <span className="min-w-0 flex-1 overflow-x-auto">{exercise.display === "steps" ? <span className="text-sm">Paso {i + 1}: <MathText text={o} block={false} /></span> : <MathText text={o} block={false} />}</span>
                     </>
                   )}
                 </button>
