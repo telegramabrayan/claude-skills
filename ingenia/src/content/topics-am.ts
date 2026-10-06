@@ -32,5 +32,11 @@ export const AM_TOPICS: Topic[] = [
   // am-9
   t("t-am-primitivas", "Primitivas: inmediatas y sustitución", "funciones", ["am-primitivas"], "l-am-primitivas", ["t-am-reglas-derivacion"]),
   t("t-am-partes-fracciones", "Integración por partes y fracciones simples", "funciones", ["am-primitivas-partes"], "l-am-partes-fracciones", ["t-am-primitivas", "t-factorizacion"]),
-  // @@TOPICS@@
+  t("t-am-tfc", "Teorema fundamental del cálculo", "funciones", ["am-tfc"], "l-am-tfc", ["t-am-primitivas", "t-am-reglas-derivacion"]),
+  // am-10
+  t("t-am-integral-area", "Integral definida y áreas", "graficos", ["am-integral-definida", "am-area-planteo", "am-area-param"], "l-am-area", ["t-am-primitivas"]),
+  t("t-am-edo", "Ecuaciones diferenciales separables", "funciones", ["am-edo-separable"], "l-am-edo", ["t-am-primitivas"]),
+  // am-11
+  t("t-am-series", "Series geométricas y de potencias", "funciones", ["am-serie-geometrica", "am-serie-potencias"], "l-am-series", ["t-am-lim-infinito"]),
+
 ];

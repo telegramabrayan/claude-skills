@@ -2,7 +2,9 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useProgress, actions } from "@/lib/store";
-import { buildPath, currentNode, progressLadder, type PathNode, type PathSection } from "@/lib/path";
+import { buildPath, currentNode, pathSubjects, progressLadder, type PathNode, type PathSection } from "@/lib/path";
+import { getSubject } from "@/content/curriculum";
+import { lessonContext, nextLesson } from "@/lib/learning";
 import { getLesson } from "@/content/lessons";
 import { findUnit } from "@/content/curriculum";
 import { XP } from "@/engine/progress/rules";
@@ -120,7 +122,13 @@ function Sheet({ children, onClose }: { children: React.ReactNode; onClose: () =
 
 function Path() {
   const s = useProgress();
-  const sections = buildPath(s);
+  const subjects = pathSubjects().filter((id) => buildPath(s, id).length);
+  const [subject, setSubject] = useState<string>(() => {
+    const nl = nextLesson(s);
+    const sid = nl ? lessonContext(nl)?.subject.id : undefined;
+    return sid && subjects.includes(sid) ? sid : subjects[0] ?? "preparacion";
+  });
+  const sections = buildPath(s, subject);
   const current = currentNode(sections);
   const [open, setOpen] = useState<{ node: PathNode; section: PathSection } | null>(null);
   const currentRef = useRef<HTMLDivElement>(null);
@@ -140,6 +148,16 @@ function Path() {
         <Link href="/materias" className="btn btn-secondary !min-h-10 text-sm">
           <Icon name="map" size={18} /> Explorar libremente
         </Link>
+      </div>
+      <div className="mb-6 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Materia">
+        {subjects.map((id) => {
+          const sub = getSubject(id);
+          return (
+            <button key={id} role="tab" aria-selected={subject === id} onClick={() => setSubject(id)} className={`chip shrink-0 !min-h-9 !px-3 ${subject === id ? "!bg-primary !text-on-primary" : ""}`}>
+              {sub?.icon} {sub?.shortName}
+            </button>
+          );
+        })}
       </div>
       <div className="mb-8 grid grid-cols-2 gap-3">
         {ladder.map((l) => (

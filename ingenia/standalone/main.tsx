@@ -28,6 +28,7 @@ import Tarjetas from "@/app/tarjetas/page";
 import Plan from "@/app/plan/page";
 import Guardados from "@/app/guardados/page";
 import Taller from "@/app/taller/page";
+import Biblioteca from "@/app/biblioteca/page";
 import NotFound from "@/app/not-found";
 import { LessonView } from "@/app/leccion/[id]/view";
 import { SubjectView } from "@/app/materias/[id]/view";
@@ -60,6 +61,7 @@ const ROUTES: Record<string, ComponentType> = {
   "/plan": Plan,
   "/guardados": Guardados,
   "/taller": Taller,
+  "/biblioteca": Biblioteca,
 };
 
 function Router() {

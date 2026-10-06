@@ -1659,5 +1659,476 @@ export const primitivasPartes = gen("am-primitivas-partes", "t-am-partes-fraccio
   );
 });
 
+// ───────────────────────── 18. Teorema fundamental del cálculo ─────────────────────────
+
+const SQ: [number, number][] = [[1, 1], [2, 4], [3, 9], [4, 16]];
+
+export const tfc = gen("am-tfc", "t-am-tfc", "Teorema fundamental: derivar ∫ con límites variables y límites con integrales", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["simple"], ["comp"], ["comp", "inferior"], ["inferior", "lim"], ["lim", "tan"], ["tan", "lim"]] as const));
+  const TH = "TFC: si $F(x) = ∫_a^{u(x)} g(t) dt$ con g continua, entonces $F′(x) = g(u(x))·u′(x)$.";
+  if (mode === "simple") {
+    const k = r.int(-4, 4), x0 = r.nz(-2, 3);
+    const v = x0 ** 3 + k * x0;
+    return num(
+      mk({
+        prompt: `Sea $F(x) = ∫_0^x (t^3 ${k ? termX(k, "t") : ""}) dt$. Calculá $F′(${fmt(x0)})$.`,
+        hints: ["No hace falta integrar.", TH, `Con u(x) = x, $F′(x) = x^3 ${k ? termX(k) : ""}$.`],
+        solution: [`F′(x) = x³ ${k ? termX(k) : ""}`, `F′(${fmt(x0)}) = ${fmt(v)}`],
+        explanation: "Derivar una integral con límite superior x devuelve el integrando evaluado en x.",
+        frequentErrors: [fe(x0 ** 4 / 4 + (k * x0 * x0) / 2, "conceptual", "Ese es F(x₀), la integral. Te piden la derivada, que por el TFC es el integrando en x₀.")],
+      }),
+      v,
+    );
+  }
+  const [sq, s2] = r.pick(SQ);
+  const x0 = r.pick([1, 2, -1]), p = r.int(-3, 3);
+  const u0 = x0 * x0 + p * x0, du = 2 * x0 + p;
+  const c = s2 - u0;
+  const g = `√(t ${c ? sgn(c) : ""})`;
+  const up = poly([1, p, 0]);
+  if (mode === "comp" || mode === "inferior") {
+    const lower = mode === "inferior";
+    const v = (lower ? -1 : 1) * sq * du;
+    return num(
+      mk({
+        prompt: lower ? `Sea $F(x) = ∫_{${up}}^{${fmt(u0 + 7)}} ${g} dt$. Calculá $F′(${fmt(x0)})$.` : `Sea $F(x) = ∫_{${fmt(-c)}}^{${up}} ${g} dt$. Calculá $F′(${fmt(x0)})$.`,
+        hints: [lower ? "La variable está en el límite INFERIOR: invertí los límites y aparece un signo menos." : "La variable está en el límite superior y es una función de x: regla de la cadena.", TH, `$u(${fmt(x0)}) = ${fmt(u0)}$ y $u′(${fmt(x0)}) = ${fmt(du)}$.`],
+        solution: [lower ? `F(x) = −∫_{${fmt(u0 + 7)}}^{${up}} ${g} dt` : `u(x) = ${up}, u′(x) = ${poly([2, p])}`, `F′(x) = ${lower ? "−" : ""}√(u(x) ${c ? sgn(c) : ""})·(${poly([2, p])})`, `F′(${fmt(x0)}) = ${lower ? "−" : ""}√(${fmt(s2)})·${par(du)} = ${fmt(v)}`],
+        explanation: "TFC + regla de la cadena: (∫_a^{u(x)} g)′ = g(u(x))·u′(x). Si la x está abajo, cambia el signo.",
+        frequentErrors: [
+          fe((lower ? -1 : 1) * sq, "derivacion", "Faltó multiplicar por u′(x): el límite es una función de x (regla de la cadena)."),
+          ...(lower ? [fe(sq * du, "signos", "Con la variable en el límite inferior, F′ = −g(u(x))·u′(x).")] : []),
+          ...(x0 + c >= 0 ? [fe((lower ? -1 : 1) * Math.sqrt(x0 + c) * du, "conceptual", `El integrando se evalúa en u(x₀) = ${fmt(u0)}, no en x₀ = ${fmt(x0)}.`)] : []),
+        ],
+      }),
+      v,
+    );
+  }
+  if (mode === "tan") {
+    const m = sq * du;
+    const ans = `${m}*(x - ${x0})`;
+    return expr(
+      mk({
+        prompt: `Sea $F(x) = ∫_{${fmt(u0)}}^{${up}} ${g} dt$. Hallá la recta tangente al gráfico de F en $x = ${fmt(x0)}$. Escribí solo la expresión de la recta.`,
+        hints: [`En x = ${fmt(x0)} los dos límites coinciden: $F(${fmt(x0)}) = 0$.`, TH, `$F′(${fmt(x0)}) = √(${fmt(s2)})·${par(du)}$.`],
+        solution: [`F(${fmt(x0)}) = ∫_{${fmt(u0)}}^{${fmt(u0)}} … = 0`, `F′(${fmt(x0)}) = √(${fmt(u0)} ${sgn(c)})·(${fmt(du)}) = ${fmt(m)}`, `y = ${fmt(m)}(x ${sgn(-x0)})`],
+        explanation: "Una integral entre dos límites iguales vale 0; la pendiente sale del TFC con regla de la cadena.",
+        frequentErrors: exprErrors(ans, [fe(`${m}*x`, "formula", `La recta pasa por (${fmt(x0)}; 0), no por el origen: y = m(x − x₀).`), fe(`${sq}*(x - ${x0})`, "derivacion", "Faltó el factor u′(x₀) de la regla de la cadena.")]),
+      }),
+      ans,
+    );
+  }
+  // lim
+  const k = r.nz(-4, 5);
+  const useExp = r.bool();
+  const v = useExp ? k / 3 : k / 2;
+  return num(
+    mk({
+      prompt: useExp ? `Calculá $lim_{x→0} \\frac{∫_0^x (e^{${coef(k)}t^2} − 1) dt}{x^3}$` : `Calculá $lim_{x→0} \\frac{∫_0^x sen(${coef(k)}t) dt}{x^2}$`,
+      hints: ["Arriba y abajo tienden a 0: es 0/0, usá L'Hôpital.", "La derivada de ∫₀ˣ g(t) dt es g(x) (TFC).", useExp ? `Queda $\\frac{e^{${coef(k)}x^2} − 1}{3x^2}$, otra vez 0/0.` : `Queda $\\frac{sen(${coef(k)}x)}{2x}$.`],
+      solution: useExp ? ["0/0 → L'H + TFC", `(e^{${coef(k)}x²} − 1)/(3x²) → 0/0`, `L'H: ${2 * k}x e^{${coef(k)}x²}/(6x) → ${fr(2 * k, 6)}`] : ["0/0 → L'H + TFC", `sen(${coef(k)}x)/(2x)`, `→ ${fmt(k)}/2 = ${fr(k, 2)}`],
+      explanation: "L'Hôpital con una integral: el TFC da la derivada del numerador sin calcular la integral.",
+      frequentErrors: [fe(k, "derivacion", useExp ? "La derivada de x³ es 3x²: queda dividido por 3." : "La derivada de x² es 2x: queda dividido por 2."), fe(0, "limites", "0/0 no es 0.")],
+    }),
+    v,
+  );
+});
+
+// ───────────────────────── 19. Integral definida ─────────────────────────
+
+export const integralDefinida = gen("am-integral-definida", "t-am-integral-area", "Integral definida (Barrow), sustitución, partes y funciones impares", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["poly"], ["poly", "raiz"], ["raiz", "exp"], ["lnx", "exp"], ["impar", "lnx"], ["partes", "impar"]] as const));
+  const BH = "Barrow: $∫_a^b f(x) dx = F(b) − F(a)$, con F primitiva de f.";
+  if (mode === "poly") {
+    const c = r.nz(-3, 3), e = r.int(-4, 4), a = r.int(-2, 1), b = a + r.int(1, 3);
+    const F = (x: number) => c * x ** 3 + (e * x * x) / 2;
+    const f = poly([3 * c, e, 0]);
+    return num(
+      mk({
+        prompt: `Calculá $∫_{${fmt(a)}}^{${fmt(b)}} (${f}) dx$`,
+        hints: [BH, `Una primitiva: $F(x) = ${poly([c, e / 2, 0, 0])}$.`, `F(${fmt(b)}) − F(${fmt(a)}).`],
+        solution: [`F(x) = ${poly([c, e / 2, 0, 0])}`, `F(${fmt(b)}) = ${fmt(F(b))}; F(${fmt(a)}) = ${fmt(F(a))}`, `∫ = ${fmt(F(b) - F(a))}`],
+        explanation: "La integral definida es un número: la diferencia de una primitiva entre los extremos. La C se cancela.",
+        frequentErrors: [fe(F(b), "calculo", `Faltó restar F(${fmt(a)}).`), fe(F(a) - F(b), "signos", "Es F(b) − F(a): superior menos inferior.")],
+      }),
+      F(b) - F(a),
+    );
+  }
+  if (mode === "raiz") {
+    const k = r.nz(-5, 6), pp = r.int(1, 3), qq = pp + r.int(1, 3);
+    return num(
+      mk({
+        prompt: `Calculá $∫_{${pp * pp}}^{${qq * qq}} \\frac{${fmt(k)}}{√x} dx$`,
+        hints: [BH, "$\\frac{1}{√x} = x^{−1/2}$: su primitiva es $\\frac{x^{1/2}}{1/2} = 2√x$.", `$${fmt(2 * k)}(√${qq * qq} − √${pp * pp})$.`],
+        solution: [`F(x) = ${fmt(2 * k)}√x`, `F(${qq * qq}) − F(${pp * pp}) = ${fmt(2 * k)}(${qq} − ${pp}) = ${fmt(2 * k * (qq - pp))}`],
+        explanation: "∫ x^{−1/2} dx = 2x^{1/2}: el exponente sube a 1/2 y se divide por 1/2.",
+        frequentErrors: [fe(k * (qq - pp), "formula", "∫ x^{−1/2} dx = 2√x: dividir por 1/2 es multiplicar por 2."), fe(2 * k * (qq * qq - pp * pp), "calculo", "Faltó la raíz al evaluar: 2√x en los extremos.")],
+      }),
+      2 * k * (qq - pp),
+    );
+  }
+  if (mode === "exp") {
+    const k = r.nz(-4, 6), m = r.pick([1, 2, -1]), L = r.int(1, 2);
+    const v = (k / m) * (Math.exp(m * L) - 1);
+    return num(
+      mk({
+        prompt: `Calculá $∫_0^{${L}} ${fmt(k)}e^{${coef(m)}x} dx$ (2 decimales)`,
+        hints: [BH, `Una primitiva de $e^{${coef(m)}x}$ es $\\frac{e^{${coef(m)}x}}{${fmt(m)}}$.`, "No te olvides de restar F(0): e⁰ = 1."],
+        solution: [`F(x) = ${fr(k, m)}·e^{${coef(m)}x}`, `F(${L}) − F(0) = ${fr(k, m)}(e^{${m * L}} − 1) ≈ ${fmt(v, 2)}`],
+        explanation: "La primitiva de e^{mx} es e^{mx}/m, y F(0) no es 0: vale 1/m.",
+        frequentErrors: [fe(k * (Math.exp(m * L) - 1), "calculo", `Faltó dividir por ${fmt(m)}.`), fe((k / m) * Math.exp(m * L), "calculo", "Faltó restar F(0) = k/m·e⁰, que no es 0.")],
+      }),
+      v,
+      0.011,
+    );
+  }
+  if (mode === "lnx") {
+    const n = r.int(1, 4), k = r.nz(-3, 4);
+    return num(
+      mk({
+        prompt: `Calculá $∫_1^{e^${n}} \\frac{${fmt(k)} ln x}{x} dx$`,
+        hints: ["Sustitución: u = ln x, du = dx/x.", "Los límites cambian: x = 1 → u = 0; x = eⁿ → u = n.", `Queda $∫_0^${n} ${fmt(k)}u du$.`],
+        solution: [`u = ln x: ∫_0^${n} ${fmt(k)}u du`, `= ${fmt(k)}·u²/2 |₀^${n} = ${fmt(k)}·${n * n}/2 = ${fr(k * n * n, 2)}`],
+        explanation: "En una sustitución dentro de una integral definida, conviene cambiar también los límites.",
+        frequentErrors: [fe(k * n * n, "formula", "∫ u du = u²/2: faltó el 1/2."), fe((k * (Math.exp(2 * n) - 1)) / 2, "conceptual", `Si cambiás a u, los límites también cambian: u va de 0 a ${n}, no de 1 a e^${n}.`)],
+      }),
+      (k * n * n) / 2,
+    );
+  }
+  if (mode === "impar") {
+    const L = r.int(1, 5), A = r.nz(-9, 9), c = r.int(0, 4);
+    const whole = r.bool() && c > 0;
+    return num(
+      mk({
+        prompt: whole
+          ? `f es impar y $∫_0^${L} f(x) dx = ${fmt(A)}$. Calculá $∫_{−${L}}^{${L}} (f(x) + ${c}) dx$.`
+          : `f es impar y $∫_0^${L} f(x) dx = ${fmt(A)}$. Calculá $∫_{−${L}}^0 f(x) dx$.`,
+        hints: ["Impar: f(−x) = −f(x). El gráfico es simétrico respecto del origen.", "Del lado negativo el área queda con el signo contrario.", whole ? `∫_{−L}^{L} f = 0; y ∫_{−${L}}^{${L}} ${c} dx = ${c}·${2 * L}.` : `$∫_{−${L}}^0 f = −∫_0^${L} f$.`],
+        solution: whole ? [`∫_{−${L}}^{${L}} f = −${par(A)} + ${par(A)} = 0`, `∫_{−${L}}^{${L}} ${c} dx = ${2 * L * c}`, `Total: ${2 * L * c}`] : [`Por imparidad: ∫_{−${L}}^0 f = −∫_0^${L} f = ${fmt(-A)}`],
+        explanation: "Para f impar, ∫_{−L}^0 f = −∫_0^L f, y por lo tanto ∫_{−L}^{L} f = 0.",
+        frequentErrors: whole ? [fe(2 * A + 2 * L * c, "conceptual", "Para f impar, las dos mitades se cancelan: ∫_{−L}^{L} f = 0, no 2A."), fe(c * L, "calculo", `∫_{−${L}}^{${L}} ${c} dx = ${c}·(${L} − (−${L})) = ${2 * L * c}.`)] : [fe(A, "conceptual", "Eso valdría si f fuera PAR. Impar invierte el signo."), fe(0, "conceptual", "La que da 0 es la integral de −L a L, no la de una mitad.")],
+      }),
+      whole ? 2 * L * c : -A,
+    );
+  }
+  // partes: ∫_1^e x^n ln x dx = (n e^{n+1} + 1)/(n + 1)^2
+  const n = r.int(1, 2);
+  const v = (n * Math.exp(n + 1) + 1) / (n + 1) ** 2;
+  return num(
+    mk({
+      prompt: `Calculá $∫_1^e x^${n} ln x dx$ (2 decimales)`,
+      hints: ["Partes: u = ln x, dv = xⁿ dx.", `Primitiva: $\\frac{x^${n + 1} ln x}{${n + 1}} − \\frac{x^${n + 1}}{${(n + 1) ** 2}}$.`, "En x = 1, ln 1 = 0; en x = e, ln e = 1."],
+      solution: [`F(x) = x^${n + 1} ln x/${n + 1} − x^${n + 1}/${(n + 1) ** 2}`, `F(e) = e^${n + 1}/${n + 1} − e^${n + 1}/${(n + 1) ** 2}; F(1) = −1/${(n + 1) ** 2}`, `∫ = (${n}e^${n + 1} + 1)/${(n + 1) ** 2} ≈ ${fmt(v, 2)}`],
+      explanation: "Partes en una integral definida: se halla la primitiva y se aplica Barrow.",
+      frequentErrors: [fe(Math.exp(n + 1) / (n + 1) - Math.exp(n + 1) / (n + 1) ** 2, "calculo", "Faltó restar F(1) = −1/(n + 1)², que no es 0."), fe(Math.exp(n + 1) / (n + 1), "signos", "Faltó el segundo término de partes (− ∫ v du).")],
+    }),
+    v,
+    0.011,
+  );
+});
+
+// ───────────────────────── 20. Área con parámetro ─────────────────────────
+
+export const areaParam = gen("am-area-param", "t-am-integral-area", "Hallar un parámetro a partir del valor de un área", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["raiz"], ["raiz"], ["parab", "raiz"], ["parab"], ["entre", "parab"], ["entre"]] as const));
+  if (mode === "raiz") {
+    const a = r.int(1, 6), pp = r.int(1, 3), qq = pp + r.int(1, 3);
+    const S = 2 * a * (qq - pp);
+    return num(
+      mk({
+        prompt: `Hallá $a > 0$ tal que el área entre el gráfico de $f(x) = \\frac{a}{√x}$, el eje x y las rectas $x = ${pp * pp}$, $x = ${qq * qq}$ sea ${S}.`,
+        hints: ["Como f > 0, el área es la integral.", "$∫ \\frac{a}{√x} dx = 2a√x$.", `$2a(${qq} − ${pp}) = ${S}$.`],
+        solution: [`Área = ∫_{${pp * pp}}^{${qq * qq}} a/√x dx = 2a(√${qq * qq} − √${pp * pp}) = ${2 * (qq - pp)}a`, `${2 * (qq - pp)}a = ${S} → a = ${a}`],
+        explanation: "Se calcula el área dejando el parámetro como letra y se iguala al dato.",
+        frequentErrors: [fe(S / (qq - pp), "formula", "∫ x^{−1/2} dx = 2√x: faltó el 2."), fe(S / (2 * (qq * qq - pp * pp)), "calculo", "Evaluá 2a√x: hay que sacar la raíz de los extremos.")],
+      }),
+      a,
+    );
+  }
+  if (mode === "parab") {
+    const c = r.int(1, 3), a = r.int(1, 6);
+    const S = (a * c ** 3) / 6;
+    return num(
+      mk({
+        prompt: `Hallá $a > 0$ tal que el área encerrada entre $f(x) = ax(${c} − x)$ y el eje x sea ${fr(a * c ** 3, 6)}.`,
+        hints: [`f se anula en x = 0 y x = ${c}, y es positiva entre ellos.`, `Área = $∫_0^${c} (${c}ax − ax^2) dx$.`, `$= a(\\frac{${c}·${c * c}}{2} − \\frac{${c ** 3}}{3}) = \\frac{${c ** 3}a}{6}$.`],
+        solution: [`Cortes con el eje: x = 0 y x = ${c}`, `Área = a·[${c}x²/2 − x³/3]₀^${c} = a·${fr(c ** 3, 6)}`, `a·${fr(c ** 3, 6)} = ${fr(a * c ** 3, 6)} → a = ${a}`],
+        explanation: "Primero los cortes con el eje (los límites), después la integral con a como letra, y al final se despeja.",
+        frequentErrors: [fe(S / c ** 3, "calculo", "La integral da a·c³/6, no a·c³: falta el 1/6 (1/2 − 1/3)."), fe((6 * S) / (c * c), "calculo", `Revisá la potencia: ∫_0^${c} queda ${c}³ = ${c ** 3}.`)],
+      }),
+      a,
+    );
+  }
+  const k = r.int(1, 6);
+  const S = k ** 3 / 6;
+  return num(
+    mk({
+      prompt: `Hallá $k > 0$ tal que el área entre $y = x^2$ e $y = kx$ sea ${fr(k ** 3, 6)}.`,
+      hints: ["Cortes: x² = kx ⇒ x = 0 o x = k.", "Entre 0 y k la recta está arriba.", "$∫_0^k (kx − x^2) dx = \\frac{k^3}{6}$."],
+      solution: ["Cortes: x = 0 y x = k", "Área = ∫_0^k (kx − x²) dx = k³/2 − k³/3 = k³/6", `k³/6 = ${fr(k ** 3, 6)} → k³ = ${k ** 3} → k = ${k}`],
+      explanation: "Con el parámetro en los límites y en el integrando: se calcula todo en función de k y se despeja.",
+      frequentErrors: [fe(Math.cbrt(S), "calculo", "El área es k³/6: faltó multiplicar por 6 antes de sacar la raíz cúbica."), fe(k ** 3, "despeje", "Ese es k³; falta la raíz cúbica.")],
+    }),
+    k,
+  );
+});
+
+// ───────────────────────── 21. Planteo de área entre curvas ─────────────────────────
+
+export const areaPlanteo = gen("am-area-planteo", "t-am-integral-area", "Área entre curvas: cortes, quién está arriba y planteo", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["calc"], ["calc", "parab"], ["parab"], ["cubica", "parab"], ["cubica", "exp"], ["exp"]] as const));
+  const I = (a: string | number, b: string | number, body: string) => `∫_{${typeof a === "number" ? fmt(a) : a}}^{${typeof b === "number" ? fmt(b) : b}} (${body}) dx`;
+  const H: [string, string, string] = ["Primero los puntos de corte: igualá las dos funciones.", "En cada tramo entre cortes, probá un valor para ver qué curva está arriba.", "Área = ∫ (arriba − abajo), sumando los tramos."];
+  if (mode === "calc" || mode === "parab") {
+    const r1 = r.int(-3, 1), r2 = r1 + r.int(1, 4);
+    const S1 = r1 + r2, P1 = r1 * r2;
+    const ftxt = "x^2", gtxt = poly([S1, -P1]);
+    AM_CHECK.area = { f: "x^2", g: `${S1}*x + ${-P1}`, pieces: [[r1, r2, "g"]] };
+    if (mode === "calc") {
+      const A = (r2 - r1) ** 3 / 6;
+      return num(
+        mk({
+          prompt: `Calculá el área encerrada entre $y = x^2$ e $y = ${gtxt}$.`,
+          hints: H,
+          solution: [`x² = ${gtxt} ⇒ x² ${termX(-S1)} ${sgn(P1)} = 0 ⇒ x = ${fmt(r1)}, x = ${fmt(r2)}`, `En (${fmt(r1)}; ${fmt(r2)}) la recta está arriba`, `Área = ∫ (${gtxt} − x²) dx = ${fr((r2 - r1) ** 3, 6)}`],
+          explanation: "Área entre curvas = integral de (la de arriba − la de abajo) entre los cortes.",
+          frequentErrors: [fe((r2 ** 3 - r1 ** 3) / 3, "conceptual", "Esa es solo el área bajo la parábola. El área entre curvas es ∫ (arriba − abajo).")],
+        }),
+        A,
+      );
+    }
+    return choice(
+      r,
+      mk({ prompt: `¿Qué integral da el área encerrada entre $y = ${ftxt}$ e $y = ${gtxt}$?`, hints: H, solution: [`Cortes: x = ${fmt(r1)} y x = ${fmt(r2)}`, `Con x = ${fmt((r1 + r2) / 2)}: la recta vale más que la parábola`, `Área = ${I(r1, r2, `${gtxt} − x^2`)}`], explanation: "El área siempre es positiva: (arriba − abajo) entre los cortes." }),
+      uniq([
+        { text: `$${I(r1, r2, `${gtxt} − x^2`)}$`, correct: true },
+        { text: `$${I(r1, r2, `x^2 − (${gtxt})`)}$`, error: { type: "conceptual", message: "Así da negativo: entre los cortes la recta está ARRIBA. Probá un punto intermedio." } },
+        { text: `$${r1 !== 0 && r2 !== 0 ? I(0, r2, `${gtxt} − x^2`) : I(r1 - 1, r2 + 1, `${gtxt} − x^2`)}$`, error: { type: "conceptual", message: `Los límites son los puntos de corte (${fmt(r1)} y ${fmt(r2)}): hay que igualar las funciones.` } },
+        { text: `$${I(r1, r2, gtxt)}$`, error: { type: "conceptual", message: "Eso es el área bajo la recta hasta el eje x; falta restar la parábola." } },
+      ]),
+    );
+  }
+  if (mode === "cubica") {
+    const k = r.int(1, 3);
+    AM_CHECK.area = { f: "x^3", g: `${k * k}*x`, pieces: [[-k, 0, "f"], [0, k, "g"]] };
+    const g = `${k * k === 1 ? "" : k * k}x`;
+    return choice(
+      r,
+      mk({ prompt: `¿Qué expresión da el área encerrada entre $y = x^3$ e $y = ${g}$?`, hints: H, solution: [`x³ = ${g} ⇒ x(x² − ${k * k}) = 0 ⇒ x = −${k}, 0, ${k}`, `En (−${k}; 0) arriba está x³; en (0; ${k}) arriba está ${g}`, `Área = ${I(-k, 0, `x^3 − ${g}`)} + ${I(0, k, `${g} − x^3`)}`], explanation: "Si las curvas se cruzan, hay que partir en los cortes: en cada tramo cambia quién está arriba." }),
+      uniq([
+        { text: `$${I(-k, 0, `x^3 − ${g}`)} + ${I(0, k, `${g} − x^3`)}$`, correct: true },
+        { text: `$${I(-k, k, `${g} − x^3`)}$`, error: { type: "conceptual", message: "Así los dos tramos se cancelan (da 0): las curvas se cruzan en x = 0 y cambia cuál está arriba." } },
+        { text: `$${I(-k, 0, `${g} − x^3`)} + ${I(0, k, `x^3 − ${g}`)}$`, error: { type: "signos", message: `Probá x = −${k / 2}: x³ = ${fmt(-(k ** 3) / 8)} y ${g} = ${fmt(-(k ** 3) / 2)}. En (−${k}; 0) arriba está x³.` } },
+        { text: `$${I(0, k, `${g} − x^3`)}$`, error: { type: "conceptual", message: `Falta el tramo entre −${k} y 0: también encierra área.` } },
+      ]),
+    );
+  }
+  const [cc, s1, t1] = r.pick([[2, 2, 1], [6, 3, 2], [12, 4, 3]] as const);
+  const f = "xe^{x^2}", g = `xe^{x + ${cc}}`;
+  AM_CHECK.area = { f: "x*exp(x^2)", g: `x*exp(x + ${cc})`, pieces: [[-t1, 0, "f"], [0, s1, "g"]] };
+  return choice(
+    r,
+    mk({
+      prompt: `¿Qué expresión da el área encerrada entre $y = ${f}$ e $y = ${g}$?`,
+      hints: [`Igualá: $x(e^{x^2} − e^{x + ${cc}}) = 0$ ⇒ x = 0 o $x^2 = x + ${cc}$.`, `Cortes: x = −${t1}, 0, ${s1}. Para ver quién está arriba, mirá el signo de x y de $x^2 − (x + ${cc})$.`, "Si x < 0 y e^{x²} < e^{x+c}, al multiplicar por x se invierte la desigualdad."],
+      solution: [`Cortes: x = −${t1}, x = 0, x = ${s1}`, `En (−${t1}; 0): x < 0 y x² < x + ${cc} ⇒ ${f} > ${g}`, `En (0; ${s1}): x > 0 ⇒ ${g} > ${f}`, `Área = ${I(-t1, 0, `${f} − ${g}`)} + ${I(0, s1, `${g} − ${f}`)}`],
+      explanation: "Multiplicar una desigualdad por x negativo la invierte: por eso cambia quién está arriba en cada tramo.",
+    }),
+    uniq([
+      { text: `$${I(-t1, 0, `${f} − ${g}`)} + ${I(0, s1, `${g} − ${f}`)}$`, correct: true },
+      { text: `$${I(-t1, 0, `${g} − ${f}`)} + ${I(0, s1, `${f} − ${g}`)}$`, error: { type: "signos", message: "Están invertidas: para x < 0, como e^{x²} < e^{x+c}, multiplicar por x (negativo) da x·e^{x²} > x·e^{x+c}." } },
+      { text: `$${I(-t1, s1, `${g} − ${f}`)}$`, error: { type: "conceptual", message: "Las curvas se cruzan en x = 0: en un tramo una está arriba y en el otro, la otra. Hay que partir." } },
+      { text: `$${I(-s1, t1, `${g} − ${f}`)}$`, error: { type: "signos", message: `Revisá los cortes: x² − x − ${cc} = (x − ${s1})(x + ${t1}).` } },
+    ]),
+  );
+});
+
+// ───────────────────────── 22. EDO separable ─────────────────────────
+
+export const edoSeparable = gen("am-edo-separable", "t-am-edo", "Ecuaciones diferenciales separables f′ = (αx + β)·f", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["formula"], ["formula"], ["formula", "valor"], ["valor"], ["valor", "param"], ["param"]] as const));
+  const h = r.nz(-2, 2), be = r.int(-4, 4), C = r.pick([1, 2, 3, 5, -2]);
+  const al = 2 * h;
+  const qText = poly([h, be, 0]);
+  const fpText = `f′(x) = (${poly([al, be])})·f(x)`;
+  const H: [string, string, string] = ["Separá: $\\frac{f′}{f} = αx + β$.", "Integrá los dos lados: $ln|f| = \\frac{α}{2}x^2 + βx + K$.", "Despejá: $f = Ce^{…}$, y la condición inicial da C."];
+  const sol = [`f′/f = ${poly([al, be])}`, `ln|f| = ${qText} + K`, `f(x) = C·e^{${qText}}`, `f(0) = C = ${fmt(C)}`];
+  if (mode === "formula") {
+    return choice(
+      r,
+      mk({ prompt: `Hallá f tal que $${fpText}$ y $f(0) = ${fmt(C)}$.`, hints: H, solution: [...sol, `f(x) = ${coef(C)}e^{${qText}}`], explanation: "En una EDO separable se pasa todo lo de f a un lado y todo lo de x al otro, y se integra." }),
+      uniq([
+        { text: `$f(x) = ${coef(C)}e^{${qText}}$`, correct: true },
+        { text: C === 1 ? `$f(x) = e^{${qText}} + C$` : `$f(x) = e^{${qText}} ${sgn(C - 1)}$`, error: { type: "conceptual", message: "La constante no queda sumando: de ln|f| = q(x) + K sale f = e^K·e^{q(x)}, multiplicando." } },
+        { text: `$f(x) = ${coef(C)}e^{${poly([al, be])}}$`, error: { type: "conceptual", message: "Hay que INTEGRAR αx + β, no copiarlo en el exponente." } },
+        { text: `$f(x) = ${coef(C)}e^{${poly([al, be, 0])}}$`, error: { type: "formula", message: `∫ ${coef(al)}x dx = ${coef(h)}x²: al integrar se divide por 2.` } },
+      ]),
+    );
+  }
+  if (mode === "valor") {
+    let x1 = r.pick([1, 2, -1]);
+    if (Math.abs(h * x1 * x1 + be * x1) > 5) x1 = 1;
+    const q1 = h * x1 * x1 + be * x1;
+    const v = C * Math.exp(q1);
+    return num(
+      mk({
+        prompt: `f cumple $${fpText}$ y $f(0) = ${fmt(C)}$. Calculá $f(${fmt(x1)})$ (podés escribir algo como 3e^(2) o un decimal con 2 cifras).`,
+        hints: H,
+        solution: [...sol, `f(${fmt(x1)}) = ${fmt(C)}e^{${fmt(q1)}} ≈ ${fmt(v, 3)}`],
+        explanation: "La solución de f′ = g(x)·f es f = C·e^{G(x)}, con G primitiva de g.",
+        frequentErrors: [fe(Math.exp(q1) + C - 1, "conceptual", "La constante multiplica a la exponencial; no se suma."), fe(C * Math.exp(al * x1 + be), "conceptual", "Hay que integrar αx + β antes de ponerlo en el exponente.")],
+      }),
+      v,
+      Math.max(0.011, Math.abs(v) * 0.005),
+    );
+  }
+  const K = r.nz(-4, 5);
+  return num(
+    mk({
+      prompt: `f cumple $f′(x) = (2x + β)·f(x)$, $f(0) = ${fmt(C)}$ y $f(1) = ${fmt(C)}e^{${fmt(K)}}$. Hallá β.`,
+      hints: H,
+      solution: ["f(x) = C·e^{x² + βx}, con C = f(0) = " + fmt(C), `f(1) = ${fmt(C)}e^{1 + β} = ${fmt(C)}e^{${fmt(K)}}`, `1 + β = ${fmt(K)} → β = ${fmt(K - 1)}`],
+      explanation: "Con la solución general escrita, la condición extra da una ecuación para el parámetro.",
+      frequentErrors: [fe(K, "formula", "∫ 2x dx = x²: en x = 1 suma 1 al exponente."), fe(K - 2, "formula", "∫ 2x dx = x², no 2x².")],
+    }),
+    K - 1,
+  );
+});
+
+// ───────────────────────── 23. Serie geométrica ─────────────────────────
+
+export const serieGeometrica = gen("am-serie-geometrica", "t-am-series", "Serie geométrica: suma, convergencia y parámetro", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["suma0"], ["suma0", "suma1"], ["suma1", "converge"], ["mixta", "converge"], ["param", "mixta"], ["param"]] as const));
+  const SH = "Geométrica: $Σ_{n=0}^{∞} r^n = \\frac{1}{1 − r}$ si $|r| < 1$ (si no, diverge).";
+  const q = r.int(2, 6);
+  let p = r.nz(-(q - 1), q - 1);
+  if (Math.abs(p) >= q) p = 1;
+  if (mode === "suma0" || mode === "suma1") {
+    const c = r.nz(-5, 6);
+    const start = mode === "suma0" ? 0 : 1;
+    const v = (c * (start === 0 ? q : p)) / (q - p);
+    return num(
+      mk({
+        prompt: `Calculá $Σ_{n=${start}}^{∞} ${c === 1 ? "" : fmt(c)}(\\frac{${fmt(p)}}{${q}})^n$`,
+        hints: [SH, `La razón es r = ${fr(p, q)}, con |r| < 1: converge.`, start === 0 ? "El primer término (n = 0) es " + fmt(c) + "." : `Empieza en n = 1: el primer término es ${fmt(c)}·${fr(p, q)}. Suma = primer término/(1 − r).`],
+        solution: [`r = ${fr(p, q)}, |r| < 1`, `Suma = (primer término)/(1 − r) = ${start === 0 ? fmt(c) : `${fmt(c)}·${fr(p, q)}`}/(1 − ${par(p)}/${q})`, `= ${fr(c * (start === 0 ? q : p), q - p)}`],
+        explanation: "Una serie geométrica convergente suma (primer término)/(1 − razón). Mirá bien desde qué n empieza.",
+        frequentErrors: [fe(start === 0 ? (c * p) / (q - p) : (c * q) / (q - p), "formula", start === 0 ? "Empezando en n = 0 el primer término es r⁰ = 1 (por c), no r." : "Empieza en n = 1: falta restar el término n = 0 (o usar r/(1 − r))."), fe((c * q) / (q + p), "signos", "Es 1 − r en el denominador.")],
+      }),
+      v,
+    );
+  }
+  if (mode === "converge") {
+    const c = r.int(-4, 4), k = r.int(2, 5);
+    return choice(
+      r,
+      mk({
+        prompt: `¿Para qué valores de x converge $Σ_{n=0}^{∞} \\frac{(${poly([1, -c])})^n}{${k}^n}$?`,
+        hints: [SH, `La razón es $r = \\frac{${poly([1, -c])}}{${k}}$.`, `$|${poly([1, -c])}| < ${k}$.`],
+        solution: [`r = (${poly([1, -c])})/${k}`, `|r| < 1 ⇔ |${poly([1, -c])}| < ${k} ⇔ ${fmt(c - k)} < x < ${fmt(c + k)}`, `En los extremos |r| = 1: diverge (el término no tiende a 0)`],
+        explanation: "La geométrica converge solo si |r| < 1, con desigualdad estricta: en |r| = 1 el término general no tiende a 0.",
+      }),
+      uniq([
+        { text: iv(fmt(c - k), fmt(c + k)), correct: true },
+        { text: iv(fmt(c - k), fmt(c + k), "[", "]"), error: { type: "limites", message: "En |r| = 1 la geométrica diverge: el término general no tiende a 0. Los extremos no van." } },
+        { text: iv(`−${k}`, `${k}`), error: { type: "signos", message: `El centro es x = ${fmt(c)}: |x ${sgn(-c)}| < ${k}.` } },
+        { text: iv(fmt(c - 1 / k, 3), fmt(c + 1 / k, 3)), error: { type: "despeje", message: `|x ${sgn(-c)}|/${k} < 1 ⇒ |x ${sgn(-c)}| < ${k}: se multiplica por ${k}.` } },
+      ]),
+    );
+  }
+  if (mode === "mixta") {
+    const a = r.int(2, 4), b = a + r.int(1, 3);
+    return num(
+      mk({
+        prompt: `Calculá $Σ_{n=0}^{∞} \\frac{${a}^{n+1}}{${b}^n}$`,
+        hints: [SH, `Escribí $\\frac{${a}^{n+1}}{${b}^n} = ${a}·(\\frac{${a}}{${b}})^n$.`, `Suma = ${a}/(1 − ${a}/${b}).`],
+        solution: [`= ${a}·Σ (${a}/${b})^n`, `= ${a}/(1 − ${a}/${b}) = ${fr(a * b, b - a)}`],
+        explanation: "Para reconocer la geométrica, separá las potencias que no dependen de n.",
+        frequentErrors: [fe(b / (b - a), "calculo", `Falta el factor ${a}: ${a}^{n+1} = ${a}·${a}^n.`), fe((a * a) / (b - a), "formula", "El primer término (n = 0) es " + a + ", no " + (a * a) + "/" + b + ".")],
+      }),
+      (a * b) / (b - a),
+    );
+  }
+  const bb = r.pick([2, 3, 5]);
+  const a = r.int(2, 4);
+  const Snum = bb * a * a, Sden = a * a - bb;
+  return num(
+    mk({
+      prompt: `Hallá $a > 0$ tal que $Σ_{n=0}^{∞} \\frac{${bb}^{n+1}}{a^{2n}} = ${fr(Snum, Sden)}$`,
+      hints: [SH, `Es ${bb}·Σ (${bb}/a²)^n = $\\frac{${bb}}{1 − ${bb}/a^2}$ (si a² > ${bb}).`, `Despejá: $\\frac{${bb}a^2}{a^2 − ${bb}} = ${fr(Snum, Sden)}$.`],
+      solution: [`Σ = ${bb}/(1 − ${bb}/a²) = ${bb}a²/(a² − ${bb})`, `${bb}a²/(a² − ${bb}) = ${fr(Snum, Sden)} → a² = ${a * a}`, `a > 0 → a = ${a}`],
+      explanation: "Con parámetro: se suma la geométrica en función de a, se iguala y se verifica que |r| < 1.",
+      frequentErrors: [fe(a * a, "despeje", "Ese es a²: falta la raíz."), fe(Math.sqrt((Snum / Sden) / (Snum / Sden - 1)), "calculo", `Falta el factor ${bb} del primer término (${bb}^{n+1} = ${bb}·${bb}^n).`)],
+    }),
+    a,
+  );
+});
+
+// ───────────────────────── 24. Series de potencias ─────────────────────────
+
+export const seriePotencias = gen("am-serie-potencias", "t-am-series", "Series de potencias: criterio de la raíz y análisis de extremos", (r, d, mk) => {
+  const mode = r.pick(byDifficulty(d, [["mas1"], ["mas1", "n"], ["n", "n2"], ["n", "n2"], ["inv", "n"], ["inv"]] as const));
+  const RH = "Criterio de la raíz: $lim \\sqrt[n]{|a_n|}$ < 1 ⇒ converge; > 1 ⇒ diverge; = 1 no decide (hay que mirar los extremos aparte).";
+  const RH2 = "Raíz n-ésima: $\\sqrt[n]{n} → 1$, $\\sqrt[n]{n^2} → 1$, $\\sqrt[n]{k^n + 1} → k$.";
+  const k = r.int(2, 5), c = r.int(-3, 3);
+  const L = fmt(c - k), R = fmt(c + k);
+  if (mode === "mas1") {
+    const kk = r.int(2, 4), m = r.int(2, 6);
+    const rad = fr(m, kk);
+    const end = fr(-m, kk);
+    return choice(
+      r,
+      mk({
+        prompt: `¿Para qué valores de x converge $Σ_{n=1}^{∞} \\frac{${kk}^n x^n}{${m}^n + 1}$?`,
+        hints: [RH.replace("\\sqrt[n]", "ⁿ√").replace("\\sqrt[n]", "ⁿ√"), `$ⁿ√(\\frac{${kk}^n|x|^n}{${m}^n + 1}) → \\frac{${kk}|x|}{${m}}$.`, `Extremos: con $x = ±${rad}$ el término es $\\frac{(±1)^n ${m}^n}{${m}^n + 1}$, que no tiende a 0.`],
+        solution: [`ⁿ√|aₙ| → ${kk}|x|/${m} < 1 ⇔ |x| < ${rad}`, `x = ±${rad}: |término| = ${m}ⁿ/(${m}ⁿ + 1) → 1 ≠ 0 ⇒ diverge`, `Converge en (${end}; ${rad})`],
+        explanation: "El criterio de la raíz da el intervalo abierto; los extremos se estudian reemplazando x en la serie.",
+      }),
+      uniq([
+        { text: iv(end, rad), correct: true },
+        { text: iv(end, rad, "[", "]"), error: { type: "limites", message: `En x = ±${rad} el término general tiende a ±1 (no a 0): diverge. Siempre probá los extremos.` } },
+        { text: iv(fr(-kk, m), fr(kk, m)), error: { type: "despeje", message: `${kk}|x|/${m} < 1 ⇒ |x| < ${m}/${kk}: quedó invertido.` } },
+        { text: iv(end, rad, "(", "]"), error: { type: "limites", message: `En x = ${rad} el término tiende a 1, no a 0: diverge.` } },
+      ]),
+    );
+  }
+  const xc = poly([1, -c]);
+  if (mode === "n" || mode === "n2") {
+    const sq = mode === "n2";
+    return choice(
+      r,
+      mk({
+        prompt: `¿Para qué valores de x converge $Σ_{n=1}^{∞} \\frac{${c ? `(${xc})` : "x"}^n}{${sq ? "n^2" : "n"}·${k}^n}$?`,
+        hints: [RH.replace("\\sqrt[n]", "ⁿ√").replace("\\sqrt[n]", "ⁿ√"), `$ⁿ√(\\frac{|${xc}|^n}{${sq ? "n^2" : "n"}·${k}^n}) → \\frac{|${xc}|}{${k}}$: el intervalo abierto es (${L}; ${R}).`, sq ? `En los extremos queda $Σ \\frac{(±1)^n}{n^2}$: converge (absolutamente).` : `En x = ${R} queda $Σ \\frac{1}{n}$ (diverge); en x = ${L}, $Σ \\frac{(−1)^n}{n}$ (Leibniz: converge).`],
+        solution: [`|${xc}|/${k} < 1 ⇔ ${L} < x < ${R}`, sq ? "Extremos: Σ 1/n² y Σ (−1)ⁿ/n² convergen" : `x = ${R}: Σ 1/n diverge; x = ${L}: Σ (−1)ⁿ/n converge (Leibniz)`, sq ? `Converge en [${L}; ${R}]` : `Converge en [${L}; ${R})`],
+        explanation: "En los extremos el criterio de la raíz da 1 y no decide: se reemplaza x y se usan series conocidas (armónica, p-series, Leibniz).",
+      }),
+      uniq([
+        { text: sq ? iv(L, R, "[", "]") : iv(L, R, "[", ")"), correct: true },
+        { text: iv(L, R), error: { type: "limites", message: "Faltó analizar los extremos: el criterio de la raíz no decide ahí, hay que reemplazar." } },
+        { text: sq ? iv(L, R, "[", ")") : iv(L, R, "(", "]"), error: { type: "limites", message: sq ? `En x = ${R} queda Σ 1/n², que converge (p = 2 > 1).` : `Está al revés: en x = ${R} queda la armónica (diverge) y en x = ${L} la alternada (converge).` } },
+        { text: sq ? iv(`−${k}`, `${k}`, "[", "]") : iv(`−${k}`, `${k}`, "[", ")"), error: { type: "signos", message: `El centro de la serie es x = ${fmt(c)}, no 0.` } },
+      ]),
+    );
+  }
+  // inv: Σ k^n/((n + 3)(x − c)^n)
+  const ans = `$(−∞; ${L}] ∪ (${R}; +∞)$`;
+  return choice(
+    r,
+    mk({
+      prompt: `¿Para qué valores de x converge $Σ_{n=1}^{∞} \\frac{${k}^n}{(n + 3)${c ? `(${xc})` : "x"}^n}$?`,
+      hints: [RH.replace("\\sqrt[n]", "ⁿ√").replace("\\sqrt[n]", "ⁿ√"), `$ⁿ√|a_n| → \\frac{${k}}{|${xc}|} < 1$ ⇔ $|${xc}| > ${k}$.`, `Extremos: $x − (${fmt(c)}) = ${k}$ da $Σ \\frac{1}{n + 3}$ (diverge); $= −${k}$ da $Σ \\frac{(−1)^n}{n + 3}$ (Leibniz: converge).`],
+      solution: [`ⁿ√|aₙ| → ${k}/|${xc}| < 1 ⇔ |${xc}| > ${k} ⇔ x < ${L} o x > ${R}`, `x = ${R}: Σ 1/(n + 3) diverge; x = ${L}: Σ (−1)ⁿ/(n + 3) converge`, `Converge en (−∞; ${L}] ∪ (${R}; +∞)`],
+      explanation: "Cuando x está en el denominador, la condición |…| < 1 se da vuelta: la región de convergencia queda AFUERA de un intervalo.",
+    }),
+    uniq([
+      { text: ans, correct: true },
+      { text: iv(L, R), error: { type: "despeje", message: `x está en el denominador: ${k}/|${xc}| < 1 ⇔ |${xc}| > ${k}. La región queda afuera del intervalo.` } },
+      { text: `$(−∞; ${L}) ∪ (${R}; +∞)$`, error: { type: "limites", message: `Faltó el extremo x = ${L}: ahí queda Σ (−1)ⁿ/(n + 3), que converge por Leibniz.` } },
+      { text: `$(−∞; ${L}) ∪ [${R}; +∞)$`, error: { type: "limites", message: `Al revés: en x = ${R} queda Σ 1/(n + 3) (diverge) y en x = ${L} la alternada (converge).` } },
+    ]),
+  );
+});
+
 // @@GENERATORS@@
-export const AM_GENERATORS: Generator[] = [limRaices, limConjugado, limInfinito, limE, continuidadParam, asintotaOblicua, asintotas, derivadaReglas, tangente, tangenteDatos, derivabilidad, lhopital, estudioFuncion, extremosAbsolutos, taylor, primitivas, primitivasPartes];
+export const AM_GENERATORS: Generator[] = [limRaices, limConjugado, limInfinito, limE, continuidadParam, asintotaOblicua, asintotas, derivadaReglas, tangente, tangenteDatos, derivabilidad, lhopital, estudioFuncion, extremosAbsolutos, taylor, primitivas, primitivasPartes, tfc, integralDefinida, areaParam, areaPlanteo, edoSeparable, serieGeometrica, seriePotencias];

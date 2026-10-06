@@ -27,9 +27,27 @@ export interface PathSection {
 }
 
 /** Orden del camino: Preparación completa y después las unidades del CBC con lecciones. */
-const PATH_UNITS = ["nivel-0", "nivel-1", "prep-geo", "nivel-2", "prep-uni", "nivel-3", "nivel-4", "am-1", "am-4", "am-5", "alg-1", "fis-1", "fis-2", "pc-1", "pc-2", "pc-3"];
+const PATH_UNITS = [
+  "nivel-0", "nivel-1", "prep-geo", "nivel-2", "prep-uni", "nivel-3", "nivel-4",
+  // CBC: Análisis
+  "am-1", "am-4", "am-5", "am-6", "am-7", "am-8", "am-9", "am-10", "am-11",
+  // Álgebra
+  "alg-con", "alg-cx", "alg-1", "alg-2", "alg-3", "alg-4", "alg-5", "alg-6",
+  // Física (orden de la cátedra: 1.er parcial y después 2.º)
+  "fis-1", "fis-2", "fis-est", "fis-5", "fis-2d", "fis-3", "fis-4",
+  // Pensamiento Computacional
+  "pc-1", "pc-tipos", "pc-2", "pc-3", "pc-datos", "pc-io",
+  // IPC
+  "ipc-u1", "ipc-u2", "ipc-u3", "ipc-u4",
+];
 
-export function buildPath(s: ProgressState): PathSection[] {
+/** Materias que tienen camino, en orden. */
+export function pathSubjects(): string[] {
+  return [...new Set(PATH_UNITS.map((u) => findUnit(u)?.subject.id).filter((x): x is string => !!x))];
+}
+
+/** Camino completo, o el de una sola materia (cada materia avanza por su cuenta). */
+export function buildPath(s: ProgressState, subjectId?: string): PathSection[] {
   const seen = new Set<string>();
   const sections: PathSection[] = [];
   let prevDone = true;
@@ -39,6 +57,7 @@ export function buildPath(s: ProgressState): PathSection[] {
   for (const unitId of PATH_UNITS) {
     const found = findUnit(unitId);
     if (!found || !found.unit.lessonIds.length) continue;
+    if (subjectId && found.subject.id !== subjectId) continue;
     const { subject, unit } = found;
     const nodes: PathNode[] = [];
     for (const lessonId of unit.lessonIds) {

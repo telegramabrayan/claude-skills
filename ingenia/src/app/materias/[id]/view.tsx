@@ -9,6 +9,7 @@ import { Gate } from "@/components/layout/Gate";
 import { Icon } from "@/components/ui/Icon";
 import { ProgressBar, SectionTitle, SUBJECT_COLORS } from "@/components/ui/primitives";
 import { OfficialBox } from "@/components/subject/OfficialBox";
+import { materialFor } from "@/content/material";
 
 const CYCLE = { preparacion: "Preparación", cbc: "CBC", "segundo-ciclo": "Segundo ciclo" } as const;
 const CONTENT = {
@@ -150,6 +151,19 @@ function Subject({ id }: { id: string }) {
             ))}
           </ul>
         </>
+      )}
+
+      {materialFor(sub.id) && (
+        <Link href={`/biblioteca?materia=${sub.id}`} className="card mt-6 flex items-center gap-4 border-accent/40 p-4 hover:border-accent">
+          <span className="text-3xl" aria-hidden>
+            📚
+          </span>
+          <span className="flex-1">
+            <span className="block font-bold">Tu material de {sub.shortName}</span>
+            <span className="text-sm text-muted">{materialFor(sub.id)!.catedra}: qué evalúa cada parcial, errores típicos y simulacros con el formato real.</span>
+          </span>
+          <Icon name="arrowRight" />
+        </Link>
       )}
 
       <SectionTitle>Fuente</SectionTitle>

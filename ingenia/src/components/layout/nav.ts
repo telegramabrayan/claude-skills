@@ -20,6 +20,7 @@ export const NAV_MAIN: NavItem[] = [
 ];
 
 export const NAV_SECONDARY: NavItem[] = [
+  { href: "/biblioteca", label: "Biblioteca", icon: "book" },
   { href: "/plan", label: "Plan de estudio", icon: "calendar" },
   { href: "/guardados", label: "Guardados", icon: "bookmark" },
   { href: "/taller", label: "Taller", icon: "gear" },
