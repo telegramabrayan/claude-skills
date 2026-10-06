@@ -2,6 +2,8 @@ import type { ErrorType, SkillId, Topic } from "@/engine/types";
 import { FISICA_TOPICS } from "./topics-fisica";
 import { PC_TOPICS } from "./topics-pc";
 import { AM_TOPICS } from "./topics-am";
+import { ALGEBRA_TOPICS } from "./topics-algebra";
+import { IPC_TOPICS } from "./topics-ipc";
 
 const t = (id: string, name: string, subjectId: string, skill: SkillId, generators: string[], lessonId: string, prerequisites: string[] = []): Topic => ({
   id,
@@ -43,6 +45,8 @@ export const TOPICS: Topic[] = [
   ...FISICA_TOPICS,
   ...PC_TOPICS,
   ...AM_TOPICS,
+  ...ALGEBRA_TOPICS,
+  ...IPC_TOPICS,
 ];
 
 const BY_ID = new Map(TOPICS.map((x) => [x.id, x]));

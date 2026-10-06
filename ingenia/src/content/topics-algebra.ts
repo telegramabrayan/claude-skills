@@ -30,4 +30,16 @@ export const ALGEBRA_TOPICS: Topic[] = [
   t("t-alg-rectas", "Rectas en ℝ³", "vectores", ["alg-recta-pertenencia"], "l-alg-rectas", ["t-vectores"]),
   t("t-alg-planos", "Ecuación del plano e intersección con rectas", "vectores", ["alg-plano-ecuacion", "alg-recta-plano-interseccion"], "l-alg-planos", ["t-alg-rectas", "t-producto-escalar"]),
   t("t-alg-posiciones-distancias", "Posiciones relativas y distancia punto–plano", "vectores", ["alg-posicion-relativa", "alg-distancia-punto-plano"], "l-alg-posiciones-distancias", ["t-alg-planos"]),
+  // alg-3 · Matrices y sistemas lineales
+  t("t-alg-matrices", "Operaciones con matrices", "algebra", ["alg-matriz-producto"], "l-alg-matrices", ["t-producto-escalar"]),
+  t("t-alg-gauss", "Sistemas lineales: método de Gauss", "algebra", ["alg-gauss"], "l-alg-gauss", ["t-ecuaciones", "t-alg-matrices"]),
+  t("t-alg-sistemas-clasificacion", "Clasificación de sistemas (SCD, SCI, SI) y parámetros", "algebra", ["alg-sistema-clasificar", "alg-sistema-parametro"], "l-alg-sistemas-clasificacion", ["t-alg-gauss"]),
+  // alg-4 · Determinantes
+  t("t-alg-determinantes", "Determinantes y propiedades", "algebra", ["alg-determinante", "alg-det-propiedades"], "l-alg-determinantes", ["t-alg-matrices"]),
+  t("t-alg-inversa", "Matriz inversa y solución única", "algebra", ["alg-inversa-2x2", "alg-det-parametro"], "l-alg-inversa", ["t-alg-determinantes", "t-alg-sistemas-clasificacion"]),
+  // alg-5 · Transformaciones lineales
+  t("t-alg-transformaciones", "Transformaciones lineales: matriz, núcleo e imagen", "algebra", ["alg-tl-imagen", "alg-tl-nucleo", "alg-tl-plano"], "l-alg-transformaciones", ["t-alg-matrices", "t-alg-determinantes"]),
+  // alg-6 · Cónicas
+  t("t-alg-circunferencia", "Circunferencia: centro y radio", "graficos", ["alg-circunferencia", "alg-ordenar-circunferencia"], "l-alg-circunferencia", ["t-pitagoras", "t-factorizacion"]),
+  t("t-alg-conicas", "Elipse, hipérbola y parábola", "graficos", ["alg-conica-identificar", "alg-conica-elementos"], "l-alg-conicas", ["t-alg-circunferencia"]),
 ];

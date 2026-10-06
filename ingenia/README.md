@@ -21,6 +21,28 @@ npm run build      # build de producción (todas las rutas son estáticas)
 Requiere Node 20+. El progreso se guarda en el navegador (con respaldo JSON desde
 Configuración).
 
+## Novedades de la v3 (profesor particular + material de la cátedra)
+
+- **Contenido a partir del material del estudiante** (carpeta «Material de estudio» de Drive, analizada y
+  organizada en la **Biblioteca**): claves de Análisis Matemático A (cátedra Cabana), Física (cátedra Torti),
+  Pensamiento Computacional (cátedra Camejo) e IPC (UBA XXI, programa oficial 2026). Los exámenes no se copian:
+  se usaron para saber qué y cómo se evalúa, y los generadores producen ejercicios propios del mismo estilo.
+  Simulacros con la distribución de temas y puntajes de cada cátedra.
+- **110 lecciones, 175 generadores, 111 temas**: Preparación 25, Álgebra A 21, Análisis A 23, Física 23,
+  Pensamiento Computacional 15, IPC 18. ICSE sigue sin contenido (no hay material).
+- **"No entendí" que cambia de estrategia** (6 formas: normal → más simple → situación cotidiana → ejemplo
+  numérico → visual/pizarra → detectar qué base falta) + desde cero, paso a paso, ¿por qué?, ¿de dónde sale?,
+  ¿qué necesito antes? y practiquemos juntos.
+- **Pizarra animada** que escribe procedimientos renglón por renglón y resalta lo que cambió.
+- **Corrección que enseña**: "Lo que hiciste / Problema / Correcto" desde el último paso bien hecho, y ayuda
+  escalonada (pista → pista más clara → concepto → solución).
+- **Profesor con IA** (dentro de claude.ai, capacidad `sample` del artifact): conoce la lección, el ejercicio,
+  la respuesta y el historial; fuera de claude.ai responde con el contenido curado.
+- **Comprobación de bases** antes de cada lección, modo **Enseñame desde cero**, mensajes de dificultad
+  adaptativa y estilos de práctica (ejemplo resuelto, guiado, independiente, desafío, repaso).
+- **Animaciones**: movimiento, fuerzas, tiro oblicuo, flotación, componentes, tangente, Riemann, familias de
+  funciones, matrices; intérprete de Python ampliado (strings, listas, tuplas, dicts) verificado contra CPython.
+
 ## Novedades de la v2 (experiencia tipo app)
 
 - **Camino**: un nodo por lección y un **desafío final** por unidad (10 ejercicios

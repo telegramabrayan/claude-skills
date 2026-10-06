@@ -976,7 +976,612 @@ export const ipcSeleccionNatural: Lesson = {
 
 const U2_LESSONS: Lesson[] = [ipcPreDarwin, ipcSeleccionNatural];
 
-// @@U3@@
+// ═══════════════════════ Unidad 3 · El cambio científico ═══════════════════════
+
+export const ipcContrastacion: Lesson = {
+  id: "l-ipc-contrastacion",
+  title: "Hipótesis y contrastación",
+  subtitle: "Términos, enunciados y el método hipotético-deductivo",
+  subjectId: S,
+  topicIds: ["t-ipc-contrastacion"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-ipc-formas", "t-ipc-enunciados"],
+  cards: [
+    intro(
+      "Cómo se pone a prueba una hipótesis",
+      "Vas a clasificar los términos y enunciados de las teorías, identificar hipótesis, condiciones iniciales, hipótesis auxiliares y consecuencias observacionales, y entender la lógica de la refutación y la «confirmación».",
+      "Es la base de toda la Unidad 3: positivistas lógicos y Popper discuten justamente qué se puede concluir de una contrastación. Y acá la lógica de la Unidad 1 se vuelve herramienta.",
+    ),
+    explain(
+      "Términos y enunciados",
+      "**Términos**: lógicos (y, o, todos…), **observacionales** (balanza, rojo, cuello) y **teóricos** (gen, electrón, bilirrubina), accesibles solo indirectamente. La frontera entre los dos últimos es gradual.\n\n**Enunciados**:\n• **Empírico básico**: observacional, singular o muestral (finito y accesible).\n• **Generalización empírica**: observacional, sobre una clase abierta.\n• **Teórico puro**: solo términos teóricos.\n• **Teórico mixto**: teóricos + observacionales (conecta teoría y observación).",
+      { tag: "matematico" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-cont-1",
+      subjectId: S,
+      topicId: "t-ipc-contrastacion",
+      prompt: "«Lucía tiene la piel amarilla debido a un exceso de bilirrubina.» ¿Qué tipo de enunciado es?",
+      options: ["Empírico básico", "Generalización empírica", "Teórico puro", "Teórico mixto"],
+      answer: 3,
+      explanation: "Aunque es singular, incluye un término teórico (bilirrubina) junto con uno observacional (piel amarilla): es teórico mixto.",
+      hints: ["Revisá el vocabulario antes que el alcance.", "¿Se puede ver la bilirrubina a simple vista?", "Un término teórico «escondido» cambia la clasificación."],
+      errors: { 0: ["conceptual", "Sería básico si fuera solo observacional; «bilirrubina» es un término teórico."], 1: ["conceptual", "No es general: habla de Lucía. Y además tiene un término teórico."], 2: ["conceptual", "No es puro: «piel amarilla» es observacional."] },
+    }),
+    explain(
+      "Las piezas de una contrastación",
+      "• **Hipótesis (H)**: enunciado general que se pone a prueba.\n• **Condiciones iniciales (CI)**: enunciados básicos que describen la situación concreta de la prueba.\n• **Hipótesis auxiliares (HA)**: enunciados **generales** ya aceptados que se presuponen (por ejemplo, que el instrumento funciona).\n• **Consecuencia observacional (CO)**: enunciado básico que se **deduce** y dice qué debería observarse si H fuera verdadera.\n\nClave: CI es singular; HA es general.",
+      { tag: "cotidiano" },
+    ),
+    board(
+      "La lógica de la contrastación",
+      [
+        { expr: "(H ∧ CI ∧ HA) → CO", note: "de la hipótesis, con CI y HA, se deduce la CO" },
+        { expr: "Caso 1: ¬CO", note: "la observación no se cumple" },
+        { expr: "∴ ¬(H ∧ CI ∧ HA)", note: "modus tollens: VÁLIDO. Cae la conjunción, no necesariamente H" },
+        { expr: "Caso 2: CO", note: "la observación se cumple" },
+        { expr: "∴ H ?", note: "afirmación del consecuente: INVÁLIDO. H no queda probada" },
+      ],
+      "Con lo que viste en formas de argumento:",
+      "Asimetría: una hipótesis universal puede refutarse, pero no verificarse.",
+    ),
+    example(
+      "Desarmar un caso",
+      "Hipótesis: «El período de un péndulo no depende de la masa que cuelga de él». Se cuelgan del mismo hilo de 1 m una pesa de 50 g y otra de 200 g, y se cronometran 20 oscilaciones. Se supone que el cronómetro mide con precisión de centésimas.",
+      ["H: el período no depende de la masa (general, a prueba).", "CI: se colgaron una pesa de 50 g y una de 200 g de un hilo de 1 m (singular).", "HA: el cronómetro mide con precisión de centésimas (general, presupuesta).", "CO: las 20 oscilaciones duran lo mismo con ambas pesas (básica, deducida)."],
+      "Si la CO no se cumple, por modus tollens cae la conjunción H ∧ CI ∧ HA.",
+    ),
+    practice("Ejercicio guiado", "ipc-tipo-enunciado-cientifico", 1, 4, true),
+    practice("Funciones en una contrastación", "ipc-componentes-contrastacion", 2, 3),
+    explain(
+      "Errores frecuentes",
+      "• Poner la hipótesis (o «X tenía razón») como CO.\n• Usar una generalización o un término teórico en la CO.\n• Confundir HA (general) con CI (singular).\n• Concluir «no H» en lugar de «no (H y CI y HA)».\n• Creer que una CO verdadera **verifica** H.\n\nOjo con las hipótesis **ad hoc**: se agregan solo para salvar a H de una refutación, sin apoyo independiente.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-componentes-contrastacion", 4, 9),
+    practice("Desafío", "ipc-tipo-enunciado-cientifico", 5, 12),
+    summary([
+      "Términos: lógicos, observacionales y teóricos.",
+      "Enunciados: básicos, generalizaciones empíricas, teóricos puros y mixtos.",
+      "Si (H y CI y HA), entonces CO. CI y CO son básicos; H y HA, generales.",
+      "Refutar = modus tollens: cae la conjunción, la lógica no dice qué conyunto falló.",
+      "«Confirmar» = afirmación del consecuente: una CO verdadera no prueba H.",
+    ]),
+  ],
+  tutor: {
+    normal: "En el método hipotético-deductivo se deducen consecuencias observacionales de la hipótesis junto con condiciones iniciales e hipótesis auxiliares. Si la consecuencia es falsa, por modus tollens es falsa la conjunción de las premisas; si es verdadera, inferir la verdad de la hipótesis sería una afirmación del consecuente. De ahí la asimetría entre refutación y verificación.",
+    simple: "Para probar una hipótesis, deducís qué deberías ver si fuera cierta y vas a mirar. Si no lo ves, algo de lo que suponías está mal. Si lo ves, buenísimo, pero no prueba que la hipótesis sea verdadera.",
+    nino: "Sospechás que tu hermano se comió la torta: «Si fue él, va a tener chocolate en la cara». Si no tiene chocolate, quizás no fue él (o se lavó la cara). Si tiene chocolate, quizás fue él… o comió otra cosa con chocolate.",
+    ejemplo: "H: «Las abejas expuestas al insecticida X se desorientan». CO: «Menos de la mitad de las 50 abejas marcadas vuelve a la colmena». Si vuelven casi todas, cae la conjunción de H, CI y HA.",
+    fromZero: "Las hipótesis científicas suelen ser generales: no se pueden mirar directamente. Lo que sí se puede hacer es deducir de ellas algo concreto y observable, en una situación determinada, suponiendo que los instrumentos funcionan. Después se observa. Según lo que pase, la lógica nos dice qué podemos concluir y qué no.",
+    why: "Entender esta estructura te deja ver por qué ninguna hipótesis científica es una certeza, y por qué un experimento fallido no siempre condena a la hipótesis: puede haber fallado un supuesto auxiliar.",
+    origin: "Es la aplicación directa de las formas de argumento: la refutación tiene forma de modus tollens (válida) y la confirmación tiene forma de afirmación del consecuente (inválida). Como el antecedente es una conjunción, lo que el modus tollens niega es la conjunción entera.",
+    board: [
+      { expr: "(H ∧ CI ∧ HA) → CO" },
+      { expr: "¬CO ∴ ¬(H ∧ CI ∧ HA)", note: "refutación: modus tollens" },
+      { expr: "CO ∴ H", note: "inválido: afirmación del consecuente" },
+    ],
+  },
+};
+
+export const ipcPlPopper: Lesson = {
+  id: "l-ipc-pl-popper",
+  title: "Positivismo lógico y falsacionismo",
+  subtitle: "Confirmación, falsabilidad y demarcación",
+  subjectId: S,
+  topicIds: ["t-ipc-pl-popper"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-ipc-contrastacion", "t-ipc-inductivos"],
+  cards: [
+    intro(
+      "Dos maneras clásicas de pensar la ciencia",
+      "Vas a comparar el positivismo lógico (inductivismo crítico) con el falsacionismo de Popper: qué papel le dan a la inducción, cómo demarcan la ciencia y qué significa que una hipótesis «resista» una prueba.",
+      "Las preguntas de «¿quién sostiene esto?» y «¿qué sabemos de una hipótesis corroborada?» son típicas del segundo parcial.",
+    ),
+    explain(
+      "Lo que comparten",
+      "Positivistas lógicos (Círculo de Viena: Carnap, Hempel, entre otros) y Popper forman la **filosofía clásica de la ciencia**. Comparten:\n\n• distinguir **contexto de descubrimiento** (cómo surge una hipótesis: no hay lógica para eso) y **de justificación** (cómo se la pone a prueba);\n• la **reconstrucción lógica** de las teorías;\n• buscar un **criterio de demarcación**;\n• explicar el cambio científico **sin factores extracientíficos**.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-pp-1",
+      subjectId: S,
+      topicId: "t-ipc-pl-popper",
+      prompt: "Una hipótesis quedó **corroborada** según Popper. ¿Qué sabemos de ella?",
+      options: [
+        "Que resistió intentos de refutación: no se probó su falsedad, y se la acepta provisoriamente.",
+        "Que se probó que es verdadera.",
+        "Que es altamente probable.",
+        "Que no es falsable.",
+      ],
+      answer: 0,
+      explanation: "La corroboración es un concepto negativo: no se probó su verdad ni ganó probabilidad. Sabemos que es falsable, que no fue refutada y que se la acepta mientras siguen los intentos de refutarla.",
+      hints: ["Para Popper, ¿se puede verificar una hipótesis universal?", "¿Acepta Popper la probabilidad inductiva?", "Corroborada = sobrevivió a un intento serio de refutarla."],
+      errors: { 1: ["conceptual", "Popper niega que se pueda probar la verdad de una hipótesis universal."], 2: ["conceptual", "Eso es la confirmación del inductivismo crítico; Popper rechaza la probabilidad inductiva."], 3: ["conceptual", "Al contrario: para ser corroborada tiene que ser falsable."] },
+    }),
+    explain(
+      "Inductivismo crítico vs. Popper",
+      "**Positivismo lógico**: la ciencia no empieza generalizando observaciones (eso es inductivismo **estrecho**, que rechazan), pero la inducción sí actúa en la justificación: cada caso favorable **confirma**, da más **probabilidad**. Demarcación: **traducibilidad a lenguaje observacional**, que es además **criterio de sentido**: la metafísica carece de sentido.\n\n**Popper**: justificar la inducción sería **circular**. Demarcación: **falsabilidad**, que **no** es criterio de sentido. Se busca **refutar**; lo que resiste queda **corroborado**. La base empírica es **falible**: los enunciados básicos se aceptan por decisión.",
+      { tag: "matematico" },
+    ),
+    board(
+      "Comparación en una pizarra",
+      [
+        { expr: "Inducción — PL: sí, en la justificación · Popper: no, en ninguna instancia" },
+        { expr: "Demarcación — PL: traducibilidad (y sentido) · Popper: falsabilidad (no es criterio de sentido)" },
+        { expr: "Metafísica — PL: sin sentido · Popper: puede tener sentido, no es ciencia" },
+        { expr: "Resultado favorable — PL: confirmación (más probable) · Popper: corroboración (provisoria)" },
+        { expr: "Base empírica — PL: firme · Popper: falible, por decisión" },
+        { expr: "Progreso — PL: acumulativo · Popper: conjeturas y refutaciones" },
+      ],
+    ),
+    example(
+      "Un falsador potencial",
+      "Hipótesis: «Todos los cisnes son blancos». ¿Cuál es un falsador potencial: (a) «Hay un cisne blanco en Chascomús el 3 de marzo», (b) «La mayoría de los cisnes son blancos», (c) «En la laguna de Chascomús, el 3 de marzo a las 8 h, hay un cisne negro»?",
+      ["Un falsador potencial es un enunciado básico: singular (lugar y momento), existencial y observacional.", "Además, lógicamente posible e incompatible con la hipótesis.", "(a) es compatible con la hipótesis. (b) no es singular.", "(c) cumple todo."],
+      "El falsador potencial es (c).",
+    ),
+    practice("Ejercicio guiado", "ipc-pl-popper", 1, 5, true),
+    practice("Falsadores", "ipc-falsador", 2, 4),
+    explain(
+      "Confusiones a evitar",
+      "• Para el PL la metafísica no es **falsa**: es **sin sentido**.\n• **Demarcar** no es **contrastar** ni **refutar**: demarcar es un análisis **lógico** (¿tiene falsadores potenciales?); no hace falta observar nada.\n• Refutar = **aceptar** un enunciado básico incompatible con la hipótesis.\n• Tautologías y enunciados **probabilísticos** no son falsables.\n• Corroboración ≠ confirmación ≠ verificación.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-pl-popper", 4, 9),
+    practice("Desafío", "ipc-falsador", 5, 14),
+    summary([
+      "Filosofía clásica: descubrimiento vs. justificación, reconstrucción lógica, demarcación.",
+      "PL: confirmación inductiva; demarcación por traducibilidad, que también es criterio de sentido.",
+      "Popper: sin inducción; demarcación por falsabilidad, que no es criterio de sentido.",
+      "Falsador potencial: básico, singular, existencial, observacional, posible e incompatible.",
+      "Corroborada: resistió la refutación y se acepta provisoriamente, no es verdadera ni probable.",
+    ]),
+  ],
+  tutor: {
+    normal: "El positivismo lógico sostiene que las hipótesis, aunque no se verifican, se confirman inductivamente con cada caso favorable, y demarca la ciencia por la traducibilidad a un lenguaje observacional, que es a la vez criterio de sentido. Popper rechaza toda inducción, propone la falsabilidad como criterio de demarcación (no de sentido) y concibe la contrastación como intento de refutación; la hipótesis que lo resiste queda corroborada provisoriamente.",
+    simple: "Para los positivistas lógicos, cada vez que una hipótesis acierta se vuelve más probable. Para Popper, eso no vale: lo único que la lógica permite es refutar; si la hipótesis aguanta, la seguimos usando, pero sin saber si es verdadera.",
+    nino: "Para un positivista lógico, cada día que el colectivo llega a horario aumenta tu confianza en que siempre llega a horario. Para Popper, no importa cuántas veces llegó: lo que importa es que podría fallar algún día, y que vos sigas atento a eso.",
+    ejemplo: "«Todos los metales se dilatan al calentarse» es falsable: un falsador potencial sería «En el laboratorio 3, el 5 de mayo, hay una barra de cobre que al calentarse no se dilató».",
+    fromZero: "Vimos que una hipótesis general no se puede verificar con casos, pero sí refutar. Ante eso hubo dos respuestas. Los positivistas lógicos dijeron: no la verificamos, pero cada caso a favor la vuelve más probable. Popper dijo: la inducción no se puede justificar, así que olvidémosla; la ciencia propone conjeturas audaces y trata de refutarlas.",
+    why: "La comparación muestra que la misma estructura lógica admite lecturas filosóficas distintas, y te da criterios para preguntar qué hace científica a una afirmación.",
+    origin: "Ambas posiciones parten de la asimetría de la contrastación. Popper además toma el problema de la inducción: para justificar un principio de inducción haría falta la lógica (no alcanza) o la experiencia (sería circular). De ahí su apuesta por la deducción sola: el modus tollens.",
+    board: [
+      { expr: "PL: casos favorables → más probabilidad", note: "confirmación" },
+      { expr: "Popper: intento de refutación fallido → corroboración", note: "aceptación provisoria" },
+      { expr: "PL: demarcar = traducir a lo observacional", note: "criterio de sentido" },
+      { expr: "Popper: demarcar = tener falsadores potenciales", note: "no es criterio de sentido" },
+    ],
+  },
+};
+
+export const ipcExplicacion: Lesson = {
+  id: "l-ipc-explicacion",
+  title: "La explicación científica",
+  subtitle: "El modelo de cobertura legal",
+  subjectId: S,
+  topicIds: ["t-ipc-explicacion"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-ipc-contrastacion"],
+  cards: [
+    intro(
+      "Explicar es más que describir",
+      "Vas a reconocer los componentes de una explicación según el modelo de cobertura legal (Hempel y Popper), sus requisitos, y la relación entre explicación y predicción.",
+      "Las preguntas del tipo «¿qué requisito no cumple?» o «¿qué lugar ocupa este enunciado?» son frecuentes, y el modelo es una pieza central de la filosofía clásica.",
+    ),
+    explain(
+      "Describir vs. explicar",
+      "«La ventana del aula está rota» **describe**. «La ventana se rompió **porque** la golpeó una pelota a gran velocidad, y los vidrios se rompen ante golpes fuertes» **explica**: responde a un **¿por qué?**\n\nPara el modelo de cobertura legal, explicar un hecho es mostrar que es **un caso de una ley**.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-exp-1",
+      subjectId: S,
+      topicId: "t-ipc-explicacion",
+      prompt: "En una explicación nomológico-deductiva, el **explanandum** es…",
+      options: ["el enunciado que describe el fenómeno que se quiere explicar.", "el conjunto de leyes y condiciones antecedentes.", "un enunciado cuya ocurrencia se desconoce.", "la ley más general de la explicación."],
+      answer: 0,
+      explanation: "El explanandum es la conclusión: describe el hecho a explicar, que se sabe ocurrido. Las leyes y condiciones forman el explanans.",
+      hints: ["«Explanandum» = lo que hay que explicar.", "Va en el lugar de la conclusión.", "En la explicación, el hecho ya ocurrió."],
+      errors: { 1: ["conceptual", "Eso es el explanans (las premisas)."], 2: ["conceptual", "En la explicación el explanandum se sabe ocurrido; si todavía no ocurrió, es una predicción."], 3: ["conceptual", "Las leyes van en el explanans."] },
+    }),
+    explain(
+      "Estructura y requisitos",
+      "**Explanans** (premisas): leyes L₁…Lₙ y, para hechos particulares, **condiciones antecedentes** C₁…Cₙ.\n**Explanandum** (conclusión): el hecho.\n\n• **Nomológico-deductiva**: al menos una ley universal; el vínculo es deductivo.\n• **Inductivo-estadística** (Hempel): al menos una ley estadística; el explanans solo hace **probable** el explanandum.\n\n**Requisitos**: al menos una ley, relevancia explicativa, **contenido empírico**, verdad (Hempel: o alta confirmación) y, en las N-D, deducción.",
+      { tag: "matematico" },
+    ),
+    board(
+      "Una explicación nomológico-deductiva",
+      [
+        { expr: "L: Los metales se dilatan cuando aumenta su temperatura.", note: "ley (universal)" },
+        { expr: "C₁: La barra del puente es de hierro, un metal.", note: "condición antecedente" },
+        { expr: "C₂: Al mediodía, su temperatura pasó de 15 °C a 35 °C.", note: "condición antecedente" },
+        { expr: "────────────", note: "deducción" },
+        { expr: "E: La barra del puente se alargó al mediodía.", note: "explanandum" },
+      ],
+      "Explanans arriba, explanandum abajo:",
+      "Si el explanandum todavía no hubiera ocurrido, la misma estructura sería una predicción.",
+    ),
+    example(
+      "¿Qué falla?",
+      "«La manteca se derritió porque la manteca se derrite a más de 32 °C.» ¿Qué requisito no cumple?",
+      ["Hay una ley: la manteca se derrite a más de 32 °C.", "Pero falta la condición antecedente: que la manteca estuvo a más de 32 °C.", "Sin ella, el explanandum no se deduce."],
+      "Faltan condiciones antecedentes: no hay deducción.",
+    ),
+    practice("Ejercicio guiado", "ipc-explicacion-cientifica", 1, 2, true),
+    explain(
+      "Trampas",
+      "• **Petición de principio**: el explanandum aparece, tal cual o reformulado, en el explanans. «Bajaron los turistas en la costa porque bajaron los extranjeros, los de otras provincias **y todos los que visitan la costa**». Hay deducción, pero no explicación.\n• El explanans **debe** tener contenido empírico (nada de «fuerzas invisibles»).\n• No siempre hay condiciones antecedentes: una **regularidad** se explica con leyes más generales.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-explicacion-cientifica", 3, 7),
+    practice("Desafío", "ipc-explicacion-cientifica", 5, 15),
+    summary([
+      "Explicar = responder «¿por qué?» mostrando el hecho como caso de una ley.",
+      "Explanans: leyes + condiciones antecedentes. Explanandum: el hecho, que se sabe ocurrido.",
+      "N-D: ley universal y deducción. I-E (Hempel): ley estadística, solo hace probable.",
+      "Requisitos: ley, relevancia, contenido empírico, verdad o alta confirmación, deducción (N-D).",
+      "Explicación y predicción tienen la misma estructura.",
+    ]),
+  ],
+  tutor: {
+    normal: "Según el modelo de cobertura legal, una explicación es un argumento cuyo explanans contiene al menos una ley y, para hechos particulares, condiciones antecedentes, y cuya conclusión, el explanandum, describe el fenómeno. En la versión nomológico-deductiva la ley es universal y el vínculo deductivo; en la inductivo-estadística, la ley es estadística y el explanans solo confiere probabilidad.",
+    simple: "Explicar algo es mostrar que pasó porque se cumplió una regla general en ciertas condiciones. La regla es la ley; las condiciones son los datos del caso; lo que pasó es el explanandum.",
+    nino: "¿Por qué se cayó el vaso? Porque todo lo que se suelta sin apoyo cae (la ley) y alguien lo soltó al borde de la mesa (la condición).",
+    ejemplo: "Ley: el agua a presión normal se congela por debajo de 0 °C. Condición: la botella estuvo en un freezer a −18 °C. Explanandum: el agua de la botella se congeló.",
+    fromZero: "Cuando preguntamos «¿por qué pasó esto?», buscamos algo más que una descripción. El modelo de cobertura legal dice: una buena respuesta es un argumento. Las premisas tienen una regla general (ley) y los datos particulares del caso; la conclusión es el hecho a explicar. Si las premisas son verdaderas, el hecho tenía que ocurrir.",
+    why: "Así se puede evaluar si una explicación es aceptable: si falta la ley, si falta un dato, si apela a algo no contrastable o si da vueltas en círculo, el modelo permite señalarlo.",
+    origin: "Hempel y Popper formularon el modelo con la herramienta de la lógica deductiva. Como explicar y predecir usan el mismo argumento, la diferencia es solo temporal: si conocemos el hecho, explicamos; si todavía no ocurrió, predecimos.",
+    board: [
+      { expr: "L₁, …, Lₙ", note: "leyes" },
+      { expr: "C₁, …, Cₙ", note: "condiciones antecedentes" },
+      { expr: "────────", note: "deducción (N-D)" },
+      { expr: "E", note: "explanandum" },
+    ],
+  },
+};
+
+export const ipcKuhn: Lesson = {
+  id: "l-ipc-kuhn",
+  title: "Kuhn y las revoluciones científicas",
+  subtitle: "Paradigma, ciencia normal, crisis e inconmensurabilidad",
+  subjectId: S,
+  topicIds: ["t-ipc-kuhn"],
+  estimatedMinutes: 11,
+  prerequisites: ["t-ipc-pl-popper"],
+  cards: [
+    intro(
+      "La ciencia tiene historia",
+      "Vas a recorrer las etapas del desarrollo de una disciplina según Thomas Kuhn (*La estructura de las revoluciones científicas*, 1962), y entender qué es un paradigma y qué significa la inconmensurabilidad.",
+      "Kuhn es la gran crítica a la filosofía clásica: mira la ciencia como práctica histórica de una comunidad. En el parcial aparece como «¿en qué etapa está?» o «¿enigma o anomalía?».",
+    ),
+    explain(
+      "Críticas a la filosofía clásica",
+      "Para Kuhn la filosofía de la ciencia no puede ignorar la **historia**. Además:\n\n• el agente de la ciencia es la **comunidad científica**;\n• **no hay observación neutral**: toda observación está **cargada de teoría**;\n• los criterios de racionalidad **cambian históricamente**, y en la elección de teorías pesan también factores **extracientíficos**.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-kuhn-1",
+      subjectId: S,
+      topicId: "t-ipc-kuhn",
+      prompt: "En plena ciencia normal, un investigador no logra que un experimento dé el resultado esperado. La comunidad atribuye el fracaso a su falta de habilidad. Según Kuhn, es…",
+      options: ["un enigma: se culpa al científico, no al paradigma.", "una anomalía que inicia una crisis.", "una revolución científica.", "un caso de inconmensurabilidad."],
+      answer: 0,
+      explanation: "En la ciencia normal, los problemas son enigmas con solución asegurada; si no se resuelven, se culpa al científico. Sería anomalía si se resistiera persistentemente y violara las expectativas del paradigma.",
+      hints: ["¿Alguien duda del paradigma?", "En la ciencia normal se pone a prueba el ingenio del científico, no el paradigma.", "Una sola dificultad no inicia una crisis."],
+      errors: { 1: ["conceptual", "Nadie duda del paradigma: mientras se culpa al investigador, es un enigma."], 2: ["conceptual", "No hay cambio de paradigma."], 3: ["conceptual", "No hay dos paradigmas en juego."] },
+    }),
+    explain(
+      "Paradigma y etapas",
+      "**Paradigma** como **matriz disciplinar**: generalizaciones simbólicas, modelos, valores y principios metafísicos compartidos. Como **ejemplar**: soluciones modelo que se imitan.\n\n**Etapas**: período **preparadigmático** (escuelas en competencia) → **ciencia normal** (resolver enigmas; acumulativa) → **anomalías** → **crisis** (se acumulan, se pierde confianza) → **revolución** (cambio no acumulativo, como una conversión) → nueva ciencia normal.\n\n**Inconmensurabilidad**: no hay medida neutral para comparar paradigmas (aspectos perceptual, metodológico y lingüístico).",
+      { tag: "matematico" },
+    ),
+    board(
+      "El ciclo kuhniano",
+      [
+        { expr: "Preciencia", note: "escuelas sin acuerdo en supuestos, métodos ni problemas" },
+        { expr: "Ciencia normal", note: "un paradigma por consenso; resolución de enigmas" },
+        { expr: "Anomalía", note: "un fenómeno se resiste y viola las expectativas" },
+        { expr: "Crisis", note: "acumulación de anomalías; escepticismo; alternativas aisladas" },
+        { expr: "Revolución", note: "un paradigma nuevo e incompatible reemplaza al viejo" },
+        { expr: "Nueva ciencia normal", note: "el progreso es acumulativo dentro del paradigma, no entre paradigmas" },
+      ],
+    ),
+    example(
+      "Inconmensurabilidad lingüística",
+      "En la física newtoniana la masa es una magnitud constante; en la relativista depende de la velocidad. ¿Qué ilustra esto según Kuhn?",
+      ["El mismo término («masa») cambia de significado de un paradigma a otro.", "Eso interrumpe la comunicación entre partidarios de cada paradigma.", "No hay un lenguaje neutral para compararlos término a término."],
+      "Ilustra el aspecto lingüístico de la inconmensurabilidad.",
+    ),
+    practice("Ejercicio guiado", "ipc-kuhn", 1, 6, true),
+    explain(
+      "Confusiones típicas",
+      "• **Enigma ≠ anomalía**: el enigma tiene solución dentro del paradigma.\n• Kuhn **no** dice que no haya progreso: lo hay **dentro** de la ciencia normal, no **entre** paradigmas.\n• Inconmensurable **no** es «incompatible pero comparable»: es sin medida común.\n• Kuhn no afirma que la ciencia sea irracional: dice que la racionalidad está **históricamente situada**.\n• Una sola anomalía no derriba un paradigma.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-kuhn", 3, 10),
+    practice("Desafío", "ipc-kuhn", 5, 16),
+    summary([
+      "Giro historicista: la ciencia es práctica de una comunidad; la observación está cargada de teoría.",
+      "Paradigma: matriz disciplinar (generalizaciones, modelos, valores, principios metafísicos) y ejemplares.",
+      "Preciencia → ciencia normal → anomalías → crisis → revolución.",
+      "Enigma: se culpa al científico. Anomalía: se resiste al paradigma.",
+      "Inconmensurabilidad: no hay criterio neutral para comparar paradigmas.",
+    ]),
+  ],
+  tutor: {
+    normal: "Kuhn describe el desarrollo de las disciplinas como una alternancia entre períodos de ciencia normal, en que una comunidad comparte un paradigma y resuelve enigmas, y revoluciones, en que un paradigma en crisis por la acumulación de anomalías es reemplazado por otro inconmensurable con él. La racionalidad científica queda así históricamente situada.",
+    simple: "Durante mucho tiempo los científicos trabajan con un mismo marco y resuelven problemas dentro de él. Cuando aparecen demasiadas cosas que no encajan, el marco entra en crisis y puede ser reemplazado por otro totalmente distinto, que ve el mundo de otra manera.",
+    nino: "Es como las reglas de un deporte: mientras todos las aceptan, se compite y se mejora dentro de ellas. Si de golpe muchos empiezan a jugar con otras reglas, ya no se puede comparar quién juega «mejor» con la vara anterior.",
+    ejemplo: "Un astrónomo no logra ajustar sus cálculos a una órbita: si la comunidad culpa sus mediciones, es un enigma; si el desajuste persiste y se suma a otros, pasa a ser anomalía y puede abrir una crisis.",
+    fromZero: "Hasta ahora vimos la ciencia como un conjunto de teorías que se ponen a prueba con lógica. Kuhn propuso mirar cómo trabajan de verdad las comunidades científicas a lo largo de la historia. Vio que comparten un marco (paradigma) que no discuten mientras funciona, y que el cambio de marco no es un paso lógico sino algo parecido a una conversión.",
+    why: "Kuhn mostró que la historia y los factores sociales importan para entender la ciencia. Eso abrió la puerta a analizar sesgos, como hace la epistemología feminista en la lección siguiente.",
+    origin: "Kuhn llegó a estas ideas estudiando episodios históricos de la ciencia y notando que no encajaban en la imagen acumulativa y puramente lógica de la filosofía clásica. Más tarde (1969 y 1982) restringió la inconmensurabilidad a lo lingüístico y la volvió local.",
+    board: [
+      { expr: "Ciencia normal → anomalías → crisis → revolución" },
+      { expr: "Enigma: falla el científico", note: "el paradigma no se discute" },
+      { expr: "Anomalía: falla la expectativa del paradigma", note: "puede llevar a la crisis" },
+    ],
+  },
+};
+
+export const ipcFeminismo: Lesson = {
+  id: "l-ipc-feminismo",
+  title: "Ciencia y género",
+  subtitle: "Conocimiento situado y epistemología feminista",
+  subjectId: S,
+  topicIds: ["t-ipc-feminismo"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-ipc-kuhn"],
+  cards: [
+    intro(
+      "¿Quién conoce, y desde dónde?",
+      "Vas a reconocer las manifestaciones del sexismo y el androcentrismo en la ciencia, el concepto de conocimiento situado y las tres tradiciones de la epistemología feminista.",
+      "Continúa la apertura de Kuhn a los factores extracientíficos y cierra la Unidad 3 en el programa 2026.",
+    ),
+    explain(
+      "Qué busca visibilizar",
+      "La epistemología feminista busca visibilizar y cuestionar el **sexismo** (desvalorización por sexo) y el **androcentrismo** (tomar al varón como medida de lo humano) en la producción, validación, aplicación y conceptualización del conocimiento.\n\nEjemplos: aportes de mujeres atribuidos a varones (**efecto Matilda**), exclusión de las universidades, diagnósticos pensados sobre cuerpos masculinos, teorías que presentan a la mujer como «pasiva».",
+      { tag: "cotidiano" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-fem-1",
+      subjectId: S,
+      topicId: "t-ipc-feminismo",
+      prompt: "Según la advertencia de Elizabeth Anderson, decir que el conocimiento es **situado**…",
+      options: ["no implica relativismo ni que la objetividad sea indeseable.", "implica que todas las perspectivas valen lo mismo.", "implica abandonar la evidencia empírica.", "significa que solo las mujeres pueden conocer."],
+      answer: 0,
+      explanation: "Que todo conocimiento refleje la situación de quien conoce no implica relativismo, ni que ninguna perspectiva sea mejor que otra, ni que la objetividad sea indeseable.",
+      hints: ["Situado ≠ relativo.", "¿La epistemología feminista abandona la evidencia?", "Pensá en el empirismo feminista."],
+      errors: { 1: ["conceptual", "Eso sería relativismo, que Anderson rechaza explícitamente."], 2: ["conceptual", "No: por ejemplo, el empirismo feminista mantiene la evidencia y la lógica."], 3: ["conceptual", "No es lo que sostiene: la situación social de cualquier sujeto influye en lo que conoce."] },
+    }),
+    explain(
+      "Conceptos y tradiciones",
+      "**Cognoscente situado**: el conocimiento refleja la situación del sujeto (cuerpo, perspectiva, intereses, **situación social**). El **género** es un modo de situación social.\n\n**Tres tradiciones** (según Sandra Harding):\n• **Teoría del punto de vista**: los grupos desfavorecidos tienen un **privilegio epistémico** sobre los fenómenos que los involucran.\n• **Posmodernismo feminista**: identidades inestables y múltiples, **interseccionalidad**, el lenguaje como poder.\n• **Empirismo feminista**: mantiene evidencia y lógica; el sujeto es la **comunidad**; **Longino**: objetividad como **crítica intersubjetiva**.",
+      { tag: "matematico" },
+    ),
+    board(
+      "Analizar un caso",
+      [
+        { expr: "Caso: los síntomas del infarto se describen según cuerpos masculinos", note: "punto de partida" },
+        { expr: "¿Afecta la historia, el acceso, los usos o el contenido?", note: "afecta los usos del conocimiento" },
+        { expr: "Manifestación: aplicación sexista", note: "diagnósticos basados en cuerpos masculinos" },
+        { expr: "Consecuencia: en mujeres se diagnostica tarde", note: "el sesgo tiene efectos concretos" },
+      ],
+      "Un procedimiento para clasificar manifestaciones del sexismo:",
+    ),
+    example(
+      "¿Qué tradición?",
+      "«La objetividad no surge de un individuo neutral, sino de una comunidad con ámbitos públicos de crítica, que responde a las críticas y reconoce igual autoridad intelectual a sus miembros.»",
+      ["No habla de un privilegio epistémico de un grupo (punto de vista).", "No disuelve la idea de conocimiento en discursos (posmodernismo).", "Mantiene la objetividad, pero entendida como crítica intersubjetiva regulada por normas."],
+      "Empirismo feminista (la propuesta de Longino).",
+    ),
+    practice("Ejercicio guiado", "ipc-feminismo", 1, 4, true),
+    explain(
+      "Para no confundir",
+      "• El **privilegio epistémico** es de la teoría del **punto de vista**, no del empirismo.\n• La **interseccionalidad** y el rechazo de un concepto unitario de «mujer» son del **posmodernismo**.\n• El empirismo feminista enfrenta la **paradoja del sesgo** (critica sesgos pero propone valores feministas) y responde que lo social y lo lógico-empírico **no se oponen**.\n• Acuerdos actuales: **pluralismo** y **situacionalidad**.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-feminismo", 3, 9),
+    practice("Desafío", "ipc-feminismo", 5, 13),
+    summary([
+      "Objetivo: visibilizar el sexismo y el androcentrismo en la ciencia.",
+      "Manifestaciones: omisiones históricas, exclusión, aplicaciones, teorías y conceptos sexistas.",
+      "Conocimiento situado: el género es un modo de situación social; no implica relativismo.",
+      "Punto de vista: privilegio epistémico. Posmodernismo: identidades múltiples. Empirismo feminista: objetividad como crítica intersubjetiva (Longino).",
+    ]),
+  ],
+  tutor: {
+    normal: "La epistemología feminista analiza cómo el sexismo y el androcentrismo afectan la producción, validación y aplicación del conocimiento. Parte de la idea de cognoscente situado, en la que el género es un modo de situación social, y se organiza en tres tradiciones: la teoría del punto de vista, el posmodernismo feminista y el empirismo feminista.",
+    simple: "Quién investiga y desde qué lugar social lo hace influye en qué se estudia y cómo. La epistemología feminista muestra los sesgos de género que hubo en la ciencia y propone formas de corregirlos sin renunciar a la objetividad.",
+    nino: "Si todos los muñecos de prueba de choque de autos tienen el cuerpo de un varón adulto, los autos van a ser más seguros para ellos que para otras personas. Nadie lo hizo a propósito, pero el sesgo está.",
+    ejemplo: "Que el aporte de una científica a un descubrimiento se atribuya a sus colegas varones ilustra las omisiones selectivas en la historia de la ciencia (efecto Matilda).",
+    fromZero: "Kuhn mostró que en la ciencia también pesan factores sociales e históricos. Una pregunta natural es: ¿pesa el género? La respuesta de la epistemología feminista es que sí: en quiénes pudieron investigar, en qué se investigó, en cómo se interpretaron los datos y en cómo se aplicó lo descubierto.",
+    why: "Reconocer los sesgos es condición para corregirlos y para producir un conocimiento más completo y confiable.",
+    origin: "Se apoya en el giro historicista de Kuhn (la racionalidad está situada) y en investigaciones históricas y científicas que documentaron sesgos concretos; las tradiciones difieren en cómo responder a ese diagnóstico.",
+    board: [
+      { expr: "Punto de vista → privilegio epistémico de los grupos desfavorecidos" },
+      { expr: "Posmodernismo → identidades múltiples, interseccionalidad" },
+      { expr: "Empirismo feminista → objetividad como crítica intersubjetiva" },
+    ],
+  },
+};
+
+const U3_LESSONS: Lesson[] = [ipcContrastacion, ipcPlPopper, ipcExplicacion, ipcKuhn, ipcFeminismo];
+
+// ═══════════════════════ Unidad 4 · La dimensión ético-política de la ciencia ═══════════════════════
+
+export const ipcEtica: Lesson = {
+  id: "l-ipc-etica",
+  title: "Ética y ciencia",
+  subtitle: "Ética de la investigación, responsabilidad y cientificismo",
+  subjectId: S,
+  topicIds: ["t-ipc-etica"],
+  estimatedMinutes: 11,
+  prerequisites: [],
+  cards: [
+    intro(
+      "¿Es neutral la ciencia?",
+      "Vas a distinguir la ética de la investigación de la ética de los usos de la ciencia, entender qué es la responsabilidad y comparar el cientificismo con el anticientificismo.",
+      "La Unidad 4 pregunta por la dimensión social de la ciencia. En el parcial aparece como «¿quién sostendría esta afirmación?» y «¿qué enfoque ético corresponde?».",
+    ),
+    explain(
+      "Hechos y valores",
+      "Un **juicio de hecho** dice cómo son las cosas y se contrasta empíricamente. Un **juicio de valor** dice qué es bueno o debido.\n\nPasar de uno a otro sin más es la **falacia naturalista**: «en tal especie los machos no crían, **así que** los padres no deben hacerse cargo». De un hecho natural no se sigue una norma.\n\nLa **ética** reflexiona sobre la moral: las normas que rigen la conducta.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-eti-1",
+      subjectId: S,
+      topicId: "t-ipc-etica",
+      prompt: "Un comité discute si una investigadora debe declarar que su estudio sobre una bebida fue financiado por la empresa que la fabrica. ¿Qué enfoque ético corresponde?",
+      options: ["Internalista: la conducta durante la investigación.", "Externalista: el impacto social de la ciencia.", "Ninguno: es un tema técnico.", "Cientificista."],
+      answer: 0,
+      explanation: "Los conflictos de interés son un problema de integridad durante la investigación: enfoque internalista.",
+      hints: ["¿Se discute cómo se investiga o qué efectos tiene lo investigado en la sociedad?", "Conflictos de interés, fraude, plagio: conducta del científico.", "Internalista = dentro de la práctica de investigación."],
+      errors: { 1: ["conceptual", "El externalismo mira los usos e impactos sociales; acá se discute la conducta de quien investiga."], 2: ["conceptual", "Es un problema ético: afecta la integridad de la investigación."], 3: ["conceptual", "El cientificismo es una postura sobre la neutralidad de la ciencia, no un enfoque de la ética de la investigación."] },
+    }),
+    explain(
+      "Dos enfoques y la responsabilidad",
+      "• **Internalista** (ética de la investigación): honestidad, fraude, plagio, méritos, **conflictos de interés**, revisión por pares, trato a participantes (engaño, daño, privacidad).\n• **Externalista** (ética de los usos): el **impacto social** de la ciencia y la tecnología.\n\n**Responsabilidad**: requiere un **agente intencional**, capaz de prever consecuencias, y **libertad** para actuar de otro modo. Responsabilidad **no es** culpabilidad, y puede ser individual o colectiva.",
+      { tag: "matematico" },
+    ),
+    board(
+      "Cientificismo vs. anticientificismo",
+      [
+        { expr: "Distinción — Cientificismo (Bunge): ciencia pura / aplicada / tecnología · Anticientificismo (Marí): tecnociencia" },
+        { expr: "Neutralidad — Cientificismo: la ciencia pura es neutral · Anticientificismo: no hay neutralidad, saber y poder" },
+        { expr: "Responsabilidad — Cientificismo: quienes usan el conocimiento · Anticientificismo: también los científicos" },
+        { expr: "Control ético — Cientificismo: sí, sobre la tecnología · Anticientificismo: sobre todo el proceso" },
+        { expr: "«Ciencia martillo»", note: "caricatura que el anticientificismo hace del cientificismo: el conocimiento como herramienta neutral" },
+      ],
+      "El núcleo evaluable de la unidad, punto por punto:",
+    ),
+    example(
+      "¿Quién lo diría?",
+      "«Quienes estudiaron la fisión nuclear no son responsables de la bomba: la responsabilidad es de los políticos que decidieron usarla.»",
+      ["Separa el conocimiento (neutral) de su uso.", "Ubica la responsabilidad en quienes usan el saber, no en quienes lo producen.", "Es la imagen de la «ciencia martillo»."],
+      "Lo sostendría el cientificismo.",
+    ),
+    practice("Ejercicio guiado", "ipc-etica-ciencia", 1, 2, true),
+    explain(
+      "Confusiones típicas",
+      "• «La búsqueda de la verdad y la de utilidad son independientes» es **cientificista**, no anticientificista.\n• La imagen del martillo **no** es una tesis de Marí: es su **caricatura** del cientificismo.\n• El cientificismo **no** niega todo control ético: lo acepta para la **tecnología**.\n• **Cientificista ≠ científico**: se puede hacer ciencia sin ser cientificista.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-etica-ciencia", 3, 7),
+    practice("Desafío", "ipc-etica-ciencia", 5, 12),
+    summary([
+      "Hechos ≠ valores; derivar normas de hechos naturales es la falacia naturalista.",
+      "Internalista: conducta durante la investigación. Externalista: impacto social.",
+      "Responsabilidad: agente intencional + libertad; no es culpabilidad.",
+      "Cientificismo: ciencia pura neutral, responsables los usuarios. Anticientificismo: tecnociencia, no hay neutralidad.",
+      "«Ciencia martillo»: la caricatura anticientificista del cientificismo.",
+    ]),
+  ],
+  tutor: {
+    normal: "La ética de la ciencia se aborda desde un enfoque internalista, centrado en la integridad y la conducta de quienes investigan, y uno externalista, centrado en los usos e impactos sociales del conocimiento. Sobre la neutralidad, el cientificismo sostiene que la ciencia pura es valorativamente neutral y que la responsabilidad recae en los usuarios; el anticientificismo niega esa neutralidad y extiende la responsabilidad a los científicos.",
+    simple: "Hay dos preguntas éticas: ¿se investiga de manera honesta? y ¿qué se hace con lo que se descubre? Unos dicen que la ciencia en sí es neutral y que la culpa es de quien la usa mal; otros dicen que la ciencia nunca es neutral y que los científicos también deben responder.",
+    nino: "Un cuchillo sirve para cocinar o para lastimar. Unos dicen: «el que lo fabrica no tiene nada que ver». Otros dicen: «si sabés para qué lo van a usar, algo de responsabilidad tenés».",
+    ejemplo: "Que una revista retire un artículo con datos inventados es un tema internalista; discutir los usos militares de la inteligencia artificial es externalista.",
+    fromZero: "La ciencia la hacen personas, con dinero de alguien y con consecuencias para todos. Por eso podemos preguntar si se investiga bien (honestidad, respeto por los participantes) y si lo que se produce se usa bien. Y hay una discusión de fondo: ¿el conocimiento es neutral, como una herramienta, o ya viene cargado de intereses desde que se elige qué investigar?",
+    why: "Las decisiones sobre qué investigar y cómo usar los resultados afectan a la sociedad entera. Entender las posiciones te da herramientas para participar de esas discusiones.",
+    origin: "La distinción internalista/externalista organiza los problemas según dónde aparecen (dentro o fuera de la investigación). El debate cientificismo/anticientificismo se apoya en la distinción entre ciencia pura, aplicada y tecnología, que una postura defiende y la otra critica como abstracta.",
+    board: [
+      { expr: "Cientificismo: ciencia pura neutral", note: "responsables: quienes la usan" },
+      { expr: "Anticientificismo: tecnociencia", note: "responsables: también los científicos" },
+      { expr: "Internalista: conducta al investigar" },
+      { expr: "Externalista: impacto social" },
+    ],
+  },
+};
+
+export const ipcPoliticas: Lesson = {
+  id: "l-ipc-politicas",
+  title: "Políticas científicas",
+  subtitle: "Ciencia básica vs. aplicada y el financiamiento",
+  subjectId: S,
+  topicIds: ["t-ipc-politicas"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-ipc-etica"],
+  cards: [
+    intro(
+      "¿Qué ciencia financiar?",
+      "Vas a conocer qué es una política científica, el modelo lineal, el debate entre practicismo y cientificismo, y cómo se mide la inversión en investigación.",
+      "Cierra la materia conectando la ciencia con las decisiones públicas. En el parcial aparece como «¿qué postura expresa esta afirmación?» y comparaciones entre medidas absolutas y relativas.",
+    ),
+    explain(
+      "Una política pública cuyo objeto es la ciencia",
+      "Una **política científica** son las medidas de un Estado para fomentar la investigación, la tecnología y la innovación con vistas al desarrollo.\n\nSurge con la Segunda Guerra Mundial (el Proyecto Manhattan). En 1945, Vannevar Bush propone el **modelo lineal**: de la ciencia **básica** sale la **aplicada**, después la **tecnología** y finalmente el **bienestar**. Por eso recomienda financiar prioritariamente la básica.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Chequeo rápido", {
+      id: "q-ipc-pol-1",
+      subjectId: S,
+      topicId: "t-ipc-politicas",
+      prompt: "«Descubrir que una proteína favorece el crecimiento de ciertos tumores» y «desarrollar un fármaco que la bloquee» son, respectivamente…",
+      options: ["ciencia básica y ciencia aplicada.", "ciencia aplicada y ciencia básica.", "dos casos de ciencia básica.", "dos casos de tecnología."],
+      answer: 0,
+      explanation: "Descubrir cómo funciona algo, sin aplicación inmediata, es básico. Usar ese conocimiento para resolver un problema práctico (un tratamiento) es aplicado.",
+      hints: ["¿Cuál busca entender y cuál busca resolver un problema práctico?", "La básica amplía el conocimiento.", "La aplicada usa conocimiento previo para un fin práctico."],
+      errors: { 1: ["conceptual", "Está invertido: descubrir la función de la proteína es básico; bloquearla para tratar es aplicado."], 2: ["conceptual", "Desarrollar un fármaco tiene un fin práctico: es aplicado."], 3: ["conceptual", "Descubrir el papel de la proteína no produce ningún artefacto: es ciencia básica."] },
+    }),
+    explain(
+      "Practicismo vs. cientificismo",
+      "• **Practicista**: prioridad de la **ciencia aplicada** a los problemas sociales y económicos del país; la autonomía del científico se subordina a esas demandas; la básica «que la hagan los países ricos».\n• **Cientificista** (Bunge): prioridad de la **ciencia básica**, que da beneficios futuros no especificados.\n\nArgumentos a favor de la básica en países periféricos: es **más barata** que la innovación tecnológica, evita formar científicos sin lugar para investigar, evita la **dependencia** de agendas ajenas, y la ciencia también es **cultura**.",
+      { tag: "matematico" },
+    ),
+    board(
+      "Medida absoluta y relativa",
+      [
+        { expr: "A: 3.000 / 200.000 · 100", note: "inversión en I+D sobre PBI (en millones)" },
+        { expr: "A: 0,015 · 100 = 1,5%" },
+        { expr: "B: 6.000 / 600.000 · 100" },
+        { expr: "B: 0,01 · 100 = 1%" },
+        { expr: "6.000 > 3.000, pero 1,5% > 1%", note: "B invierte más en términos absolutos; A, en términos relativos" },
+      ],
+      "El país A invierte 3.000 millones con un PBI de 200.000 millones; el país B, 6.000 millones con un PBI de 600.000 millones:",
+      "La medida relativa (porcentaje del PBI) permite comparar el esfuerzo de países de distinto tamaño.",
+    ),
+    example(
+      "Reconocer la postura",
+      "«Con los recursos escasos de un país en desarrollo, la investigación debe orientarse a resolver problemas sanitarios urgentes; la ciencia básica es un lujo.» ¿Qué postura es y qué le objetaría un cientificista?",
+      ["Prioriza la ciencia aplicada a problemas del país: es practicista.", "Objeción 1: muchos grandes avances surgieron de investigación sin aplicación inmediata.", "Objeción 2: renunciar a la básica genera dependencia de agendas ajenas.", "Objeción 3: la ciencia básica es más barata que la innovación tecnológica."],
+      "Postura practicista; el cientificista defendería financiar también la ciencia básica.",
+    ),
+    practice("Ejercicio guiado", "ipc-politicas-cientificas", 1, 3, true),
+    explain(
+      "Para no confundir",
+      "• «Cientificismo» aparece en dos debates: la **neutralidad** de la ciencia (lección anterior) y **qué financiar**. En ambos lo representa Bunge.\n• Invertir **más dinero** no es invertir **más en proporción**: compará siempre con el PBI.\n• Según el material de la cátedra, en los países desarrollados la inversión es mayormente **privada**, y en los países en desarrollo, mayormente **estatal**.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "ipc-politicas-cientificas", 3, 8),
+    practice("Desafío", "ipc-politicas-cientificas", 5, 14),
+    summary([
+      "Política científica: política pública para fomentar investigación, tecnología e innovación.",
+      "Modelo lineal (Bush, 1945): básica → aplicada → tecnología → bienestar.",
+      "Practicismo: prioridad de lo aplicado. Cientificismo (Bunge): prioridad de lo básico.",
+      "Medida absoluta (monto total) vs. relativa (% del PBI).",
+    ]),
+  ],
+  tutor: {
+    normal: "Las políticas científicas son políticas públicas que tienen por objeto la investigación científica y tecnológica. El modelo lineal de Vannevar Bush justificó priorizar la ciencia básica; el debate posterior enfrenta al practicismo, que prioriza la ciencia aplicada a problemas locales, y al cientificismo, que defiende la ciencia básica por sus beneficios no especificados. La inversión se mide en términos absolutos o relativos al PBI.",
+    simple: "Un país tiene que decidir en qué investigar y cuánto gastar. Unos dicen: pongamos la plata en resolver los problemas urgentes. Otros dicen: si no investigamos lo básico, siempre vamos a depender de otros. Y para comparar países, se mira qué porcentaje de su riqueza invierten.",
+    nino: "Es como una familia que decide si gasta en arreglar ya el techo que gotea o en que los chicos estudien, que rinde a largo plazo. Las dos cosas importan, y la discusión es cuánto a cada una.",
+    ejemplo: "Un país invierte 3.000 millones con un PBI de 200.000 millones (1,5%); otro, 6.000 millones con un PBI de 600.000 millones (1%). El segundo gasta más, pero el primero hace un esfuerzo relativo mayor.",
+    fromZero: "Investigar cuesta dinero, y gran parte lo pone el Estado. Entonces aparecen preguntas políticas: ¿cuánto invertir?, ¿en qué?, ¿quién decide? Una política científica es el conjunto de respuestas que da un gobierno a esas preguntas.",
+    why: "Las decisiones sobre financiamiento definen qué conocimiento existe en un país y para quién. Entender los argumentos te permite evaluar propuestas concretas.",
+    origin: "Las políticas científicas modernas nacen cuando la Segunda Guerra Mundial mostró el poder de la ciencia organizada. El modelo lineal fue la primera justificación sistemática del financiamiento estatal; sus críticas dieron lugar al debate entre practicismo y cientificismo.",
+    board: [
+      { expr: "Ciencia básica → ciencia aplicada → tecnología → bienestar", note: "modelo lineal" },
+      { expr: "% del PBI = inversión / PBI · 100", note: "medida relativa" },
+    ],
+  },
+};
+
+const U4_LESSONS: Lesson[] = [ipcEtica, ipcPoliticas];
 
 
-export const ipcLessons: Lesson[] = [...U1_LESSONS, ...U2_LESSONS];
+
+
+export const ipcLessons: Lesson[] = [...U1_LESSONS, ...U2_LESSONS, ...U3_LESSONS, ...U4_LESSONS];

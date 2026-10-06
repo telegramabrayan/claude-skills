@@ -749,4 +749,543 @@ export const posicionesDistanciasLesson: Lesson = {
   },
 };
 
-export const algebraALessons: Lesson[] = [conjuntosLesson, valorAbsolutoLesson, complejosLesson, complejosPolarLesson, polinomiosDivisionLesson, polinomiosRaicesLesson, productoVectorialLesson, anguloProyeccionLesson, rectasLesson, planosLesson, posicionesDistanciasLesson];
+// ═════════════════════════ alg-3 · Matrices y sistemas lineales ═════════════════════════
+
+const matricesBoard: BoardStep[] = [
+  { expr: "A = [1  2 ; 3  4],  B = [0  1 ; 2  −1]", note: "Filas separadas por «;»" },
+  { expr: "c₁₁ = 1·0 + 2·2 = 4", note: "Fila 1 de A por columna 1 de B" },
+  { expr: "c₁₂ = 1·1 + 2·(−1) = −1", note: "Fila 1 por columna 2" },
+  { expr: "c₂₁ = 3·0 + 4·2 = 8", note: "Fila 2 por columna 1" },
+  { expr: "c₂₂ = 3·1 + 4·(−1) = −1", note: "Fila 2 por columna 2" },
+  { expr: "A·B = [4  −1 ; 8  −1]", note: "Resultado (y B·A = [3 4 ; −1 0]: ¡distinto!)" },
+];
+
+export const matricesLesson: Lesson = {
+  id: "l-alg-matrices",
+  title: "Matrices y operaciones",
+  subtitle: "Suma, producto por escalar y producto de matrices",
+  subjectId: S,
+  topicIds: ["t-alg-matrices"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-producto-escalar"],
+  cards: [
+    intro("Matrices", "Qué es una matriz, cómo se suman y cómo se multiplican (fila por columna).", "Las matrices ordenan los coeficientes de un sistema lineal y representan transformaciones: son el objeto central de la segunda mitad de la materia."),
+    explain(
+      "Una tabla de números",
+      "Una **matriz** $m×n$ es una tabla con $m$ filas y $n$ columnas. $a_{ij}$ es el elemento de la fila $i$ y la columna $j$.\n\nComo una planilla de notas: cada fila es un estudiante, cada columna un parcial. En el texto escribimos las filas separadas por «;»: $[1  2 ; 3  4]$.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-dimension-producto",
+      subjectId: S,
+      topicId: "t-alg-matrices",
+      prompt: "Si A es 2×3 y B es 3×4, ¿qué tamaño tiene A·B?",
+      options: ["2×4", "3×3", "No se puede multiplicar"],
+      answer: 0,
+      explanation: "Se puede porque las columnas de A (3) coinciden con las filas de B (3). El resultado tiene las filas de A y las columnas de B: 2×4.",
+      hints: ["Para multiplicar, columnas de A = filas de B.", "(2×3)·(3×4): los «del medio» coinciden.", "Quedan los de afuera."],
+      errors: { 1: ["conceptual", "Los números que coinciden (3 y 3) «se cancelan»; quedan los de afuera: 2×4."], 2: ["conceptual", "Sí se puede: columnas de A (3) = filas de B (3)."] },
+    }, true),
+    explain(
+      "Operaciones",
+      "• **Suma**: elemento a elemento (mismo tamaño).\n• **Escalar**: $k·A$ multiplica cada elemento.\n• **Producto**: $c_{ij}$ = fila $i$ de $A$ · columna $j$ de $B$ (como un producto escalar).\n\nEl producto **no es conmutativo**: en general $A·B ≠ B·A$. Probá cambiar los números de la matriz y mirá cómo transforma la grilla.",
+      { tag: "matematico", widget: { type: "matrix", a: 1, b: 2, c: 3, d: 4 } },
+    ),
+    board("Multiplicar dos matrices 2×2", matricesBoard),
+    example("Ejemplo resuelto", "Calculá $2A − B$ con $A = [1  0 ; −1  3]$ y $B = [2  2 ; 0  1]$.", ["$2A = [2  0 ; −2  6]$", "$2A − B = [2 − 2   0 − 2 ; −2 − 0   6 − 1]$", "$= [0  −2 ; −2  5]$"], "[0 −2 ; −2 5]"),
+    practice("Ejercicio guiado", "alg-matriz-producto", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "1. Multiplicar elemento a elemento: así **no** se multiplican matrices.\n2. Hacer fila por fila: es fila de la primera por **columna** de la segunda.\n3. Dar vuelta el orden: $A·B$ y $B·A$ suelen ser distintos (y a veces uno ni existe).",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-matriz-producto", 3, 5),
+    practice("Tu turno", "alg-matriz-producto", 4, 8),
+    practice("Desafío", "alg-matriz-producto", 6, 11),
+    summary(["A es m×n: m filas, n columnas; a_ij en fila i, columna j.", "Suma y escalar: elemento a elemento.", "A·B existe si columnas de A = filas de B; el resultado es (filas de A)×(columnas de B).", "c_ij = fila i de A · columna j de B.", "A·B ≠ B·A en general."]),
+  ],
+  tutor: {
+    normal: "El producto de A (m×n) por B (n×p) es la matriz C (m×p) con c_ij = Σ a_ik b_kj. Corresponde a componer las transformaciones lineales asociadas, por eso no es conmutativo.",
+    simple: "Para cada casillero del resultado, tomás una fila de la primera y una columna de la segunda, multiplicás uno a uno y sumás.",
+    nino: "En un kiosco, una matriz dice cuántas unidades de cada producto vendiste por día y otra el precio de cada producto. Fila por columna te da cuánto facturaste cada día.",
+    ejemplo: "[1 2] · [3 ; 4] = 1·3 + 2·4 = 11.",
+    visual: { type: "matrix", a: 1, b: 2, c: 3, d: 4 },
+    visualText: "Cada matriz 2×2 deforma la grilla del plano; multiplicar matrices es aplicar una deformación después de otra.",
+    fromZero: "Una matriz es solo una tabla de números ordenada en filas y columnas. Las operaciones son reglas para combinar tablas.",
+    why: "El producto «fila por columna» es exactamente lo que hace falta para escribir un sistema de ecuaciones como A·X = B y para encadenar transformaciones.",
+    origin: "Si y = A·x y x = B·t, reemplazando y agrupando los coeficientes de t se obtiene y = (A·B)·t con c_ij = Σ a_ik b_kj: así se definió el producto.",
+    board: matricesBoard,
+  },
+};
+
+const gaussBoard: BoardStep[] = [
+  { expr: "x + y + z = 6 ; 2x + 3y + z = 11 ; x − y + 2z = 5", note: "Sistema original" },
+  { expr: "F₂ − 2F₁:  y − z = −1", note: "Eliminamos x de la segunda" },
+  { expr: "F₃ − F₁:  −2y + z = −1", note: "Eliminamos x de la tercera" },
+  { expr: "F₃ + 2F₂:  −z = −3", note: "Eliminamos y de la tercera" },
+  { expr: "z = 3,  y = −1 + 3 = 2", note: "Sustitución hacia atrás" },
+  { expr: "x = 6 − 2 − 3 = 1", note: "Solución (1, 2, 3)" },
+];
+
+export const gaussLesson: Lesson = {
+  id: "l-alg-gauss",
+  title: "Sistemas lineales: método de Gauss",
+  subtitle: "Escalonar y despejar de abajo hacia arriba",
+  subjectId: S,
+  topicIds: ["t-alg-gauss"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-ecuaciones", "t-alg-matrices"],
+  cards: [
+    intro("Método de Gauss", "Cómo resolver un sistema lineal con operaciones entre filas hasta dejarlo escalonado.", "Es el método que funciona siempre, con cualquier cantidad de ecuaciones e incógnitas; lo vas a usar para núcleos, inversas y mucho más."),
+    explain(
+      "Eliminar una incógnita por vez",
+      "Si sabés que 2 cafés y 1 medialuna cuestan 7, y 1 café y 1 medialuna cuestan 4, restando las dos cuentas ves que 1 café cuesta 3. Eso es Gauss: **combinar ecuaciones para eliminar incógnitas**.\n\nSe trabaja con la matriz ampliada $(A | B)$: los coeficientes y, separados por una barra, los términos independientes.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-op-elemental",
+      subjectId: S,
+      topicId: "t-alg-gauss",
+      prompt: "¿Cuál de estas operaciones **no** está permitida en Gauss?",
+      options: ["Multiplicar una fila por 0", "Restarle a una fila el doble de otra", "Intercambiar dos filas"],
+      answer: 0,
+      explanation: "Multiplicar por 0 borra una ecuación y cambia las soluciones. Se permite multiplicar por un número distinto de 0, sumar a una fila un múltiplo de otra e intercambiar filas.",
+      hints: ["Las operaciones válidas no cambian las soluciones.", "¿Qué pasa con la información de una ecuación multiplicada por 0?", "Queda 0 = 0."],
+      errors: { 1: ["conceptual", "Sumar a una fila un múltiplo de otra es LA operación de Gauss."], 2: ["conceptual", "Intercambiar filas está permitido: el sistema es el mismo."] },
+    }, true),
+    explain(
+      "Escalonar",
+      "Con la fila 1 eliminás la $x$ de las demás ($F_i → F_i − k·F_1$). Con la fila 2, la $y$ de las de abajo. Queda un sistema **escalonado** (triangular):\n\n$a x + b y + c z = d$\n$  e y + f z = g$\n$    h z = i$\n\nY se despeja de abajo hacia arriba.",
+      { tag: "matematico" },
+    ),
+    board("Gauss en un sistema 3×3", gaussBoard),
+    example("Ejemplo resuelto", "Resolvé $2x + y = 7$, $x − y = 2$.", ["Intercambiamos filas: $x − y = 2$ ; $2x + y = 7$", "$F_2 − 2F_1$: $3y = 3$ ⇒ $y = 1$", "$x = 2 + 1 = 3$"], "x = 3, y = 1"),
+    practice("Ejercicio guiado", "alg-gauss", 1, 2, true),
+    explain(
+      "Errores típicos",
+      "1. Operar solo los coeficientes y olvidar el término independiente: la operación se aplica a **toda** la fila.\n2. Errores de signo al restar un múltiplo negativo.\n3. No verificar: reemplazá la solución en las ecuaciones **originales**.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-gauss", 2, 6),
+    practice("Tu turno", "alg-gauss", 3, 9),
+    practice("Desafío", "alg-gauss", 5, 12),
+    summary(["Matriz ampliada (A | B).", "Operaciones: F_i → F_i − k·F_j, multiplicar por k ≠ 0, intercambiar filas.", "Objetivo: forma escalonada (triangular).", "Sustitución hacia atrás: de la última ecuación a la primera.", "Verificá en el sistema original."]),
+  ],
+  tutor: {
+    normal: "Las operaciones elementales de fila producen sistemas equivalentes. El método de Gauss las usa para llevar la matriz ampliada a forma escalonada, desde la cual el sistema se resuelve por sustitución regresiva.",
+    simple: "Usás una ecuación para «limpiar» una incógnita de las otras, hasta que la última ecuación tiene una sola incógnita. Despejás y vas subiendo.",
+    nino: "Es como una balanza doble: si a dos balanzas equilibradas les sacás lo mismo de cada lado, siguen equilibradas, y cada vez quedan menos cosas desconocidas.",
+    ejemplo: "x + y = 5, x − y = 1: restando, 2y = 4 ⇒ y = 2, x = 3.",
+    fromZero: "Un sistema es un conjunto de ecuaciones que se tienen que cumplir a la vez. Si sumás o restás ecuaciones verdaderas, obtenés otra ecuación verdadera; Gauss aprovecha eso para ir eliminando incógnitas.",
+    why: "Porque un sistema triangular se resuelve despejando de a una incógnita. Gauss es la forma sistemática de llegar ahí sin cambiar las soluciones.",
+    origin: "Si (x, y, z) cumple dos ecuaciones, también cumple cualquier combinación de ellas; y como las operaciones se pueden deshacer, no se ganan ni se pierden soluciones.",
+    board: gaussBoard,
+  },
+};
+
+const clasifBoard: BoardStep[] = [
+  { expr: "x + y + z = 2 ; x + 2y − z = 1 ; 2x + 3y = 3", note: "Sistema" },
+  { expr: "F₂ − F₁:  y − 2z = −1", note: "Eliminamos x" },
+  { expr: "F₃ − 2F₁:  y − 2z = −1", note: "Eliminamos x de la tercera" },
+  { expr: "F₃ − F₂:  0 = 0", note: "La tercera ecuación no aportaba nada" },
+  { expr: "z = t,  y = 2t − 1,  x = 3 − 3t", note: "z queda libre: SCI" },
+];
+
+export const sistemasClasificacionLesson: Lesson = {
+  id: "l-alg-sistemas-clasificacion",
+  title: "Clasificación de sistemas",
+  subtitle: "SCD, SCI, SI y sistemas con parámetro",
+  subjectId: S,
+  topicIds: ["t-alg-sistemas-clasificacion"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-alg-gauss"],
+  cards: [
+    intro("Clasificar sistemas", "Cómo saber si un sistema tiene una solución, infinitas o ninguna, y cómo analizarlo cuando depende de un parámetro k.", "En los parciales es muy común «clasificar según los valores de k»: es el mismo Gauss, mirando qué filas se anulan."),
+    explain(
+      "Tres finales posibles",
+      "Dos rectas en el plano pueden cortarse en **un punto**, ser **la misma recta** (infinitos puntos en común) o ser **paralelas** (ninguno). Con más ecuaciones pasa lo mismo:\n\n• **SCD**: compatible determinado, solución única.\n• **SCI**: compatible indeterminado, infinitas.\n• **SI**: incompatible, ninguna.",
+      { tag: "intuitivo", widget: { type: "plot", mode: "linear", initial: "2x+1" } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-fila-contradiccion",
+      subjectId: S,
+      topicId: "t-alg-sistemas-clasificacion",
+      prompt: "Al escalonar, la última fila quedó $0x + 0y + 0z = 4$. ¿Qué podés afirmar?",
+      options: ["El sistema es incompatible (SI)", "Tiene infinitas soluciones", "z = 4"],
+      answer: 0,
+      explanation: "La fila dice 0 = 4, que es falso para cualquier (x, y, z): no hay solución.",
+      hints: ["¿Qué valor de x, y, z cumple 0 = 4?", "Ninguno.", "Una contradicción ⇒ SI."],
+      errors: { 1: ["conceptual", "Infinitas soluciones aparece con 0 = 0, no con 0 = 4."], 2: ["conceptual", "El coeficiente de z es 0: la fila no dice nada de z, dice 0 = 4."] },
+    }, true),
+    explain(
+      "Cómo decidir",
+      "Escalonás y mirás:\n\n• Aparece $0 = k$ con $k ≠ 0$ ⇒ **SI**.\n• No hay contradicción y hay un pivote por incógnita ⇒ **SCD**.\n• No hay contradicción pero sobran incógnitas (filas $0 = 0$) ⇒ **SCI**, con variables libres.\n\nCon parámetro: buscá los $k$ que anulan un pivote (o el determinante) y analizalos aparte.",
+      { tag: "matematico" },
+    ),
+    board("Un sistema SCI", clasifBoard),
+    example("Ejemplo resuelto: con parámetro", "Clasificá $x + 2y = 3$, $2x + ky = 6$ según k.", ["$F_2 − 2F_1$: $(k − 4)y = 0$", "Si $k ≠ 4$: $y = 0$, $x = 3$ ⇒ SCD.", "Si $k = 4$: queda $0 = 0$ ⇒ SCI."], "k ≠ 4: SCD; k = 4: SCI"),
+    practice("Ejercicio guiado", "alg-sistema-clasificar", 1, 2, true),
+    explain(
+      "Error típico: dividir por algo que puede ser 0",
+      "En $(k − 4)y = 0$ no se puede «pasar dividiendo» $(k − 4)$ sin aclarar que $k ≠ 4$. El caso $k = 4$ hay que estudiarlo **por separado**.\n\nOtro error: decir SCI con solo ver una fila $0 = 0$. Primero fijate que no haya otra fila con $0 = k$.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-sistema-parametro", 2, 5),
+    practice("Tu turno", "alg-sistema-clasificar", 4, 8),
+    practice("Desafío", "alg-sistema-parametro", 5, 11),
+    summary(["SCD: única; SCI: infinitas; SI: ninguna.", "0 = k (k ≠ 0) ⇒ SI.", "Filas 0 = 0 y menos pivotes que incógnitas ⇒ SCI.", "Con parámetro: estudiá aparte los k que anulan un pivote.", "Sistema cuadrado: det ≠ 0 ⇔ SCD."]),
+  ],
+  tutor: {
+    normal: "Un sistema lineal es compatible determinado, compatible indeterminado o incompatible. La forma escalonada lo decide: una fila 0 = k ≠ 0 lo hace incompatible; si es compatible, la cantidad de variables libres es el número de incógnitas menos el de pivotes.",
+    simple: "Hacés Gauss. Si aparece algo imposible (0 = 5) no tiene solución. Si todo cierra y cada incógnita tiene su escalón, hay una sola. Si sobran incógnitas, hay infinitas.",
+    nino: "Tres pistas para adivinar tres números. Si las pistas se contradicen, no hay respuesta. Si una pista repite lo que ya decían otras, te faltan datos y hay muchas respuestas posibles.",
+    ejemplo: "x + y = 2 y 2x + 2y = 4: la segunda es el doble de la primera ⇒ SCI.",
+    visual: { type: "plot", mode: "linear", initial: "2x+1" },
+    visualText: "Cada ecuación de dos incógnitas es una recta: cortarse, coincidir o ser paralelas son los tres casos.",
+    fromZero: "Resolver un sistema es encontrar los valores que cumplen todas las ecuaciones juntas. Puede haber uno, ninguno o infinitos, y Gauss te dice cuál de los tres casos es.",
+    why: "Antes de buscar «la» solución conviene saber si existe y si es única: en Ingeniería, un sistema SCI significa que faltan datos y uno SI que los datos son inconsistentes.",
+    origin: "Las operaciones de Gauss no cambian las soluciones. En la forma escalonada se ve directamente si hay una ecuación imposible o variables sin pivote (libres).",
+    board: clasifBoard,
+  },
+};
+
+// ═════════════════════════ alg-4 · Determinantes ═════════════════════════
+
+const detBoard: BoardStep[] = [
+  { expr: "A = [2  1  3 ; 0  −1  4 ; 1  2  0]", note: "Desarrollamos por la primera fila" },
+  { expr: "det A = 2·M₁₁ − 1·M₁₂ + 3·M₁₃", note: "Signos alternados + − +" },
+  { expr: "M₁₁ = (−1)·0 − 4·2 = −8", note: "Tapamos fila 1 y columna 1" },
+  { expr: "M₁₂ = 0·0 − 4·1 = −4", note: "Tapamos fila 1 y columna 2" },
+  { expr: "M₁₃ = 0·2 − (−1)·1 = 1", note: "Tapamos fila 1 y columna 3" },
+  { expr: "det A = 2·(−8) − 1·(−4) + 3·1 = −9", note: "Resultado" },
+];
+
+export const determinantesLesson: Lesson = {
+  id: "l-alg-determinantes",
+  title: "Determinantes",
+  subtitle: "2×2, 3×3 (Sarrus y cofactores) y propiedades",
+  subjectId: S,
+  topicIds: ["t-alg-determinantes"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-alg-matrices"],
+  cards: [
+    intro("Determinantes", "Cómo calcular el determinante de matrices 2×2 y 3×3 y cómo usar sus propiedades para no hacer cuentas de más.", "El determinante dice en un número si una matriz es inversible y si un sistema tiene solución única."),
+    explain(
+      "Un factor de área",
+      "Una matriz 2×2 transforma el cuadrado unidad en un paralelogramo. El **determinante** es el área de ese paralelogramo, con signo (negativo si «da vuelta» la figura).\n\nSi $det = 0$, el cuadrado se aplasta en un segmento: la transformación pierde información. Probá con $[2  1 ; 4  2]$.",
+      { tag: "intuitivo", widget: { type: "matrix", a: 2, b: 1, c: 1, d: 3 } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-det2",
+      subjectId: S,
+      topicId: "t-alg-determinantes",
+      prompt: "¿Cuánto vale $det [3  2 ; 4  5]$?",
+      options: ["7", "23", "−7"],
+      answer: 0,
+      explanation: "det = 3·5 − 2·4 = 15 − 8 = 7.",
+      hints: ["ad − bc.", "Diagonal principal: 3·5.", "Diagonal secundaria: 2·4."],
+      errors: { 1: ["signos", "Es una resta: 15 − 8, no 15 + 8."], 2: ["signos", "Es diagonal principal menos secundaria: 15 − 8."] },
+    }, true),
+    explain(
+      "3×3 y propiedades",
+      "**Cofactores**: elegís una fila, multiplicás cada elemento por el determinante 2×2 que queda al tachar su fila y columna, con signos $+ − +$. **Sarrus** (solo 3×3): tres diagonales que bajan a la derecha menos tres que bajan a la izquierda.\n\nPropiedades ($A$ de $n×n$): $det(A^T) = det A$; $det(AB) = det A·det B$; $det(kA) = k^n det A$; intercambiar filas cambia el signo; una fila nula o dos filas proporcionales ⇒ $det = 0$.",
+      { tag: "matematico" },
+    ),
+    board("Determinante 3×3 por cofactores", detBoard),
+    example("Ejemplo resuelto: propiedades", "Si A es 3×3 con $det A = 2$, calculá $det(3A)$.", ["$3A$ multiplica por 3 cada una de las 3 filas.", "$det(3A) = 3^3·det A$", "$= 27·2 = 54$"], "54"),
+    practice("Ejercicio guiado", "alg-determinante", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "1. $det(kA) = k·det A$: **falso**, es $k^n·det A$.\n2. $det(A + B) = det A + det B$: **falso** en general.\n3. En cofactores, olvidar el signo menos del segundo término.\n\nConsejo: desarrollá por la fila o columna con más ceros.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-determinante", 3, 6),
+    practice("Tu turno", "alg-det-propiedades", 2, 8),
+    practice("Desafío", "alg-det-propiedades", 5, 12),
+    summary(["det [a b ; c d] = ad − bc.", "3×3: cofactores (+ − +) o Sarrus.", "det(AB) = det A·det B; det(Aᵀ) = det A.", "det(kA) = kⁿ det A.", "Intercambiar filas cambia el signo; filas proporcionales ⇒ 0."]),
+  ],
+  tutor: {
+    normal: "El determinante es una función de las matrices cuadradas, lineal en cada fila, alternada e igual a 1 en la identidad. Se calcula por desarrollo en cofactores y mide el factor de cambio de área (o volumen) con orientación.",
+    simple: "Para 2×2: diagonal principal menos diagonal secundaria. Para 3×3: elegís una fila y la desarrollás con signos + − +, usando determinantes 2×2.",
+    nino: "Si estirás una foto en una impresora, el determinante dice por cuánto se multiplicó el área. Si da 0, la foto quedó aplastada en una línea y no se puede recuperar.",
+    ejemplo: "det [2 0 ; 0 3] = 6: el cuadrado unidad se vuelve un rectángulo de 2 por 3.",
+    visual: { type: "matrix", a: 2, b: 1, c: 1, d: 3 },
+    visualText: "El área del paralelogramo transformado es |det|.",
+    fromZero: "Una matriz cuadrada tiene asociado un número, su determinante. Para 2×2 la cuenta es ad − bc; para matrices más grandes se arma con determinantes más chicos.",
+    why: "Porque resume en un solo número si la matriz «pierde dimensión»: det = 0 significa filas dependientes, sistema sin solución única y matriz sin inversa.",
+    origin: "Resolviendo ax + by = e, cx + dy = f por eliminación aparece en el denominador ad − bc: ese número decide si se puede despejar. El 3×3 se obtiene igual y se organiza en cofactores.",
+    board: detBoard,
+  },
+};
+
+const inversaBoard: BoardStep[] = [
+  { expr: "A = [3  1 ; 5  2]", note: "Matriz a invertir" },
+  { expr: "det A = 3·2 − 1·5 = 1", note: "Como det ≠ 0, existe la inversa" },
+  { expr: "[2  −1 ; −5  3]", note: "Intercambiamos la diagonal y cambiamos el signo de los otros dos" },
+  { expr: "A⁻¹ = (1/1)·[2  −1 ; −5  3]", note: "Dividimos por el determinante" },
+  { expr: "A·A⁻¹ = [6 − 5   −3 + 3 ; 10 − 10   −5 + 6] = I", note: "Verificación" },
+];
+
+export const inversaLesson: Lesson = {
+  id: "l-alg-inversa",
+  title: "Matriz inversa y solución única",
+  subtitle: "det ≠ 0 ⇔ hay inversa ⇔ solución única",
+  subjectId: S,
+  topicIds: ["t-alg-inversa"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-alg-determinantes", "t-alg-sistemas-clasificacion"],
+  cards: [
+    intro("Inversa y determinante", "Cómo calcular la inversa de una matriz 2×2 y por qué det ≠ 0 equivale a que un sistema tenga solución única.", "Une las dos unidades anteriores: con la inversa, A·X = B se resuelve como X = A⁻¹·B."),
+    explain(
+      "Deshacer una transformación",
+      "Si una matriz es una «máquina» que transforma vectores, su **inversa** es la máquina que los devuelve a su lugar: $A^{−1}·A = I$.\n\nComo una cerradura: si girás la llave a la derecha, la inversa es girar a la izquierda. Pero si la máquina aplasta el plano (det = 0), no hay forma de deshacerlo.",
+      { tag: "cotidiano", widget: { type: "matrix", a: 3, b: 1, c: 5, d: 2 } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-inversible",
+      subjectId: S,
+      topicId: "t-alg-inversa",
+      prompt: "¿Cuál de estas matrices **no** tiene inversa?",
+      options: ["$[2  4 ; 1  2]$", "$[2  4 ; 1  3]$", "$[1  0 ; 0  −1]$"],
+      answer: 0,
+      explanation: "det [2 4 ; 1 2] = 4 − 4 = 0: las filas son proporcionales y la matriz no es inversible.",
+      hints: ["Calculá los determinantes.", "Una matriz es inversible ⇔ det ≠ 0.", "¿Alguna tiene filas proporcionales?"],
+      errors: { 1: ["calculo", "det = 2·3 − 4·1 = 2 ≠ 0: sí es inversible."], 2: ["calculo", "det = −1 ≠ 0: sí es inversible (es una simetría)."] },
+    }, true),
+    explain(
+      "Inversa 2×2 y el teorema",
+      "Si $A = [a  b ; c  d]$ y $det A ≠ 0$:\n\n$A^{−1} = \\frac{1}{ad − bc}·[d  −b ; −c  a]$\n\nPara $A$ cuadrada, son equivalentes: $det A ≠ 0$ ⇔ $A$ inversible ⇔ $A·X = B$ tiene **solución única** $X = A^{−1}B$ ⇔ $A·X = 0$ solo tiene la solución nula.",
+      { tag: "matematico" },
+    ),
+    board("Inversa de una matriz 2×2", inversaBoard),
+    example("Ejemplo resuelto", "Invertí $A = [2  4 ; 1  3]$.", ["$det A = 6 − 4 = 2$", "$[3  −4 ; −1  2]$ (intercambio y signos)", "$A^{−1} = [3/2  −2 ; −1/2  1]$"], "[3/2 −2 ; −1/2 1]"),
+    practice("Ejercicio guiado", "alg-inversa-2x2", 1, 4, true),
+    explain(
+      "Errores típicos",
+      "1. Cambiar de signo la diagonal principal en lugar de intercambiarla.\n2. Olvidar dividir por el determinante.\n3. Intentar invertir con $det = 0$: si el determinante da 0, la respuesta es «no existe».\n\nVerificá siempre que $A·A^{−1}$ dé la identidad.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-det-parametro", 2, 5),
+    practice("Tu turno", "alg-inversa-2x2", 3, 7),
+    practice("Desafío", "alg-det-parametro", 5, 10),
+    summary(["A⁻¹ existe ⇔ det A ≠ 0.", "2×2: A⁻¹ = 1/(ad − bc)·[d −b ; −c a].", "A·X = B con det A ≠ 0 ⇒ X = A⁻¹B (solución única).", "det A = 0 ⇒ SCI o SI, según B.", "Verificá: A·A⁻¹ = I."]),
+  ],
+  tutor: {
+    normal: "Una matriz cuadrada A es inversible si existe B con AB = BA = I. Esto ocurre si y solo si det A ≠ 0, condición que también equivale a que el sistema A·X = B tenga solución única para todo B.",
+    simple: "Si el determinante no es cero, la matriz tiene inversa y el sistema tiene una sola solución. Para 2×2: intercambiás a y d, cambiás el signo de b y c, y dividís todo por el determinante.",
+    nino: "Ponerse y sacarse las medias: una cosa deshace la otra. Una matriz con determinante 0 es como licuar fruta: no hay manera de volver atrás.",
+    ejemplo: "A = [2 0 ; 0 4] ⇒ A⁻¹ = [1/2 0 ; 0 1/4].",
+    visual: { type: "matrix", a: 3, b: 1, c: 5, d: 2 },
+    visualText: "Esta matriz tiene det = 1: deforma el cuadrado pero conserva el área, y se puede deshacer.",
+    fromZero: "Con números, el inverso de 5 es 1/5 porque 5·(1/5) = 1. Con matrices, el papel del 1 lo juega la identidad I, y no todas las matrices tienen «inverso».",
+    why: "Porque permite despejar matrices: de A·X = B se pasa a X = A⁻¹·B, igual que de 5x = 10 se pasa a x = 10/5.",
+    origin: "Multiplicando [a b ; c d]·[d −b ; −c a] se obtiene (ad − bc)·I. Dividiendo por ad − bc (si no es 0) aparece la identidad: esa es la fórmula.",
+    board: inversaBoard,
+  },
+};
+
+// ═════════════════════════ alg-5 · Transformaciones lineales ═════════════════════════
+
+const tlBoard: BoardStep[] = [
+  { expr: "T(x, y) = (2x − y, x + 3y)", note: "Transformación dada por fórmula" },
+  { expr: "T(1, 0) = (2, 1)", note: "Imagen del primer vector canónico" },
+  { expr: "T(0, 1) = (−1, 3)", note: "Imagen del segundo" },
+  { expr: "M_T = [2  −1 ; 1  3]", note: "Esas imágenes son las columnas de la matriz" },
+  { expr: "T(2, 1) = (2·2 − 1, 2 + 3·1) = (3, 5)", note: "Imagen de un vector cualquiera" },
+];
+
+export const transformacionesLesson: Lesson = {
+  id: "l-alg-transformaciones",
+  title: "Transformaciones lineales",
+  subtitle: "Matriz asociada, núcleo, imagen y el plano en movimiento",
+  subjectId: S,
+  topicIds: ["t-alg-transformaciones"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-alg-matrices", "t-alg-determinantes"],
+  cards: [
+    intro("Transformaciones lineales", "Qué es una transformación lineal, cómo se escribe con una matriz y cómo encontrar su núcleo e imagen en casos simples.", "Rotar, reflejar o escalar una figura en computación gráfica son transformaciones lineales: todo se reduce a multiplicar por una matriz."),
+    explain(
+      "Mover todo el plano",
+      "Una **transformación lineal** $T$ mueve los vectores respetando sumas y escalas: $T(u + v) = T(u) + T(v)$ y $T(k·u) = k·T(u)$. Las rectas siguen siendo rectas y el origen queda fijo.\n\nEsta matriz es una **rotación de 90°**: mirá cómo gira la grilla. Cambiá los números para ver simetrías y escalas.",
+      { tag: "intuitivo", widget: { type: "matrix", a: 0, b: -1, c: 1, d: 0 } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-tl-lineal",
+      subjectId: S,
+      topicId: "t-alg-transformaciones",
+      prompt: "¿Cuál de estas **no** es una transformación lineal?",
+      options: ["$T(x, y) = (x + 1, y)$", "$T(x, y) = (2x, −y)$", "$T(x, y) = (y, x)$"],
+      answer: 0,
+      explanation: "Una transformación lineal manda el (0, 0) al (0, 0). Pero T(0, 0) = (1, 0): una traslación no es lineal.",
+      hints: ["Probá con el vector nulo.", "Una TL siempre cumple T(0) = 0.", "¿Cuánto vale T(0, 0) en cada caso?"],
+      errors: { 1: ["conceptual", "(2x, −y) es una escala combinada con una simetría: sí es lineal."], 2: ["conceptual", "(y, x) es la simetría respecto de y = x: sí es lineal."] },
+    }, true),
+    explain(
+      "Matriz, núcleo e imagen",
+      "Las columnas de la matriz asociada son $T(e_1)$ y $T(e_2)$. Entonces $T(v) = M·v$.\n\n• **Núcleo** $Nu(T)$: los $v$ con $T(v) = 0$ (sistema homogéneo).\n• **Imagen** $Im(T)$: todos los $T(v)$, generada por las columnas.\n• $dim Nu + dim Im = dim$ del dominio.\n\nSi $det M ≠ 0$: $Nu = \\{0\\}$ e $Im = ℝ^2$.",
+      { tag: "matematico", widget: { type: "matrix", a: 1, b: 2, c: 2, d: 4 } },
+    ),
+    board("Matriz asociada y una imagen", tlBoard),
+    example("Ejemplo resuelto: núcleo e imagen", "$T(x, y) = (x − 2y, 2x − 4y)$.", ["Matriz $[1  −2 ; 2  −4]$, det = 0.", "$T(x, y) = 0$ ⇔ $x − 2y = 0$ ⇔ $x = 2y$ ⇒ $Nu(T) = gen\\{(2, 1)\\}$", "Columnas $(1, 2)$ y $(−2, −4)$ ⇒ $Im(T) = gen\\{(1, 2)\\}$", "Dimensiones: 1 + 1 = 2 ✓"], "Nu = gen{(2, 1)}, Im = gen{(1, 2)}"),
+    practice("Ejercicio guiado", "alg-tl-imagen", 1, 2, true),
+    explain(
+      "Errores típicos",
+      "1. Poner las imágenes como **filas** en lugar de columnas.\n2. Confundir núcleo con imagen: el núcleo vive en el dominio (lo que va a 0), la imagen en el codominio (lo que se alcanza).\n3. Creer que $Nu = \\{0\\}$ siempre: solo si $det ≠ 0$.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-tl-plano", 2, 5),
+    practice("Tu turno", "alg-tl-nucleo", 3, 8),
+    practice("Desafío", "alg-tl-imagen", 6, 11),
+    summary(["T lineal: respeta sumas y escalas; T(0) = 0.", "Columnas de la matriz = imágenes de la base canónica.", "Nu(T) = {v : T(v) = 0}; Im(T) = generada por las columnas.", "dim Nu + dim Im = dim del dominio.", "Rotación 90°: [0 −1 ; 1 0]; simetría eje x: [1 0 ; 0 −1]; escala k: [k 0 ; 0 k]."]),
+  ],
+  tutor: {
+    normal: "Una transformación lineal T: ℝⁿ → ℝᵐ preserva combinaciones lineales y queda determinada por las imágenes de una base; su matriz asociada tiene esas imágenes como columnas. El núcleo y la imagen son subespacios y cumplen el teorema de la dimensión.",
+    simple: "Es una regla que mueve todos los vectores multiplicándolos por una matriz. El núcleo son los vectores que terminan en el origen; la imagen, todos los lugares a los que se puede llegar.",
+    nino: "Pensá en un dibujo en una hoja de goma: podés girarla, estirarla o darla vuelta, pero el centro no se mueve y las líneas rectas siguen rectas. Si la aplastás hasta que quede una línea, algunos puntos se juntan en el centro: ese es el núcleo.",
+    ejemplo: "La simetría respecto del eje x, T(x, y) = (x, −y), tiene matriz [1 0 ; 0 −1].",
+    visual: { type: "matrix", a: 0, b: -1, c: 1, d: 0 },
+    visualText: "Rotación de 90°: (1, 0) va a (0, 1) y (0, 1) va a (−1, 0).",
+    fromZero: "Una función toma un número y devuelve otro. Una transformación toma un vector y devuelve otro vector. Las lineales son las más simples: se calculan multiplicando por una matriz.",
+    why: "Porque conociendo qué le pasa a dos vectores (la base) sabés qué le pasa a todos. Eso convierte geometría (rotar, reflejar) en cuentas con matrices.",
+    origin: "Todo v = (x, y) es x·e₁ + y·e₂. Por linealidad T(v) = x·T(e₁) + y·T(e₂), que es exactamente la matriz de columnas T(e₁), T(e₂) multiplicada por (x, y).",
+    board: tlBoard,
+  },
+};
+
+// ═════════════════════════ alg-6 · Cónicas ═════════════════════════
+
+const circBoard: BoardStep[] = [
+  { expr: "x^2 + y^2 − 4x + 6y − 3 = 0", note: "Ecuación general" },
+  { expr: "(x^2 − 4x) + (y^2 + 6y) = 3", note: "Agrupamos y pasamos el término independiente" },
+  { expr: "(x^2 − 4x + 4) + (y^2 + 6y + 9) = 3 + 4 + 9", note: "Completamos cuadrados: sumamos (b/2)² en ambos lados" },
+  { expr: "(x − 2)^2 + (y + 3)^2 = 16", note: "Forma canónica" },
+  { expr: "C = (2, −3),  r = 4", note: "Centro y radio" },
+];
+
+export const circunferenciaLesson: Lesson = {
+  id: "l-alg-circunferencia",
+  title: "Circunferencia",
+  subtitle: "Completar cuadrados para hallar centro y radio",
+  subjectId: S,
+  topicIds: ["t-alg-circunferencia"],
+  estimatedMinutes: 10,
+  prerequisites: ["t-pitagoras", "t-factorizacion"],
+  cards: [
+    intro("Circunferencia", "La ecuación de la circunferencia y cómo pasar de la forma general a la canónica completando cuadrados.", "Completar cuadrados es la técnica para reconocer todas las cónicas, y la vas a volver a usar en Análisis."),
+    explain(
+      "Todos a la misma distancia",
+      "Un compás marca todos los puntos a la misma distancia $r$ de la punta. Por Pitágoras, $(x, y)$ está a distancia $r$ de $(h, k)$ si\n\n$(x − h)^2 + (y − k)^2 = r^2$\n\nEsa es la **forma canónica**: el centro y el radio se leen directo.",
+      { tag: "cotidiano", widget: { type: "plot", mode: "free", initial: "sqrt(16-(x-2)^2)-3" } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-centro",
+      subjectId: S,
+      topicId: "t-alg-circunferencia",
+      prompt: "¿Centro y radio de $(x + 1)^2 + (y − 5)^2 = 49$?",
+      options: ["Centro (−1, 5), radio 7", "Centro (1, −5), radio 7", "Centro (−1, 5), radio 49"],
+      answer: 0,
+      explanation: "(x + 1)² = (x − (−1))² ⇒ h = −1; (y − 5)² ⇒ k = 5; r² = 49 ⇒ r = 7.",
+      hints: ["Compará con (x − h)² + (y − k)² = r².", "x + 1 = x − (−1).", "El número de la derecha es r²."],
+      errors: { 1: ["signos", "El centro tiene los signos opuestos a los del paréntesis: (x + 1) ⇒ h = −1."], 2: ["potencias", "49 es r²: el radio es √49 = 7."] },
+    }, true),
+    explain(
+      "Completar cuadrados",
+      "En la forma general $x^2 + y^2 + Dx + Ey + F = 0$ el centro no se ve. La clave:\n\n$x^2 + bx = (x + \\frac{b}{2})^2 − (\\frac{b}{2})^2$\n\nSe agrupan $x$ con $x$ e $y$ con $y$, se suma $(b/2)^2$ **en ambos lados** y queda la forma canónica. Si $x^2$ e $y^2$ tienen coeficiente $a ≠ 1$, primero se divide todo por $a$.",
+      { tag: "matematico" },
+    ),
+    board("De la forma general a la canónica", circBoard),
+    example("Ejemplo resuelto", "Centro y radio de $x^2 + y^2 + 2x − 8y + 8 = 0$.", ["$(x^2 + 2x + 1) + (y^2 − 8y + 16) = −8 + 1 + 16$", "$(x + 1)^2 + (y − 4)^2 = 9$", "Centro $(−1, 4)$, radio 3"], "C = (−1, 4), r = 3"),
+    practice("Ejercicio guiado", "alg-circunferencia", 1, 2, true),
+    explain(
+      "Errores típicos",
+      "1. Sumar $(b/2)^2$ solo de un lado: la ecuación cambia.\n2. Leer mal el signo del centro: $(x − 3)^2$ ⇒ $h = 3$; $(x + 3)^2$ ⇒ $h = −3$.\n3. Dar $r^2$ como radio.\n4. Si a la derecha queda un número negativo, no hay circunferencia (ningún punto la cumple).",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-ordenar-circunferencia", 3, 5),
+    practice("Tu turno", "alg-circunferencia", 3, 8),
+    practice("Desafío", "alg-circunferencia", 5, 11),
+    summary(["(x − h)² + (y − k)² = r²: centro (h, k), radio r.", "x² + bx = (x + b/2)² − (b/2)².", "Lo que se suma de un lado se suma del otro.", "Si x² e y² tienen coeficiente a, dividí por a.", "El radio es la raíz del número de la derecha."]),
+  ],
+  tutor: {
+    normal: "La circunferencia de centro (h, k) y radio r es el lugar geométrico de los puntos a distancia r del centro: (x − h)² + (y − k)² = r². Desarrollada da x² + y² + Dx + Ey + F = 0, y completando cuadrados se vuelve a la forma canónica.",
+    simple: "Agrupás las x, agrupás las y, y a cada grupo le sumás lo que le falta para ser un cuadrado perfecto (lo mismo del otro lado). Así aparecen el centro y el radio.",
+    nino: "Una cabra atada a una estaca con una soga de 4 metros puede pastar en un círculo: todos los puntos del borde están a 4 metros de la estaca. La ecuación dice exactamente eso.",
+    ejemplo: "x² + y² − 6x = 0 ⇒ (x − 3)² + y² = 9: centro (3, 0), radio 3.",
+    visual: { type: "plot", mode: "free", initial: "sqrt(16-(x-2)^2)-3" },
+    visualText: "La mitad de arriba de la circunferencia de centro (2, −3) y radio 4.",
+    fromZero: "La distancia entre dos puntos sale de Pitágoras: √((x − h)² + (y − k)²). Pedir que esa distancia sea r, y elevar al cuadrado, da la ecuación de la circunferencia.",
+    why: "Porque en la forma general el centro y el radio están «escondidos». Completar cuadrados los hace visibles, y la misma técnica sirve para elipses, hipérbolas y parábolas.",
+    origin: "Desarrollando (x + b/2)² = x² + bx + (b/2)² se ve que a x² + bx solo le falta (b/2)² para ser un cuadrado perfecto.",
+    board: circBoard,
+  },
+};
+
+const conicasBoard: BoardStep[] = [
+  { expr: "4x^2 + 9y^2 − 16x + 18y − 11 = 0", note: "Ecuación general" },
+  { expr: "4(x^2 − 4x) + 9(y^2 + 2y) = 11", note: "Agrupamos y sacamos factor común" },
+  { expr: "4(x − 2)^2 − 16 + 9(y + 1)^2 − 9 = 11", note: "Completamos cuadrados (multiplicados por 4 y por 9)" },
+  { expr: "4(x − 2)^2 + 9(y + 1)^2 = 36", note: "Pasamos los números a la derecha" },
+  { expr: "(x − 2)^2/9 + (y + 1)^2/4 = 1", note: "Dividimos por 36: elipse de centro (2, −1)" },
+  { expr: "a = 3,  b = 2,  c = √(9 − 4) = √5", note: "Semiejes y distancia focal" },
+];
+
+export const conicasLesson: Lesson = {
+  id: "l-alg-conicas",
+  title: "Elipse, hipérbola y parábola",
+  subtitle: "Formas canónicas y sus elementos",
+  subjectId: S,
+  topicIds: ["t-alg-conicas"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-alg-circunferencia"],
+  cards: [
+    intro("Cónicas", "Cómo reconocer una elipse, una hipérbola o una parábola por su ecuación y cómo leer centro, semiejes, focos y directriz.", "Las órbitas son elipses, las antenas son parábolas y la navegación por diferencia de distancias usa hipérbolas."),
+    explain(
+      "Definiciones con distancias",
+      "• **Elipse**: la **suma** de distancias a dos focos es constante (una soga atada a dos clavos).\n• **Hipérbola**: la **diferencia** de distancias a dos focos es constante.\n• **Parábola**: misma distancia a un foco y a una recta (la directriz).\n\nPor eso una antena parabólica concentra todo en el foco.",
+      { tag: "cotidiano", widget: { type: "param-function", family: "parabola" } },
+    ),
+    quiz("Para pensar", {
+      id: "q-alg-identificar-conica",
+      subjectId: S,
+      topicId: "t-alg-conicas",
+      prompt: "¿Qué cónica es $\\frac{x^2}{16} − \\frac{y^2}{9} = 1$?",
+      options: ["Hipérbola", "Elipse", "Parábola"],
+      answer: 0,
+      explanation: "x² e y² aparecen con signos opuestos: hipérbola.",
+      hints: ["Mirá los signos de los términos cuadráticos.", "Mismo signo: elipse (o circunferencia).", "Signos opuestos: hipérbola."],
+      errors: { 1: ["conceptual", "En la elipse los dos cuadrados se SUMAN."], 2: ["conceptual", "En la parábola solo una variable está al cuadrado."] },
+    }, true),
+    explain(
+      "Formas canónicas (centro en el origen)",
+      "• Elipse: $\\frac{x^2}{a^2} + \\frac{y^2}{b^2} = 1$, con $a > b$: focos $(±c, 0)$, $c^2 = a^2 − b^2$.\n• Hipérbola: $\\frac{x^2}{a^2} − \\frac{y^2}{b^2} = 1$: focos $(±c, 0)$, $c^2 = a^2 + b^2$.\n• Parábola: $x^2 = 4py$: foco $(0, p)$, directriz $y = −p$.\n\nCon centro $(h, k)$, se cambia $x$ por $x − h$ e $y$ por $y − k$.",
+      { tag: "matematico", widget: { type: "plot", mode: "free", initial: "3*sqrt(1-x^2/25)" } },
+    ),
+    board("Llevar una elipse a la forma canónica", conicasBoard),
+    example("Ejemplo resuelto", "Focos de la elipse $\\frac{x^2}{25} + \\frac{y^2}{9} = 1$.", ["$a^2 = 25$, $b^2 = 9$", "$c^2 = 25 − 9 = 16$ ⇒ $c = 4$", "Focos $(−4, 0)$ y $(4, 0)$"], "(±4, 0)"),
+    practice("Ejercicio guiado", "alg-conica-identificar", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "1. Usar $c^2 = a^2 + b^2$ en la elipse (es la de la hipérbola).\n2. Leer $a$ y $b$ como los denominadores: los denominadores son $a^2$ y $b^2$.\n3. En $x^2 = 8y$, decir que $p = 8$: es $4p = 8$, así que $p = 2$.",
+      { tag: "intuitivo" },
+    ),
+    practice("Tu turno", "alg-conica-elementos", 2, 5),
+    practice("Tu turno", "alg-conica-identificar", 4, 8),
+    practice("Desafío", "alg-conica-elementos", 5, 11),
+    summary(["Elipse: suma de distancias constante; c² = a² − b².", "Hipérbola: diferencia constante; c² = a² + b².", "Parábola: (x − h)² = 4p(y − k); foco a distancia p del vértice, directriz del otro lado.", "Identificar: mismo signo ⇒ elipse; signos opuestos ⇒ hipérbola; un solo cuadrado ⇒ parábola.", "Forma general → canónica: completar cuadrados."]),
+  ],
+  tutor: {
+    normal: "Las cónicas son las curvas de segundo grado en x e y. Sin término xy, completando cuadrados toda ecuación no degenerada se lleva a una forma canónica de circunferencia, elipse, hipérbola o parábola, de la que se leen centro (o vértice), semiejes, focos y directriz.",
+    simple: "Mirás los términos al cuadrado: si están los dos sumando, es elipse (o circunferencia si tienen el mismo número); si uno resta, hipérbola; si hay uno solo, parábola. Después completás cuadrados para ver los datos.",
+    nino: "Si atás una soga a dos clavos y la recorrés con un lápiz bien tirante, dibujás una elipse. Las órbitas de los planetas tienen esa forma, con el Sol en uno de los clavos.",
+    ejemplo: "x²/9 + y²/4 = 1: elipse con a = 3, b = 2, c = √5 ≈ 2,24.",
+    visual: { type: "plot", mode: "free", initial: "3*sqrt(1-x^2/25)" },
+    visualText: "Mitad de arriba de la elipse x²/25 + y²/9 = 1: corta el eje x en ±5 y el eje y en 3.",
+    fromZero: "Las cónicas se definen con distancias: a un punto (foco), a dos puntos, o a un punto y una recta. Escribiendo esas distancias con Pitágoras y simplificando aparecen sus ecuaciones.",
+    why: "Porque así se reconoce de un vistazo qué curva es y dónde están sus puntos importantes, que son los que importan en las aplicaciones (focos de antenas, órbitas, lentes).",
+    origin: "Para la parábola: la distancia de (x, y) al foco (0, p) es √(x² + (y − p)²) y a la directriz y = −p es |y + p|. Igualando y elevando al cuadrado: x² = 4py. La elipse y la hipérbola salen igual con dos focos.",
+    board: conicasBoard,
+  },
+};
+
+export const algebraALessons: Lesson[] = [conjuntosLesson, valorAbsolutoLesson, complejosLesson, complejosPolarLesson, polinomiosDivisionLesson, polinomiosRaicesLesson, productoVectorialLesson, anguloProyeccionLesson, rectasLesson, planosLesson, posicionesDistanciasLesson,
+  matricesLesson, gaussLesson, sistemasClasificacionLesson, determinantesLesson, inversaLesson, transformacionesLesson, circunferenciaLesson, conicasLesson];

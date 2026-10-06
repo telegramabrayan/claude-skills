@@ -85,3 +85,13 @@ analítico ICSE (FFyB-UBA), programa UBA XXI de Pensamiento Computacional y
 - Pendiente: más lecciones del CBC (Álgebra A, AM A, Física, IPC, ICSE) y verificar programas contra fuentes UBA
   (los sitios oficiales siguen bloqueados desde este entorno; nada se marcó "verified").
 - La división 1.er / 2.º parcial del simulador es orientativa (mitad de las unidades) y la interfaz lo aclara.
+
+## 5. v3 (2026-10-06): material de estudio del estudiante
+
+- Fuente: carpeta «Material de estudio» (Drive). Análisis: 22 claves 2023 (el ZIP «Álgebra» es copia idéntica del de
+  Análisis: no hay material de Álgebra). Física: 14 claves 2023. PC: 8 claves del 1.er parcial. IPC: programa 2026
+  (UBA XXI, Cátedra A), claves 2023/2024, resúmenes.
+- IPC pasó a «verificado» con las 4 unidades del programa 2026. Física y Análisis suman las claves como fuente.
+- Erratas detectadas en claves oficiales (PC T2 ej. 9 y T4 ej. 10; AM 2P T4) documentadas en la Biblioteca.
+- Ningún enunciado de examen se copió al repositorio. Los reportes de análisis quedaron fuera del repo.
+- Pendiente: ICSE (sin material), Química (sin material), verificar el programa de Álgebra A con la cátedra del estudiante.

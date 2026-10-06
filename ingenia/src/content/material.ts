@@ -166,6 +166,42 @@ export const MATERIAL: MaterialSet[] = [
   },
 ];
 
+MATERIAL.push({
+  subjectId: "ipc",
+  catedra: "Introducción al Pensamiento Científico (040) — UBA XXI, Cátedra A",
+  summary: "Programa oficial 2026, claves del 1.er parcial (2023 y 2024), resúmenes y respuestas de lecciones. Bibliografía obligatoria: «Desenredando la ciencia» (Eudeba, 2022).",
+  files: [
+    { group: "Programa 2026", count: 1, detail: "Unidades, bibliografía y régimen de promoción (fuente de la estructura de la materia)" },
+    { group: "Claves de 1.er parcial", count: 8, detail: "2023 y 1.er cuatrimestre 2024 (temas 1 a 12)" },
+    { group: "Resúmenes y lecciones", count: 20, detail: "Resúmenes de 1.er y 2.º parcial, cuadros conceptuales y respuestas de lecciones (algunos de programas anteriores)" },
+  ],
+  instances: [
+    { name: "1.er parcial (según claves 2024)", evaluates: ["Unidad 1: argumentos, enunciados, conectivas, condiciones necesarias y suficientes, validez, formas válidas e inválidas, inducción", "Unidad 2: la revolución darwiniana"] },
+    { name: "2.º parcial (inferido de los resúmenes)", evaluates: ["Unidad 3: contrastación, positivismo lógico, Popper, explicación científica, Kuhn, epistemología feminista", "Unidad 4: ética y políticas científicas"] },
+  ],
+  notes: [
+    "El formato del 1.er parcial es de 10 preguntas de opción múltiple, 1 punto cada una, sin puntaje parcial.",
+    "Parte del material corresponde a programas anteriores (sistemas axiomáticos, geometrías no euclidianas, Copérnico): no entra en el programa 2026.",
+    "Ojo con algunos resúmenes de estudiantes: hay uno que define el modus tollens con la forma de la falacia de afirmación del consecuente. En Ingenia está corregido.",
+  ],
+  blueprints: [
+    {
+      id: "ipc-1p",
+      title: "1.er parcial (10 preguntas, formato de las claves)",
+      minutes: 75,
+      note: "Ocho preguntas de la Unidad 1 y dos de Darwin, como en las claves 2024.",
+      items: [it("t-ipc-argumentos", "Argumentos", 1), it("t-ipc-enunciados", "Enunciados", 1), it("t-ipc-conectivas", "Conectivas", 1), it("t-ipc-condiciones", "Condiciones", 1), it("t-ipc-tautologias", "Tautologías", 1), it("t-ipc-validez", "Validez", 1), it("t-ipc-formas", "Formas de razonamiento", 1), it("t-ipc-inductivos", "Inductivos", 1), it("t-ipc-pre-darwin", "Darwin I", 1), it("t-ipc-seleccion-natural", "Darwin II", 1)],
+    },
+    {
+      id: "ipc-2p",
+      title: "2.º parcial (práctica de unidades 3 y 4)",
+      minutes: 75,
+      note: "Formato inferido: no hay claves de 2.º parcial en el material.",
+      items: [it("t-ipc-contrastacion", "Contrastación", 1), it("t-ipc-contrastacion", "Contrastación", 1), it("t-ipc-pl-popper", "Positivismo y Popper", 1), it("t-ipc-pl-popper", "Popper", 1), it("t-ipc-explicacion", "Explicación", 1), it("t-ipc-kuhn", "Kuhn", 1), it("t-ipc-kuhn", "Kuhn", 1), it("t-ipc-feminismo", "Epistemología feminista", 1), it("t-ipc-etica", "Ética", 1), it("t-ipc-politicas", "Políticas científicas", 1)],
+    },
+  ],
+});
+
 export function materialFor(subjectId: string): MaterialSet | undefined {
   return MATERIAL.find((m) => m.subjectId === subjectId);
 }
