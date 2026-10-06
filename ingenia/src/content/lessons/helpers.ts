@@ -1,4 +1,4 @@
-import type { ChoiceExercise, Difficulty, ErrorType, LessonCard, Widget } from "@/engine/types";
+import type { BoardStep, ChoiceExercise, Difficulty, ErrorType, LessonCard, Widget } from "@/engine/types";
 
 export const intro = (title: string, learn: string, why: string): LessonCard => ({ kind: "intro", title, learn, why });
 
@@ -54,3 +54,15 @@ export const quiz = (title: string, a: QuizArgs, guided = false): LessonCard => 
   };
   return { kind: "exercise", title, guided, exercise: ex };
 };
+
+/** Pizarra: un procedimiento renglón por renglón ({expr, note}). */
+export const board = (title: string, steps: BoardStep[], intro?: string, outro?: string): LessonCard => ({
+  kind: "board",
+  title,
+  steps,
+  ...(intro ? { intro } : {}),
+  ...(outro ? { outro } : {}),
+});
+
+/** Atajo para un renglón de pizarra. */
+export const row = (expr: string, note?: string): BoardStep => (note ? { expr, note } : { expr });

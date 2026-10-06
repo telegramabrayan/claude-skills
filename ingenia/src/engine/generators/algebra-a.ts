@@ -468,7 +468,7 @@ export const potenciaI: Generator = {
   description: "Potencias de la unidad imaginaria i",
   generate(seed, d) {
     const r = rng(seed);
-    const n = r.int(...byDifficulty(d, [[2, 12], [5, 50], [20, 400], [1, 30], [5, 99], [5, 999]] as [number, number][]));
+    const n = r.int(...byDifficulty(d, [[2, 12], [5, 50], [20, 400], [1, 30], [5, 99], [5, 999]] as [[number, number], [number, number], [number, number], [number, number], [number, number], [number, number]]));
     const m = r.int(1, 60);
     const mode = d === 4 ? "neg" : d === 5 ? "prod" : d === 6 ? "suma" : "pow";
     let prompt: string, ans: [number, number], steps: string[];

@@ -1337,9 +1337,283 @@ const U1: Generator[] = [
   ipcFortalecerInductivo,
 ];
 
-// @@U2-U4@@
+// ───────────────────────── Ayudas para bancos conceptuales ─────────────────────────
 
-export const IPC_GENERATORS: Generator[] = [...U1];
+interface Labeled<L extends string> {
+  text: string;
+  label: L;
+  why: string;
+}
 
-// Silencia el import de MatchExercise/Difficulty hasta que se usen en U2–U4.
-export type _IpcUnused = MatchExercise | Difficulty;
+/** Clasificar un enunciado del banco: opciones = etiquetas en orden fijo. */
+function classifyChoice<L extends string>(
+  r: Rng,
+  args: { gen: string; seed: number; d: Difficulty; topicId: string; prompt: (text: string) => string; item: Labeled<L>; labels: L[]; names: Record<L, string>; hints: [string, string, string]; explanation: string; errorType?: ErrorType },
+) {
+  const { item } = args;
+  return choice(
+    fixed(r),
+    base({ gen: args.gen, seed: args.seed, difficulty: args.d, subjectId: S, topicId: args.topicId, prompt: args.prompt(item.text), hints: args.hints, solution: [item.why], explanation: args.explanation }),
+    args.labels.map((l) => ({
+      text: args.names[l],
+      correct: l === item.label,
+      error: l === item.label ? undefined : { type: args.errorType ?? "conceptual", message: `No: ${item.why}` },
+    })),
+  );
+}
+
+/** Relacionar n enunciados con etiquetas distintas (una por etiqueta). */
+function matchByLabel<L extends string>(
+  r: Rng,
+  args: { gen: string; seed: number; d: Difficulty; topicId: string; prompt: string; bank: Labeled<L>[]; labels: L[]; names: Record<L, string>; hints: [string, string, string]; explanation: string },
+): MatchExercise {
+  const pairs: [string, string][] = sample(r, args.labels, args.labels.length).map((l) => {
+    const it = r.pick(args.bank.filter((b) => b.label === l));
+    return [it.text, args.names[l]];
+  });
+  return {
+    ...base({ gen: args.gen, seed: args.seed, difficulty: args.d, subjectId: S, topicId: args.topicId, prompt: args.prompt, hints: args.hints, solution: pairs.map(([a, b]) => `${a} → ${b}`), explanation: args.explanation }),
+    kind: "match",
+    pairs,
+  };
+}
+
+/** Verdadero/falso de un banco. */
+function vfChoice(r: Rng, args: { gen: string; seed: number; d: Difficulty; topicId: string; st: { text: string; value: boolean; why: string }; hints: [string, string, string]; intro?: string }) {
+  const { st } = args;
+  return choice(
+    fixed(r),
+    base({ gen: args.gen, seed: args.seed, difficulty: args.d, subjectId: S, topicId: args.topicId, prompt: `¿Verdadero o falso?${args.intro ? ` ${args.intro}` : ""}\n\n«${st.text}»`, hints: args.hints, solution: [st.why], explanation: st.why }),
+    [
+      { text: "Verdadero", correct: st.value, error: st.value ? undefined : { type: "conceptual", message: st.why } },
+      { text: "Falso", correct: !st.value, error: !st.value ? undefined : { type: "conceptual", message: st.why } },
+    ],
+  );
+}
+
+// ───────────────────────── U2 · Antes de Darwin ─────────────────────────
+
+type PreLabel = "creacionismo" | "fijismo" | "lamarck" | "lyell" | "malthus" | "cuvier" | "darwin";
+const PRE_NAMES: Record<PreLabel, string> = {
+  creacionismo: "Creacionismo",
+  fijismo: "Fijismo",
+  lamarck: "Lamarck",
+  lyell: "Lyell",
+  malthus: "Malthus",
+  cuvier: "Cuvier (catastrofismo)",
+  darwin: "Darwin",
+};
+
+const PRE_BANK: Labeled<PreLabel>[] = [
+  { text: "Las especies y su adecuación al medio son obra de un diseño inteligente, según un plan divino.", label: "creacionismo", why: "Explicar la adaptación por diseño de un creador es la tesis creacionista." },
+  { text: "Los organismos encajan con su ambiente porque fueron hechos así desde el principio, con un propósito.", label: "creacionismo", why: "Apelar a un propósito puesto por un creador es creacionismo." },
+  { text: "Las especies que vemos hoy son las mismas que existieron siempre: no cambian.", label: "fijismo", why: "La inmutabilidad de las especies es el fijismo." },
+  { text: "Cada especie tiene propiedades esenciales que no varían a lo largo del tiempo.", label: "fijismo", why: "Especies con esencias inmutables: fijismo (sobre supuestos aristotélicos, como en Linneo)." },
+  { text: "El uso frecuente de un órgano lo desarrolla, el desuso lo atrofia, y esos cambios se heredan.", label: "lamarck", why: "Uso y desuso más herencia de caracteres adquiridos: Lamarck." },
+  { text: "Lo que un organismo adquiere durante su vida por esfuerzo o costumbre pasa a su descendencia.", label: "lamarck", why: "La herencia de caracteres adquiridos es la tesis de Lamarck." },
+  { text: "Para explicar el relieve basta con suponer que las causas que actúan hoy (erosión, sedimentación) actuaron igual durante muchísimo tiempo.", label: "lyell", why: "Actualismo y gradualismo en tiempos enormes: Lyell." },
+  { text: "La Tierra cambió lentamente, por acumulación de pequeños cambios a lo largo de tiempos enormes.", label: "lyell", why: "El gradualismo geológico con tiempo profundo es de Lyell." },
+  { text: "La población tiende a crecer más rápido que los alimentos disponibles, lo que genera una lucha por la existencia.", label: "malthus", why: "Población que crece más que los recursos: Malthus." },
+  { text: "Los grandes cambios de la superficie terrestre se debieron a catástrofes breves y violentas.", label: "cuvier", why: "Cambios bruscos y violentos: catastrofismo de Cuvier, lo opuesto a Lyell." },
+  { text: "Entre los individuos de una población hay variaciones; los que tienen rasgos ventajosos dejan más descendencia, y así cambia la población.", label: "darwin", why: "Variación, ventaja, más descendencia y herencia: selección natural, de Darwin." },
+  { text: "Las semejanzas entre especies distintas se deben a que descienden de un ancestro común.", label: "darwin", why: "Descendencia con modificación desde un ancestro común: Darwin." },
+];
+
+const PRE_MATCH: [string, string][] = [
+  ["Lamarck", "Uso y desuso de los órganos y herencia de caracteres adquiridos"],
+  ["Lyell", "Gradualismo y actualismo: las mismas causas de hoy, durante tiempos enormes"],
+  ["Malthus", "La población crece más rápido que los alimentos: lucha por la existencia"],
+  ["Cuvier", "Catastrofismo: cambios bruscos y violentos"],
+  ["Linneo", "Clasificación jerárquica de especies por propiedades esenciales"],
+  ["Owen", "Homologías entendidas como variaciones de arquetipos de un plan divino"],
+  ["Los criadores", "Selección artificial: elegir qué individuos se reproducen"],
+];
+
+const LAMARCK_DARWIN: { text: string; value: boolean; why: string }[] = [
+  { text: "Lamarck y Darwin coinciden en que las especies cambian (evolucionan).", value: true, why: "Ambos son evolucionistas: rechazan el fijismo." },
+  { text: "Lamarck y Darwin coinciden en que hace falta la herencia para que los cambios perduren.", value: true, why: "Ambos necesitan que los rasgos pasen a la descendencia; difieren en cómo surge la variación." },
+  { text: "Darwin acepta que los rasgos adquiridos por uso y desuso se heredan, igual que Lamarck.", value: false, why: "Darwin toma de Lamarck la idea de evolución, pero no ese mecanismo: la variación no surge por el esfuerzo del organismo." },
+  { text: "Para Lamarck, los rasgos nuevos aparecen en respuesta a las necesidades que impone el ambiente.", value: true, why: "En Lamarck el cambio responde a la necesidad y al uso; en Darwin la variación no está dirigida por el ambiente." },
+  { text: "Para Darwin, los rasgos nuevos aparecen porque el organismo los necesita.", value: false, why: "Eso es lamarckiano. Para Darwin la variación no está dirigida: puede ser ventajosa, neutra o perjudicial." },
+  { text: "El fijismo sostiene que las especies no cambian a lo largo del tiempo.", value: true, why: "Esa es justamente la tesis fijista." },
+  { text: "Lyell sostenía que la Tierra se formó por catástrofes breves y violentas.", value: false, why: "Eso es el catastrofismo de Cuvier. Lyell defendía el gradualismo y el actualismo." },
+  { text: "De Malthus, Darwin tomó la idea de que no todos los individuos que nacen logran sobrevivir y reproducirse.", value: true, why: "La población crece más que los recursos: hay competencia, lucha por la existencia." },
+];
+
+export const ipcAntecedentesDarwin: Generator = {
+  id: "ipc-antecedentes-darwin",
+  topicId: "t-ipc-pre-darwin",
+  description: "Creacionismo, fijismo, Lamarck y las influencias de Darwin",
+  generate(seed, d) {
+    const r = rng(seed);
+    const hints: [string, string, string] = [
+      "Preguntate si la tesis habla de un creador, de especies inmutables, de esfuerzo y herencia, de geología o de población.",
+      "Lamarck: uso y desuso + herencia de lo adquirido. Lyell: cambios lentos con las causas de hoy. Malthus: población vs alimentos.",
+      "Cuvier: catástrofes. Creacionismo: diseño. Fijismo: las especies no cambian. Darwin: variación + selección + herencia.",
+    ];
+    const mode = d <= 2 ? 0 : d <= 4 ? r.pick([0, 1, 2] as const) : r.pick([1, 2] as const);
+    if (mode === 1) {
+      const pairs = sample(r, PRE_MATCH, 4);
+      const ex: MatchExercise = {
+        ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Relacioná cada autor con la idea que lo caracteriza.", hints, solution: pairs.map(([a, b]) => `${a} → ${b}`), explanation: "Darwin integró ideas de distintas fuentes: la evolución (Lamarck), el tiempo profundo (Lyell), la lucha por la existencia (Malthus) y la selección artificial (criadores)." }),
+        kind: "match",
+        pairs,
+      };
+      return ex;
+    }
+    if (mode === 2) return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: LAMARCK_DARWIN[(seed + d) % LAMARCK_DARWIN.length], hints });
+    const item = r.pick(PRE_BANK);
+    const others = sample(r, (Object.keys(PRE_NAMES) as PreLabel[]).filter((l) => l !== item.label), 3);
+    return choice(
+      r,
+      base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `¿A qué posición o autor corresponde esta idea?\n\n«${item.text}»`, hints, solution: [item.why], explanation: "Ubicar a cada antecedente ayuda a ver qué tomó Darwin y qué rechazó." }),
+      [{ text: PRE_NAMES[item.label], correct: true }, ...others.map((o) => ({ text: PRE_NAMES[o], error: { type: "conceptual" as ErrorType, message: item.why } }))],
+    );
+  },
+};
+
+// ───────────────────────── U2 · Selección natural ─────────────────────────
+
+interface Trait {
+  desc: string;
+  org: string; // "las jirafas"
+  creados: string; // "creadas" | "creados"
+  anc: string;
+  rasgoVar: string;
+  ventaja: string;
+  uso: string;
+  rasgo: string;
+  fin: string;
+}
+
+const TRAITS: Trait[] = [
+  { desc: "Las jirafas tienen el cuello muy largo, lo que les permite alcanzar las hojas altas de las acacias.", org: "las jirafas", creados: "creadas", anc: "los ancestros de las jirafas", rasgoVar: "el cuello algo más largo que el resto", ventaja: "alcanzaban más alimento cuando escaseaban las hojas bajas", uso: "estiraban el cuello para llegar a las hojas altas y, de tanto usarlo, se les fue alargando", rasgo: "el cuello largo", fin: "alimentarse de las hojas altas" },
+  { desc: "Los cactus tienen espinas en lugar de hojas anchas, lo que reduce la pérdida de agua en el desierto.", org: "los cactus", creados: "creados", anc: "los ancestros de los cactus", rasgoVar: "hojas más reducidas", ventaja: "perdían menos agua en ambientes secos", uso: "al pasar mucha sed fueron afinando sus hojas hasta volverlas espinas", rasgo: "las espinas", fin: "vivir en el desierto" },
+  { desc: "La liebre ártica tiene el pelaje blanco, lo que la camufla en la nieve.", org: "las liebres árticas", creados: "creadas", anc: "las liebres ancestrales de la región", rasgoVar: "el pelaje más claro", ventaja: "los depredadores las detectaban menos sobre la nieve", uso: "se esforzaban por esconderse en la nieve y su pelaje se fue aclarando", rasgo: "el pelaje blanco", fin: "camuflarse en la nieve" },
+  { desc: "En una isla donde abundan las semillas duras, los pinzones tienen el pico grueso y fuerte.", org: "estos pinzones", creados: "creados", anc: "los pinzones que colonizaron la isla", rasgoVar: "el pico un poco más grueso", ventaja: "podían romper las semillas duras y comer más", uso: "picaban semillas duras con tanta fuerza que su pico se fue engrosando", rasgo: "el pico grueso", fin: "romper semillas duras" },
+  { desc: "En un hospital, muchas bacterias de cierta especie ya no mueren con el antibiótico que antes las eliminaba.", org: "estas bacterias", creados: "creadas", anc: "la población original de bacterias", rasgoVar: "una resistencia algo mayor al antibiótico", ventaja: "sobrevivían a los tratamientos", uso: "se fueron acostumbrando al antibiótico de tanto estar en contacto con él", rasgo: "la resistencia al antibiótico", fin: "resistir los tratamientos" },
+  { desc: "En zonas industriales contaminadas, la mayoría de las polillas de cierta especie son de color oscuro.", org: "estas polillas", creados: "creadas", anc: "las polillas de la región", rasgoVar: "alas más oscuras", ventaja: "pasaban desapercibidas para las aves sobre los troncos ennegrecidos por el hollín", uso: "se fueron oscureciendo al posarse una y otra vez sobre troncos sucios", rasgo: "el color oscuro", fin: "esconderse sobre troncos oscuros" },
+];
+
+type EvoKind = "darwin" | "lamarck" | "creacion" | "azar" | "progreso";
+const EVO_MSG: Record<EvoKind, string> = {
+  darwin: "Variación previa, ventaja en un ambiente, más descendencia y herencia: selección natural.",
+  lamarck: "Es lamarckiana: el rasgo aparece por el uso o el esfuerzo y se hereda lo adquirido.",
+  creacion: "Es creacionista: apela a un diseño con un fin («para…», «en armonía»).",
+  azar: "Confunde variación aleatoria con ausencia de selección: para Darwin la variación es aleatoria, pero la selección no.",
+  progreso: "Supone que la evolución tiene dirección o meta; para Darwin la selección es ciega y no apunta a un «ideal».",
+};
+
+function evoText(k: EvoKind, t: Trait): string {
+  switch (k) {
+    case "darwin":
+      return `Entre ${t.anc} había individuos con ${t.rasgoVar}; como ${t.ventaja}, sobrevivían y dejaban más descendencia, que heredaba ese rasgo, y su proporción en la población aumentó generación tras generación.`;
+    case "lamarck":
+      return `${cap(t.anc)} ${t.uso}, y ese rasgo adquirido pasó a sus descendientes.`;
+    case "creacion":
+      return `${cap(t.org)} fueron ${t.creados} con ${t.rasgo} para ${t.fin}, en armonía con su entorno.`;
+    case "azar":
+      return `${cap(t.rasgo)} es pura lotería: apareció por azar y se mantuvo sin ninguna relación con el ambiente en que viven ${t.org}.`;
+    case "progreso":
+      return `La evolución avanza necesariamente hacia formas cada vez más perfectas; ${t.rasgo} es un paso más en ese progreso.`;
+  }
+}
+
+export const ipcExplicacionEvolutiva: Generator = {
+  id: "ipc-explicacion-evolutiva",
+  topicId: "t-ipc-seleccion-natural",
+  description: "Elegir la explicación darwiniana de un rasgo (o reconocer la lamarckiana, creacionista…)",
+  generate(seed, d) {
+    const r = rng(seed);
+    const t = r.pick(TRAITS);
+    const kinds: EvoKind[] = ["darwin", "lamarck", "creacion", "azar", "progreso"];
+    const target: EvoKind = d >= 4 && r.bool() ? r.pick(["lamarck", "creacion", "azar"] as const) : "darwin";
+    const others = sample(r, kinds.filter((k) => k !== target), 3);
+    const ask: Record<EvoKind, string> = {
+      darwin: "¿Qué opción lo explica según la teoría de la **selección natural**?",
+      lamarck: "¿Cuál de estas explicaciones es **lamarckiana**?",
+      creacion: "¿Cuál de estas explicaciones es **creacionista**?",
+      azar: "¿Cuál de estas explicaciones confunde la variación aleatoria con **ausencia de selección**?",
+      progreso: "",
+    };
+    return choice(
+      r,
+      base({
+        gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+        prompt: `${t.desc}\n\n${ask[target]}`,
+        hints: [
+          "La explicación darwiniana mira a los ANCESTROS: había variación antes de que el rasgo fuera útil.",
+          "Buscá los cuatro ingredientes: variación previa, ventaja en ese ambiente, más descendencia y herencia.",
+          "Lamarck: «de tanto usar…, lo adquirieron y lo heredaron». Creacionismo: «fueron creados para…». Azar puro: «sin relación con el ambiente».",
+        ],
+        solution: [evoText(target, t), EVO_MSG[target]],
+        explanation: "La selección natural explica la adaptación sin finalidad ni diseño: variación no dirigida + herencia + diferencias en supervivencia y reproducción.",
+      }),
+      [
+        { text: evoText(target, t), correct: true },
+        ...others.map((k) => ({ text: evoText(k, t), error: { type: "conceptual" as ErrorType, message: EVO_MSG[k] } })),
+      ],
+    );
+  },
+};
+
+interface VFJ {
+  text: string;
+  value: boolean;
+  why: string;
+  wrong: [string, string];
+}
+
+const DARWIN_VF: VFJ[] = [
+  { text: "Los rasgos nuevos que aparecen por variación siempre mejoran la aptitud.", value: false, why: "la variación no está dirigida: un rasgo nuevo puede ser beneficioso, neutro o perjudicial", wrong: ["la selección natural solo produce rasgos útiles", "el ambiente provoca los rasgos que el organismo necesita"] },
+  { text: "Los descendientes heredan solo los rasgos útiles de sus progenitores.", value: false, why: "se heredan muchos rasgos, útiles o no; la selección actúa después, sobre la supervivencia y la reproducción", wrong: ["los rasgos inútiles desaparecen en cuanto aparecen", "solo se transmite lo que el organismo usa"] },
+  { text: "La descendencia no es idéntica a sus progenitores.", value: true, why: "hay herencia de muchos rasgos, pero en cada generación aparecen variaciones nuevas", wrong: ["los hijos heredan los rasgos adquiridos por esfuerzo de sus padres", "cada generación es creada de nuevo"] },
+  { text: "Los rasgos que aparecen por variación responden a las necesidades que impone el ambiente.", value: false, why: "la variación es aleatoria en el sentido de no dirigida: no surge porque el organismo la necesite", wrong: ["el uso intensivo de un órgano lo desarrolla y ese cambio se hereda", "todos los rasgos nuevos aumentan la aptitud"] },
+  { text: "La aptitud de un rasgo depende del ambiente.", value: true, why: "el mismo rasgo puede ser ventajoso en un medio e inútil o perjudicial en otro", wrong: ["los rasgos son buenos o malos en sí mismos", "la aptitud se mide en relación con otras especies"] },
+  { text: "Que la variación sea aleatoria significa que no tiene ninguna causa.", value: false, why: "«aleatoria» significa que no está dirigida por las necesidades del ambiente, no que carezca de causa", wrong: ["la teoría de Darwin renuncia a explicar la variación", "todo en la evolución es azar, incluida la selección"] },
+  { text: "Según Darwin, la evolución avanza necesariamente de lo simple a lo complejo, con el ser humano como cima.", value: false, why: "la selección es ciega: no tiene dirección ni meta", wrong: ["las especies complejas están mejor diseñadas", "la naturaleza tiende siempre a lo mejor"] },
+  { text: "En una población, la proporción de individuos con un rasgo ventajoso tiende a aumentar generación tras generación.", value: true, why: "quienes lo tienen dejan más descendencia, que hereda el rasgo", wrong: ["los individuos adquieren el rasgo a lo largo de su vida", "el rasgo aparece a la vez en todos los individuos"] },
+  { text: "La teoría sintética de la evolución explica la variación mediante mutaciones en el material genético.", value: true, why: "integra a Darwin con la genética: las mutaciones (errores de copia del ADN) son fuente de variación", wrong: ["la teoría sintética retoma la herencia de caracteres adquiridos", "las mutaciones aparecen cuando el organismo las necesita"] },
+];
+
+export const ipcDarwinVF: Generator = {
+  id: "ipc-darwin-vf",
+  topicId: "t-ipc-seleccion-natural",
+  description: "Verdadero o falso (con justificación) sobre la selección natural",
+  generate(seed, d) {
+    const r = rng(seed);
+    const it = DARWIN_VF[(seed * 3 + d) % DARWIN_VF.length];
+    const hints: [string, string, string] = [
+      "Repasá los ingredientes: variación no dirigida, herencia, lucha por la existencia, selección.",
+      "«Aleatoria» = no dirigida por las necesidades; la herencia no filtra rasgos útiles; la aptitud es relativa al ambiente.",
+      "Desconfiá de «siempre», «solo» y de cualquier idea de meta o progreso.",
+    ];
+    if (d <= 2) return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: { text: it.text, value: it.value, why: cap(it.why) + "." }, hints, intro: "Según la teoría de Darwin:" });
+    const V = it.value ? "Verdadero" : "Falso";
+    const NV = it.value ? "Falso" : "Verdadero";
+    return choice(
+      r,
+      base({
+        gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+        prompt: `Según la teoría de Darwin: «${it.text}»\n\nElegí el valor de verdad **y** la justificación correctos.`,
+        hints,
+        solution: [`${V}, porque ${it.why}.`],
+        explanation: "En los ítems con justificación, tienen que estar bien las dos partes: el valor de verdad y la razón.",
+      }),
+      [
+        { text: `${V}, porque ${it.why}.`, correct: true },
+        { text: `${V}, porque ${it.wrong[0]}.`, error: { type: "conceptual", message: `El valor es correcto, pero la razón no: ${it.why}.` } },
+        { text: `${NV}, porque ${it.wrong[1]}.`, error: { type: "conceptual", message: `Es ${V.toLowerCase()}: ${it.why}.` } },
+        { text: `${NV}, porque ${it.wrong[0]}.`, error: { type: "conceptual", message: `Es ${V.toLowerCase()}: ${it.why}.` } },
+      ],
+    );
+  },
+};
+
+const U2: Generator[] = [ipcAntecedentesDarwin, ipcExplicacionEvolutiva, ipcDarwinVF];
+
+// @@U3-U4@@
+
+
+export const IPC_GENERATORS: Generator[] = [...U1, ...U2];
+
