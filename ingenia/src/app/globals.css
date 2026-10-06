@@ -282,3 +282,8 @@ body {
 .board-btn { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 2.5rem; border-radius: 0.75rem; padding: 0 0.9rem; font-weight: 700; font-size: 0.9rem; background: var(--primary); color: var(--on-primary); }
 .board-btn-ghost { background: transparent; color: var(--board-ink); border: 1px solid var(--board-line); }
 @media (prefers-reduced-motion: reduce) { .board-write .board-expr, .board-note-in { animation: none; clip-path: none; } }
+/* En pantallas angostas los renglones largos de la pizarra se acomodan en vez de desbordar. */
+.board ol { overflow-x: auto; }
+.board .math { white-space: normal; overflow-wrap: anywhere; }
+.board-write .board-expr { display: inline; }
+@media (max-width: 640px) { .math { white-space: normal; overflow-wrap: anywhere; } }
