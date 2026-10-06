@@ -633,7 +633,7 @@ export const pcDicts: Lesson = {
     codeExample("Ejemplo resuelto", "¿Qué muestra?", 'nombres = {101: "ana lopez", 205: "JUAN perez"}\nnotas = {205: [7, 9], 101: [4]}\nfor cod in notas:\n    print(nombres[cod].capitalize()[:4], notas[cod][:1])', [
       "Se recorre notas: primero 205, después 101.",
       "205 → \"JUAN perez\".capitalize() = \"Juan perez\" → [:4] = \"Juan\"; notas[205][:1] = [7] (un slice es una lista).",
-      "101 → \"Ana lopez\"[:4] = \"Ana \" (el espacio cuenta); notas[101][:1] = [4].",
+      "101 → \"Ana lopez\"[:4] = \"Ana \" (el espacio cuenta, y print agrega otro: quedan dos); notas[101][:1] = [4].",
     ]),
     practice("Ejercicio guiado", "pc-dict-replace", 1, 3, true),
     explain(

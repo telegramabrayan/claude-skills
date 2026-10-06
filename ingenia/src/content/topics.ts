@@ -1,5 +1,6 @@
 import type { ErrorType, SkillId, Topic } from "@/engine/types";
 import { FISICA_TOPICS } from "./topics-fisica";
+import { PC_TOPICS } from "./topics-pc";
 
 const t = (id: string, name: string, subjectId: string, skill: SkillId, generators: string[], lessonId: string, prerequisites: string[] = []): Topic => ({
   id,
@@ -39,6 +40,7 @@ export const TOPICS: Topic[] = [
   t("t-condicionales", "Condicionales y lógica", "pensamiento-computacional", "logica", ["traza-if", "logica-booleana"], "l-condicionales", ["t-variables-codigo"]),
   t("t-bucles", "Bucles", "pensamiento-computacional", "computacional", ["traza-for", "traza-while"], "l-bucles", ["t-condicionales"]),
   ...FISICA_TOPICS,
+  ...PC_TOPICS,
 ];
 
 const BY_ID = new Map(TOPICS.map((x) => [x.id, x]));
