@@ -2,7 +2,7 @@
 /**
  * Renderiza el mini-markup del contenido:
  *   $...$     matemática (superíndices con ^2, ^{n+1}, ^(−1); subíndices con _0, _{máx})
- *   **texto** negrita · `código` · \x carácter literal · párrafos separados por línea en blanco
+ *   **texto** negrita · `código` · ```bloque de código``` · \x carácter literal · párrafos separados por línea en blanco
  * Los símbolos especiales (Δ, Σ, ∫, ∈, ℝ, lim, …) se pueden tocar para ver qué significan.
  */
 import { Fragment, useEffect, useId, useRef, useState, type ReactNode } from "react";
@@ -224,21 +224,65 @@ function Inline({ text, k }: { text: string; k: string }) {
   return <>{nodes}</>;
 }
 
-export function MathText({ text, className = "", block = true }: { text: string; className?: string; block?: boolean }) {
-  if (!block) return <span className={className}><Inline text={text} k="i" /></span>;
-  const paragraphs = text.split(/\n\s*\n/);
+/** Separa los bloques de código ```…``` del resto del texto. */
+function splitFences(text: string): { code: boolean; text: string }[] {
+  const out: { code: boolean; text: string }[] = [];
+  const re = /```[A-Za-z]*\n?([\s\S]*?)\n?```\n?/g;
+  let last = 0;
+  for (let m = re.exec(text); m; m = re.exec(text)) {
+    if (m.index > last) out.push({ code: false, text: text.slice(last, m.index) });
+    out.push({ code: true, text: m[1] });
+    last = m.index + m[0].length;
+  }
+  if (last < text.length) out.push({ code: false, text: text.slice(last) });
+  return out;
+}
+
+function Paragraphs({ text, k }: { text: string; k: string }) {
+  const paragraphs = text.replace(/^\s*\n|\n\s*$/g, "").split(/\n\s*\n/).filter((p, i, all) => p.trim() || all.length === 1);
   return (
-    <div className={`space-y-3 leading-relaxed ${className}`}>
+    <>
       {paragraphs.map((p, pi) => (
-        <p key={pi}>
+        <p key={`${k}-${pi}`}>
           {p.split("\n").map((line, li) => (
             <Fragment key={li}>
               {li > 0 && <br />}
-              <Inline text={line} k={`${pi}-${li}`} />
+              <Inline text={line} k={`${k}-${pi}-${li}`} />
             </Fragment>
           ))}
         </p>
       ))}
+    </>
+  );
+}
+
+export function MathText({ text, className = "", block = true }: { text: string; className?: string; block?: boolean }) {
+  const parts = text.includes("```") ? splitFences(text) : [{ code: false, text }];
+  if (!block)
+    return (
+      <span className={className}>
+        {parts.map((p, i) =>
+          p.code ? (
+            <span key={i} className="my-1 block overflow-x-auto whitespace-pre rounded-md bg-surface-2 px-2 py-1 text-left font-mono text-[0.9em] leading-snug">
+              {p.text}
+            </span>
+          ) : (
+            <Inline key={i} text={p.text} k={`i${i}`} />
+          ),
+        )}
+      </span>
+    );
+  return (
+    <div className={`space-y-3 leading-relaxed ${className}`}>
+      {parts.map((p, i) =>
+        p.code ? (
+          <pre key={i} className="overflow-x-auto rounded-xl border border-line bg-surface-2 px-3 py-2 font-mono text-sm leading-6">
+            {p.text}
+          </pre>
+        ) : (
+          <Paragraphs key={i} text={p.text} k={`b${i}`} />
+        ),
+      )}
     </div>
   );
 }
