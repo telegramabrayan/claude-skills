@@ -91,8 +91,13 @@ function withSymbols(text: string, keyBase: string): ReactNode[] {
 /** Lee un grupo tras ^ o _: {…}, (…) o una corrida de caracteres simples. */
 function readGroup(s: string, i: number): [string, number] {
   if (s[i] === "{") {
-    const j = s.indexOf("}", i);
-    return j < 0 ? [s.slice(i + 1), s.length] : [s.slice(i + 1, j), j + 1];
+    // Llaves balanceadas: \frac{e^{2x} − 1}{x} funciona.
+    let depth = 0;
+    for (let j = i; j < s.length; j++) {
+      if (s[j] === "{") depth++;
+      else if (s[j] === "}" && --depth === 0) return [s.slice(i + 1, j), j + 1];
+    }
+    return [s.slice(i + 1), s.length];
   }
   if (s[i] === "(") {
     let depth = 0;

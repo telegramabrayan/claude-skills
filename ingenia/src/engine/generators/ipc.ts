@@ -657,11 +657,11 @@ export const ipcNecSuf: Generator = {
     const con = ant === X ? Y : X;
     if (mode === 1) {
       const stmts = [
-        { text: `«${cap(ant.p)}» es condición suficiente para que ${con.p}.`, ok: true },
-        { text: `«${cap(con.p)}» es condición necesaria para que ${ant.p}.`, ok: true },
-        { text: `«${cap(ant.p)}» es condición necesaria para que ${con.p}.`, ok: false },
-        { text: `«${cap(con.p)}» es condición suficiente para que ${ant.p}.`, ok: false },
-        { text: `«${cap(ant.p)}» es condición necesaria y suficiente para que ${con.p}.`, ok: false },
+        { text: `«${cap(ant.p)}» es condición suficiente de «${con.p}».`, ok: true },
+        { text: `«${cap(con.p)}» es condición necesaria de «${ant.p}».`, ok: true },
+        { text: `«${cap(ant.p)}» es condición necesaria de «${con.p}».`, ok: false },
+        { text: `«${cap(con.p)}» es condición suficiente de «${ant.p}».`, ok: false },
+        { text: `«${cap(ant.p)}» es condición necesaria y suficiente de «${con.p}».`, ok: false },
       ];
       const good = r.pick(stmts.filter((s) => s.ok));
       const opts: Option[] = [
@@ -685,10 +685,10 @@ export const ipcNecSuf: Generator = {
     }
     // mode 2: la única situación que vuelve falsa la oración.
     const situations = [
-      { text: `Que ${ant.p} y ${con.n}.`, ok: true },
-      { text: `Que ${ant.n} y ${con.p}.`, ok: false },
-      { text: `Que ${ant.p} y ${con.p}.`, ok: false },
-      { text: `Que ${ant.n} y ${con.n}.`, ok: false },
+      { text: `${cap(ant.p)} y ${con.n}.`, ok: true },
+      { text: `${cap(ant.n)} y ${con.p}.`, ok: false },
+      { text: `${cap(ant.p)} y ${con.p}.`, ok: false },
+      { text: `${cap(ant.n)} y ${con.n}.`, ok: false },
     ];
     return choice(
       r,

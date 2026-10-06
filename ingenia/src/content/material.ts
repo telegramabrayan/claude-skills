@@ -31,6 +31,52 @@ const it = (topicId: string, label: string, points: number, difficulty: SessionI
 
 export const MATERIAL: MaterialSet[] = [
   {
+    subjectId: "am-a",
+    catedra: "Análisis Matemático A (66) — Cátedra Cabana",
+    summary: "22 claves y resoluciones de 2023 (11 exámenes distintos: cada par de temas es el mismo examen con otros números u opciones permutadas). Tu ZIP «Álgebra» resultó ser una copia exacta de este: no hay material de Álgebra.",
+    files: [
+      { group: "1.er parcial", count: 12, detail: "1.er cuatrimestre (temas 1–6) y 2.º cuatrimestre (temas 1–6)" },
+      { group: "Recuperatorio 1.er parcial", count: 2, detail: "Temas 7 y 8" },
+      { group: "2.º parcial", count: 4, detail: "1.er cuatrimestre, temas 1–4" },
+      { group: "Recuperatorio 2.º parcial", count: 2, detail: "Temas 5 y 6" },
+      { group: "Final", count: 2, detail: "Julio 2023, temas 1 y 2" },
+    ],
+    instances: [
+      { name: "1.er parcial", evaluates: ["Estudio de función por opción múltiple (siempre, 3–4 de 10 puntos)", "Límites: ∞ − ∞ con raíces, 0/0, ∞/∞ con acotadas, 1^∞", "Continuidad con parámetros y L'Hôpital", "Regla de la cadena y recta tangente", "Extremos absolutos en [a, b]", "Asíntota oblicua y derivabilidad"] },
+      { name: "2.º parcial", evaluates: ["Polinomio de Taylor", "Serie de potencias: intervalo de convergencia", "Área con parámetro", "Primitivas: sustitución, partes, fracciones simples", "Teorema fundamental del cálculo", "Planteo de área entre curvas"] },
+      { name: "Final", evaluates: ["Límite con TFC y L'Hôpital", "Serie geométrica con parámetro", "Recta tangente con parámetros", "Integral de una función impar", "Planteo de área", "Ecuación diferencial separable"] },
+    ],
+    notes: [
+      "Dato clave de recta tangente: si la tangente a f en x₁ es y = mx + n, entonces f′(x₁) = m y f(x₁) = m·x₁ + n (no n).",
+      "En el estudio de función los distractores usan intervalos fuera del dominio y confunden abscisa con ordenada: la imagen es [f(6); +∞), no [6; +∞).",
+      "En series, la diferencia entre opciones suele estar en los extremos del intervalo: siempre analizalos aparte.",
+      "Hay erratas en algunas claves (por ejemplo, el 2.º parcial tema 4 escribe a = 19, b = 9 en la resolución cuando la respuesta es a = 29, b = 16).",
+    ],
+    blueprints: [
+      {
+        id: "am-1p",
+        title: "1.er parcial (formato de la cátedra)",
+        minutes: 120,
+        note: "Extremos 2 · límite 2 · cadena y tangente 2 · continuidad 1 · estudio de función 3.",
+        items: [it("t-am-extremos-absolutos", "Extremos absolutos", 2), it("t-am-lim-indeterminadas", "Límite", 2), it("t-am-recta-tangente", "Cadena y recta tangente", 2), it("t-am-continuidad", "Continuidad", 1), it("t-am-estudio-funcion", "Estudio de función (a)", 1), it("t-am-estudio-funcion", "Estudio de función (b)", 1), it("t-am-estudio-funcion", "Estudio de función (c)", 1)],
+      },
+      {
+        id: "am-2p",
+        title: "2.º parcial (formato de la cátedra)",
+        minutes: 120,
+        note: "Taylor 2 · serie 2 · área con parámetro 1 · primitivas 2 · TFC 1 · planteo de área 2.",
+        items: [it("t-am-taylor", "Taylor", 2), it("t-am-series", "Serie de potencias", 2), it("t-am-integral-area", "Área con parámetro", 1), it("t-am-primitivas", "Primitiva (sustitución)", 1), it("t-am-partes-fracciones", "Primitiva (partes)", 1), it("t-am-tfc", "TFC", 1), it("t-am-integral-area", "Planteo de área", 2)],
+      },
+      {
+        id: "am-final",
+        title: "Final (formato de la cátedra)",
+        minutes: 120,
+        note: "Límite con L'Hôpital 2 · serie 2 · tangente 2 · integral 1 · área 2 · EDO 1.",
+        items: [it("t-am-lhopital", "Límite con L'Hôpital", 2), it("t-am-series", "Serie geométrica", 2), it("t-am-recta-tangente", "Recta tangente", 2), it("t-am-integral-area", "Integral definida", 1), it("t-am-integral-area", "Planteo de área", 2), it("t-am-edo", "EDO separable", 1)],
+      },
+    ],
+  },
+  {
     subjectId: "fisica",
     catedra: "Física (03) — Cátedra Torti, UBA XXI",
     summary: "14 claves de corrección de 2023: primeros y segundos parciales, recuperatorios y el final de julio. Todos usan g = 9,80 m/s², piden 3 cifras significativas y la unidad.",
