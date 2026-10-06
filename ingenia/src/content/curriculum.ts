@@ -230,18 +230,26 @@ const pendingSubject = (id: string, name: string, shortName: string, icon: strin
 });
 
 export const IPC: Subject = {
-  ...pendingSubject("ipc", "Introducción al Pensamiento Científico", "IPC", "🔬", "humanities", "Qué es el conocimiento científico, cómo se construye y cómo se pone a prueba."),
+  ...pendingSubject("ipc", "Introducción al Pensamiento Científico", "IPC", "🔬", "humanities", "Cómo se argumenta, cómo cambia la ciencia y qué responsabilidades tiene: lógica, la revolución darwiniana, epistemología y ética."),
   objectives: [
-    "Distinguir conocimiento de sentido común y científico, y conocimiento formal y fáctico.",
-    "Analizar argumentos y reconocer tipos de inferencias y su corrección.",
-    "Distinguir tipos de enunciados según sus condiciones de verdad.",
+    "Reconocer y evaluar argumentos deductivos e inductivos.",
+    "Distinguir tipos de enunciados, condiciones de verdad y condiciones necesarias y suficientes.",
+    "Comprender la revolución darwiniana y su impacto en el modo de concebir la ciencia y el mundo.",
+    "Conocer y abordar críticamente las corrientes epistemológicas (empirismo lógico, falsacionismo, Kuhn, epistemología feminista).",
+    "Problematizar la dimensión ético-política de la práctica científica.",
   ],
   units: [
-    unit("ipc-1", "Historia de la ciencia", "La razón en el pensamiento occidental y el desarrollo histórico de la ciencia."),
-    unit("ipc-2", "Consideraciones sobre el lenguaje", "Lenguaje y teorías científicas, lenguaje y realidad, dimensiones sintáctica y semántica."),
+    unit("ipc-u1", "La argumentación", "Discurso argumentativo, estructura de un argumento, enunciados y condiciones de verdad, condiciones necesarias y suficientes, validez, formas válidas y reglas de inferencia, argumentos inductivos y su evaluación.", [], [], "🧩"),
+    unit("ipc-u2", "La ciencia y su historia", "La revolución darwiniana: creacionismo y fijismo, Lamarck, Darwin y la selección natural, actualidad.", [], [], "🐢"),
+    unit("ipc-u3", "El cambio científico", "Estructura de las teorías y contrastación de hipótesis, positivismo lógico, falsacionismo, explicación científica, Kuhn, ciencia y género.", [], [], "🔄"),
+    unit("ipc-u4", "La dimensión ético-política de la ciencia", "Ética de la investigación y de los usos de la ciencia, responsabilidad, cientificismo y anti-cientificismo, políticas científicas.", [], [], "⚖️"),
   ],
-  official: official("parcial", [SRC.ipc2026], "Unidades 1 y 2 y objetivos tomados del programa del 1º C 2026 de una cátedra. Las unidades siguientes, los autores y la bibliografía varían según cátedra: se cargan cuando se verifiquen."),
-  contentLevel: "draft",
+  official: official(
+    "verificado",
+    [{ label: "Programa analítico IPC (040) 2026 — UBA XXI, Cátedra A (aportado por el estudiante)" }, SRC.ipc2026],
+    "Unidades tomadas textualmente del programa 2026 de UBA XXI (Cátedra A, bibliografía: Desenredando la ciencia, Eudeba 2022). En el CBC presencial otras cátedras usan programas distintos: si cursás en otra, avisá y se agrega su programa. El programa no dice qué unidades entran en cada parcial; las claves 2024 sugieren 1.er parcial = U1 + U2 y 2.º parcial = U3 + U4.",
+  ),
+  contentLevel: "partial",
 };
 export const ICSE: Subject = {
   ...pendingSubject("icse", "Introducción al Conocimiento de la Sociedad y el Estado", "ICSE", "🏛️", "humanities", "Sociedad, Estado y su relación a lo largo del tiempo, con perspectivas histórica, sociológica y política."),

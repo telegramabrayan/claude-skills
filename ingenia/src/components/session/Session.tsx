@@ -21,6 +21,15 @@ export interface SessionItem {
   /** Dificultad fija (exámenes). */
   difficulty?: Difficulty;
   label?: string;
+  /** Puntaje del ítem en un simulacro con el formato de la cátedra (si falta, todos valen igual). */
+  points?: number;
+}
+
+/** Nota sobre 10 ponderada por los puntos de cada ítem. */
+function weightedScore(items: SessionItem[], log: { correct: boolean }[]): number {
+  const total = items.reduce((a, it) => a + (it.points ?? 1), 0);
+  const got = items.reduce((a, it, i) => a + (log[i]?.correct ? (it.points ?? 1) : 0), 0);
+  return total ? (got / total) * 10 : 0;
 }
 
 interface Props {
@@ -134,7 +143,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
         id: `${Date.now()}`,
         title,
         ts: Date.now(),
-        score: Math.round((correct / items.length) * 100) / 10,
+        score: Math.round(weightedScore(items, log) * 10) / 10,
         correct,
         total: items.length,
         seconds: Math.round((Date.now() - started.current) / 1000),
@@ -199,7 +208,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
 function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHref }: { title: string; log: Log[]; items: SessionItem[]; kind: string; hearts: number | null; xp: number; seconds: number; onExit?: () => void; exitHref: string }) {
   const correct = log.filter((l) => l.correct).length;
   const total = kind === "examen" ? items.length : log.length;
-  const pct = total ? correct / total : 0;
+  const pct = kind === "examen" ? weightedScore(items, log) / 10 : total ? correct / total : 0;
   const errorCounts = useMemo(() => {
     const m = new Map<ErrorType, number>();
     log.forEach((l) => !l.correct && l.errorType && m.set(l.errorType, (m.get(l.errorType) ?? 0) + 1));
