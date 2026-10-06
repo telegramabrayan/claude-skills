@@ -1,5 +1,5 @@
 import type { Lesson } from "@/engine/types";
-import { example, explain, intro, practice, quiz, summary } from "./helpers";
+import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
 
 const S = "preparacion";
 
@@ -9,7 +9,7 @@ export const comoEstudiar: Lesson = {
   subtitle: "Antes de empezar: el método",
   subjectId: S,
   topicIds: [],
-  estimatedMinutes: 5,
+  estimatedMinutes: 7,
   prerequisites: [],
   cards: [
     intro(
@@ -22,23 +22,20 @@ export const comoEstudiar: Lesson = {
       "Leer una explicación da la sensación de entender. Pero la comprensión real aparece cuando **intentás resolver** algo vos.\n\nPor eso cada lección acá alterna: una idea corta → un ejemplo → un ejercicio. No saltees los ejercicios: son la parte que más enseña.",
       { tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-estudiar-metodo",
+      subjectId: S,
+      topicId: "t-signos",
+      prompt: "Leíste una explicación y sentís que la entendiste. ¿Qué conviene hacer ahora?",
+      options: ["Resolver un ejercicio sin mirar la explicación", "Releerla dos veces más", "Pasar al tema siguiente"],
+      answer: 0,
+      explanation: "La sensación de entender aparece al leer; la comprensión real se comprueba resolviendo. Un ejercicio te muestra enseguida si falta algo.",
+      hints: ["¿Cómo sabrías si de verdad lo entendiste?", "Leer no es lo mismo que hacer.", "Probalo con un ejercicio."],
+      errors: { 1: ["conceptual", "Releer refuerza la sensación de entender, pero no la comprueba. Resolver un ejercicio sí."], 2: ["conceptual", "Avanzar sin comprobar suele acumular dudas. Primero un ejercicio."] },
+    }),
     explain(
       "Los símbolos son abreviaturas",
       "Cada símbolo es una palabra corta. Tocá cualquier símbolo resaltado para ver qué significa:\n\n$=$ «es igual a» · $≠$ «es distinto de» · $<$ «es menor que» · $>$ «es mayor que» · $·$ «por» · $/$ «dividido» · $√$ «raíz cuadrada».\n\nTambién tenés el **Diccionario** en el menú, con buscador.",
-    ),
-    explain(
-      "Equivocarse es información",
-      "Cuando te equivocás, el sistema intenta encontrar **en qué paso** estuvo el problema y de qué tipo fue (signos, despeje, unidades...).\n\nCon eso arma después ejercicios de refuerzo específicos. Un error bien analizado vale más que tres aciertos de suerte.",
-      { tag: "cotidiano" },
-    ),
-    explain(
-      "Pistas antes que soluciones",
-      "Cada ejercicio tiene **tres pistas**, de menor a mayor ayuda. Pedilas de a una: muchas veces con la primera alcanza.\n\nLa solución completa existe, pero aparece al final. El objetivo es que aprendas a razonar, no a copiar.",
-    ),
-    explain(
-      "La calculadora, con criterio",
-      "La calculadora no se equivoca, pero hace exactamente lo que le escribís. Dos trampas clásicas:\n\n1. **Negativos con potencias**: $-3^2$ da $−9$, porque eleva solo el 3. Para $(−3)^2 = 9$ hacen falta paréntesis.\n2. **Modo de ángulos**: para trigonometría con grados, la calculadora tiene que estar en **DEG**, no en RAD.",
-      { tag: "matematico" },
     ),
     quiz(
       "Probemos",
@@ -54,6 +51,54 @@ export const comoEstudiar: Lesson = {
         errors: { 1: ["conceptual", "Es al revés: < es «menor que» y > es «mayor que». La parte abierta apunta al número mayor."] },
       },
       true,
+    ),
+    explain(
+      "Equivocarse es información",
+      "Cuando te equivocás, el sistema intenta encontrar **en qué paso** estuvo el problema y de qué tipo fue (signos, despeje, unidades...).\n\nCon eso arma después ejercicios de refuerzo específicos. Un error bien analizado vale más que tres aciertos de suerte.",
+      { tag: "cotidiano" },
+    ),
+    quiz("Pregunta rápida", {
+      id: "q3-estudiar-error",
+      subjectId: S,
+      topicId: "t-signos",
+      prompt: "Te equivocaste en un ejercicio. ¿Qué te sirve más?",
+      options: ["Buscar en qué paso apareció el error", "Pasar al siguiente y olvidarlo", "Mirar solo el resultado correcto"],
+      answer: 0,
+      explanation: "Ubicar el paso exacto convierte el error en información: sabés qué repasar y no lo repetís.",
+      hints: ["¿Qué información te da un error?", "Te dice dónde está la dificultad.", "Buscá el primer paso que no cierra."],
+      errors: { 2: ["conceptual", "El resultado correcto no te dice dónde te desviaste. Lo que enseña es encontrar el paso equivocado."] },
+    }),
+    explain(
+      "Pistas antes que soluciones",
+      "Cada ejercicio tiene **tres pistas**, de menor a mayor ayuda. Pedilas de a una: muchas veces con la primera alcanza.\n\nLa solución completa existe, pero aparece al final. El objetivo es que aprendas a razonar, no a copiar.",
+    ),
+    quiz("Pregunta rápida", {
+      id: "q3-estudiar-pistas",
+      subjectId: S,
+      topicId: "t-signos",
+      prompt: "Te trabaste en un ejercicio. ¿Qué es lo primero que conviene pedir?",
+      options: ["La primera pista", "La solución completa", "Otro ejercicio más fácil sin intentar este"],
+      answer: 0,
+      explanation: "La primera pista da el empujón mínimo y te deja hacer el resto. Muchas veces alcanza con eso.",
+      hints: ["Las pistas van de menos a más ayuda.", "Empezá por la que menos te regala.", "La primera."],
+      errors: { 1: ["conceptual", "Ver la solución enseguida te quita la parte que más enseña: razonar el paso que faltaba."] },
+    }),
+    explain(
+      "La calculadora, con criterio",
+      "La calculadora no se equivoca, pero hace exactamente lo que le escribís. Dos trampas clásicas:\n\n1. **Negativos con potencias**: $-3^2$ da $−9$, porque eleva solo el 3. Para $(−3)^2 = 9$ hacen falta paréntesis.\n2. **Modo de ángulos**: para trigonometría con grados, la calculadora tiene que estar en **DEG**, no en RAD.",
+      { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: menos tres al cuadrado",
+      [
+        row("−3^2 = −(3^2)", "sin paréntesis, la potencia se aplica solo al 3"),
+        row("−(3^2) = −(3·3)", "elevar al cuadrado es multiplicar por sí mismo"),
+        row("−(3·3) = −9", "el signo menos se aplica al final"),
+        row("(−3)^2 = (−3)·(−3)", "con paréntesis, la base es $−3$"),
+        row("(−3)·(−3) = 9", "signos iguales: resultado positivo"),
+      ],
+      "Así interpreta la calculadora lo que escribís:",
+      "Si querés elevar un negativo, escribí siempre los paréntesis.",
     ),
     quiz("Ahora vos", {
       id: "q-estudiar-2",
@@ -78,6 +123,14 @@ export const comoEstudiar: Lesson = {
     simple: "Leé poquito, probá mucho, y cuando te equivoques, mirá en qué paso fue.",
     nino: "Es como aprender a andar en bici: nadie aprende mirando un video. Hay que subirse, caerse un poco y volver a intentar.",
     ejemplo: "En vez de leer 10 páginas sobre fracciones, leé una idea, resolvé 3 ejercicios, y si fallás uno, pedí una pista.",
+    fromZero: "Estudiar matemática no es memorizar resultados: es aprender **procedimientos** y entender por qué funcionan. Cada lección tiene tres tipos de pantalla: una idea corta, un ejemplo resuelto y ejercicios para que lo hagas vos. Los símbolos ($=$, $<$, $·$, $√$) son abreviaturas de palabras: si alguno no te suena, tocalo y aparece su significado. Cuando te equivoques, no pasa nada: el sistema busca en qué paso estuvo el problema. Si te trabás, pedí las pistas de a una. Y si una explicación no te cierra, tocá «No entendí»: te la explico de otra forma.",
+    why: "Porque después de varios años sin estudiar, lo que más cuesta es el método, no la inteligencia. Alternar idea → ejemplo → ejercicio hace que lo aprendido quede, en vez de evaporarse al cerrar la pantalla. Y en el CBC el tiempo es limitado: estudiar con método rinde mucho más por hora.",
+    origin: "La idea de intercalar explicaciones cortas con práctica activa viene de la investigación sobre aprendizaje: recordar y aplicar algo (en vez de releerlo) es lo que consolida la memoria, y repartir la práctica en varios días funciona mejor que concentrarla en una sola sesión larga. Por eso cada lección es corta y vuelve a pedirte lo que ya viste.",
+    board: [
+      { expr: "−3^2 = −9", note: "sin paréntesis: se eleva solo el 3" },
+      { expr: "(−3)^2 = 9", note: "con paréntesis: se eleva el $−3$ completo" },
+      { expr: "−3^2 ≠ (−3)^2", note: "los paréntesis cambian el resultado" },
+    ],
   },
 };
 
@@ -87,7 +140,7 @@ export const signos: Lesson = {
   subtitle: "La recta numérica y la regla de los signos",
   subjectId: S,
   topicIds: ["t-signos"],
-  estimatedMinutes: 10,
+  estimatedMinutes: 11,
   prerequisites: [],
   cards: [
     intro(
@@ -100,15 +153,48 @@ export const signos: Lesson = {
       "Imaginá una línea con el 0 en el medio: a la derecha los positivos, a la izquierda los negativos.\n\n**Sumar** un positivo = moverse a la derecha. **Restar** un positivo = moverse a la izquierda.\n\nMové el punto y probá:",
       { widget: { type: "numberline", min: -10, max: 10, start: 3, step: 1 }, tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-signos-recta",
+      subjectId: S,
+      topicId: "t-signos",
+      prompt: "Estás en $−2$ sobre la recta y sumás $5$. ¿Dónde quedás?",
+      options: ["$3$", "$−7$", "$7$"],
+      answer: 0,
+      explanation: "Sumar 5 es moverse 5 lugares a la derecha: −1, 0, 1, 2, 3. Quedás en 3.",
+      hints: ["Sumar es moverse hacia la derecha.", "Contá 5 pasos desde −2.", "−2 + 5 = 3."],
+      errors: { 1: ["signos", "Te moviste hacia la izquierda. Sumar un positivo es ir hacia la derecha."], 2: ["signos", "Ignoraste el signo del −2. Arrancás a la izquierda del cero."] },
+    }),
     explain(
       "Deudas y ahorros",
       "Pensá los negativos como deudas. Si tenés $5$ pesos y gastás $8$, quedás debiendo $3$: $5 − 8 = −3$.\n\n¿Cuál es mayor, $−2$ o $−7$? Deber 2 es mejor que deber 7, así que $−2 > −7$. Entre negativos, el mayor es el más cercano al cero.",
       { tag: "cotidiano" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-signos-mayor",
+      subjectId: S,
+      topicId: "t-signos",
+      prompt: "¿Cuál es mayor: $−3$ o $−10$?",
+      options: ["$−3$", "$−10$", "Son iguales"],
+      answer: 0,
+      explanation: "Deber 3 es mejor que deber 10: −3 está más cerca del cero, a la derecha de −10. Entonces −3 > −10.",
+      hints: ["Pensalo como deudas.", "¿Qué preferís deber: 3 o 10?", "El más cercano al cero es el mayor."],
+      errors: { 1: ["signos", "10 es más grande que 3, pero −10 es una deuda más grande: está más a la izquierda. Entre negativos, el mayor es el más cercano al 0."] },
+    }),
     explain(
       "Dos signos seguidos",
       "Cuando aparecen dos signos juntos, se combinan:\n\n$+(+3) = +3$ · $+(−3) = −3$ · $−(+3) = −3$ · $−(−3) = +3$\n\n**Restar un negativo es sumar.** Sacarte una deuda es como recibir plata.",
       { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: simplificar los signos",
+      [
+        row("−5 − (−8) + (−2)"),
+        row("−5 + 8 + (−2)", "$−(−8)$ se vuelve $+8$: restar una deuda es sumar"),
+        row("−5 + 8 − 2", "$+(−2)$ se vuelve $−2$"),
+        row("3 − 2", "de izquierda a derecha: $−5 + 8 = 3$"),
+        row("1"),
+      ],
+      "Primero se resuelven los signos dobles; después se cuenta de izquierda a derecha.",
     ),
     example("Ejemplo resuelto", "Calculá $4 − (−6) + (−3)$", ["$−(−6)$ se convierte en $+6$", "$+(−3)$ se convierte en $−3$", "Queda $4 + 6 − 3$", "$= 7$"], "7"),
     practice("Ejercicio guiado", "signos-suma", 2, 11, true),
@@ -135,6 +221,15 @@ export const signos: Lesson = {
     ejemplo: "3 − 8: empezás en 3 y te movés 8 lugares a la izquierda: 2, 1, 0, −1, −2, −3, −4, −5. Resultado: −5.",
     visual: { type: "numberline", min: -10, max: 10, start: 0, step: 1 },
     visualText: "Mové el punto por la recta: cada paso a la derecha suma 1, cada paso a la izquierda resta 1.",
+    fromZero: "Los números para contar (1, 2, 3…) dicen **cuánto** hay. Pero muchas veces también importa el **sentido**: grados bajo cero, una deuda, un subsuelo. Para eso existen los negativos: $−3$ es «3 en el sentido contrario». En una recta, el 0 queda en el medio, los positivos a la derecha y los negativos a la izquierda, cada uno a la misma distancia del 0 que su versión positiva. Sumar es avanzar hacia la derecha; restar, hacia la izquierda. Y el signo menos delante de algo significa «lo contrario de»: por eso $−(−3)$, lo contrario de $−3$, es $+3$.",
+    why: "Porque casi todas las magnitudes de la ingeniería tienen sentido: una velocidad hacia atrás, una fuerza hacia abajo, una pérdida en un balance, una temperatura bajo cero. El signo guarda ese sentido dentro del número. Un error de signo no deja el resultado «un poco mal»: lo da vuelta (un auto que avanza parece retroceder). Por eso conviene automatizar estas reglas ahora.",
+    origin: "«Menos por menos da más» no es un capricho: sale de exigir que las reglas de siempre sigan valiendo. Sabemos que $(−3)·0 = 0$ y que $0 = 2 + (−2)$. Entonces $(−3)·(2 + (−2)) = 0$. Distribuyendo: $(−3)·2 + (−3)·(−2) = 0$, o sea $−6 + (−3)·(−2) = 0$. El único número que sumado a $−6$ da $0$ es $6$. Por lo tanto $(−3)·(−2) = 6$.",
+    board: [
+      { expr: "(−2)·(−4) − (−3)" },
+      { expr: "8 − (−3)", note: "primero el producto: signos iguales dan positivo" },
+      { expr: "8 + 3", note: "restar un negativo es sumar" },
+      { expr: "11" },
+    ],
   },
 };
 
@@ -144,7 +239,7 @@ export const jerarquiaLesson: Lesson = {
   subtitle: "Qué se calcula primero",
   subjectId: S,
   topicIds: ["t-jerarquia"],
-  estimatedMinutes: 8,
+  estimatedMinutes: 9,
   prerequisites: ["t-signos"],
   cards: [
     intro("Jerarquía de operaciones", "En qué orden se resuelve una cuenta con varias operaciones.", "Si dos personas resuelven la misma cuenta en distinto orden, obtienen resultados distintos. La jerarquía es el acuerdo que evita eso, y es la base de todo el álgebra."),
@@ -153,10 +248,31 @@ export const jerarquiaLesson: Lesson = {
       "¿Cuánto es $2 + 3 · 4$?\n\nSi sumás primero: $5 · 4 = 20$. Si multiplicás primero: $2 + 12 = 14$.\n\nLa respuesta correcta es **14**. La multiplicación tiene prioridad sobre la suma.",
       { tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-jer-1",
+      subjectId: S,
+      topicId: "t-jerarquia",
+      prompt: "¿Cuánto es $10 − 2 · 3$?",
+      options: ["$4$", "$24$", "$−4$"],
+      answer: 0,
+      explanation: "Primero la multiplicación: 2 · 3 = 6. Después la resta: 10 − 6 = 4.",
+      hints: ["¿Qué va primero: la resta o la multiplicación?", "Calculá 2 · 3 antes.", "10 − 6."],
+      errors: { 1: ["jerarquia", "Restaste primero: (10 − 2) · 3 = 24. La multiplicación tiene prioridad."] },
+    }),
     explain(
       "El orden",
       "1. **Paréntesis** (y corchetes, llaves)\n2. **Potencias y raíces**\n3. **Multiplicaciones y divisiones**, de izquierda a derecha\n4. **Sumas y restas**, de izquierda a derecha\n\nLos signos $+$ y $−$ separan la cuenta en «términos»: resolvé cada término y al final sumá.",
       { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: una cuenta en orden",
+      [
+        row("18 ÷ (5 − 2) + 2·4^2"),
+        row("18 ÷ 3 + 2·4^2", "paréntesis primero: $5 − 2 = 3$"),
+        row("18 ÷ 3 + 2·16", "potencia: $4^2 = 16$"),
+        row("6 + 32", "multiplicaciones y divisiones: $18 ÷ 3 = 6$ y $2·16 = 32$"),
+        row("38", "al final, la suma"),
+      ],
     ),
     explain(
       "Una analogía",
@@ -173,8 +289,19 @@ export const jerarquiaLesson: Lesson = {
   tutor: {
     normal: "Se resuelve primero lo que está entre paréntesis, después potencias y raíces, después multiplicaciones y divisiones (de izquierda a derecha) y al final sumas y restas.",
     simple: "Las sumas y restas son las últimas. Antes, todo lo demás: paréntesis, potencias, multiplicar y dividir.",
-    nino: "Es como vestirse: primero las medias y después las zapatillas. Si lo hacés al revés, no funciona.",
+    nino: "Es como armar un mueble: primero se arman los cajones (las multiplicaciones), después se encastran en la estructura, y recién al final se atornilla todo junto (las sumas). Si atornillás antes de armar las partes, no encaja. En «2 alfajores de \\$300 más un agua de \\$500», primero calculás lo de los alfajores y al final sumás.",
     ejemplo: "3 + 2 · 5: primero 2 · 5 = 10, después 3 + 10 = 13. No es 5 · 5 = 25.",
+    fromZero: "Una cuenta con varias operaciones es como una oración con varias acciones: hace falta saber en qué orden se hacen. Por acuerdo, primero se resuelve lo que está **entre paréntesis**; después las **potencias y raíces**; después **multiplicaciones y divisiones**; y al final **sumas y restas**. Cuando hay dos operaciones del mismo nivel, se hacen de izquierda a derecha. Un truco útil: los signos $+$ y $−$ cortan la cuenta en pedazos (términos). Resolvé cada pedazo por separado y recién al final sumá o restá los resultados.",
+    why: "Porque una fórmula tiene que significar lo mismo para todos. Cuando en Física escribís $x_0 + v·t$, todos entienden que primero se multiplica $v·t$ y después se suma; sin ese acuerdo, cada uno obtendría otra posición. Las calculadoras y los lenguajes de programación siguen exactamente este orden, así que también es lo que necesitás para escribir bien una cuenta en la computadora.",
+    origin: "Es una convención, pero con lógica. La multiplicación abrevia sumas: $2·3$ es $3 + 3$. Entonces, en $2 + 2·3$, el $2·3$ es un «paquete» que vale 6 y tiene sentido resolverlo antes de sumar. La potencia abrevia multiplicaciones ($3^2 = 3·3$), así que es un paquete todavía más fuerte. Cada operación «más fuerte» resume varias de la anterior, y por eso va primero. Los paréntesis existen justamente para pedir otro orden cuando lo necesitamos.",
+    board: [
+      { expr: "3 + 4·(6 − 2)^2 ÷ 8" },
+      { expr: "3 + 4·4^2 ÷ 8", note: "paréntesis: $6 − 2 = 4$" },
+      { expr: "3 + 4·16 ÷ 8", note: "potencia: $4^2 = 16$" },
+      { expr: "3 + 64 ÷ 8", note: "de izquierda a derecha: primero $4·16$" },
+      { expr: "3 + 8", note: "después la división" },
+      { expr: "11", note: "la suma, al final" },
+    ],
   },
 };
 
@@ -193,15 +320,46 @@ export const fracciones: Lesson = {
       "$3/4$ significa: dividí un entero en **4 partes iguales** y tomá **3**.\n\nEl de abajo (**denominador**) dice el tamaño de cada parte. El de arriba (**numerador**) cuántas partes tomás.",
       { widget: { type: "fraction-bars", a: 3, b: 4, c: 1, d: 2 }, tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-frac-partes",
+      subjectId: S,
+      topicId: "t-fracciones",
+      prompt: "En $5/8$, ¿qué indica el $8$?",
+      options: ["En cuántas partes iguales se dividió el entero", "Cuántas partes tomás", "Cuánto vale cada parte en pesos"],
+      answer: 0,
+      explanation: "El denominador (abajo) dice en cuántas partes iguales se cortó el entero. El numerador (arriba) dice cuántas tomás.",
+      hints: ["El 8 está abajo.", "Abajo va el denominador.", "El denominador dice el tamaño de las partes: en cuántas se cortó."],
+      errors: { 1: ["fracciones", "Eso lo dice el numerador, el de arriba (el 5)."] },
+    }),
     explain(
       "Fracciones equivalentes",
       "$1/2 = 2/4 = 3/6$: es la misma cantidad cortada en más pedazos.\n\nSi multiplicás (o dividís) numerador y denominador por el mismo número, la fracción no cambia. **Simplificar** es dividir arriba y abajo por un divisor común: $6/8 = 3/4$.",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-frac-equiv",
+      subjectId: S,
+      topicId: "t-fracciones",
+      prompt: "¿Cuál es equivalente a $6/9$?",
+      options: ["$2/3$", "$3/6$", "$6/3$"],
+      answer: 0,
+      explanation: "6 y 9 se pueden dividir por 3: 6 ÷ 3 = 2 y 9 ÷ 3 = 3. Entonces 6/9 = 2/3.",
+      hints: ["Buscá un número que divida a 6 y a 9.", "Es el 3.", "Dividí arriba y abajo por 3."],
+      errors: { 1: ["fracciones", "Dividiste solo el de abajo por 3. Para que la fracción no cambie, se divide arriba Y abajo por lo mismo."], 2: ["fracciones", "Diste vuelta la fracción: 6/3 vale 2, que es mucho más que 6/9."] },
+    }),
     explain(
       "Sumar: el tamaño de las partes importa",
       "$1/2 + 1/3$ **no** es $2/5$. No se pueden sumar pedazos de distinto tamaño.\n\nPrimero se cortan ambas en partes iguales (denominador común): $1/2 = 3/6$ y $1/3 = 2/6$. Ahora sí: $3/6 + 2/6 = 5/6$.\n\nCompará las barras:",
       { widget: { type: "fraction-bars", a: 1, b: 2, c: 1, d: 3 }, tag: "intuitivo" },
+    ),
+    board(
+      "Pizarra: sumar fracciones",
+      [
+        row("3/4 + 1/6"),
+        row("9/12 + 2/12", "denominador común 12 (múltiplo de 4 y de 6): $3/4 = 9/12$ y $1/6 = 2/12$"),
+        row("(9 + 2)/12", "con partes del mismo tamaño, se suman los numeradores"),
+        row("11/12", "no se puede simplificar: 11 y 12 no tienen divisores comunes"),
+      ],
     ),
     example("Ejemplo resuelto", "Calculá $2/3 + 1/4$", ["Denominador común: $3 · 4 = 12$", "$2/3 = 8/12$ (multiplico arriba y abajo por 4)", "$1/4 = 3/12$ (multiplico arriba y abajo por 3)", "$8/12 + 3/12 = 11/12$"], "11/12"),
     practice("Ejercicio guiado", "fracciones-suma", 2, 7, true),
@@ -222,6 +380,15 @@ export const fracciones: Lesson = {
     ejemplo: "1/4 + 2/4 = 3/4 (mismo tamaño de pedazo). 1/2 + 1/4 = 2/4 + 1/4 = 3/4 (primero pasé 1/2 a cuartos).",
     visual: { type: "fraction-bars", a: 1, b: 2, c: 1, d: 4 },
     visualText: "Mirá las barras: cuando los pedazos son de distinto tamaño, primero hay que cortarlos igual.",
+    fromZero: "Una fracción es una forma de escribir una parte de algo. Tomá un entero (una pizza, un litro, una hora) y cortalo en partes **iguales**. El número de abajo, el denominador, dice en cuántas partes lo cortaste: eso fija el tamaño de cada parte. El de arriba, el numerador, dice cuántas de esas partes tomás. Así, $3/4$ de hora son 3 partes de 15 minutos: 45 minutos. Una fracción también es una división: $3/4 = 3 ÷ 4 = 0,75$. Y si cortás en el doble de partes y tomás el doble, tenés lo mismo: $3/4 = 6/8$.",
+    why: "Porque muchas cantidades exactas no son enteras: una pendiente de $2/3$, una probabilidad de $1/6$, el resultado de un despeje. Escribirlas como fracción conserva el valor exacto, mientras que el decimal ($0,666…$) obliga a redondear. Además, el álgebra de fracciones es la misma que la de las fracciones con letras que vas a manejar en Análisis.",
+    origin: "Para **sumar** hace falta denominador común porque solo se pueden juntar partes del mismo tamaño, igual que no se suman metros con centímetros sin convertir. Para **dividir** se multiplica por la inversa: dividir por $1/5$ pregunta cuántos quintos entran, y en cada entero entran 5; o sea, multiplicar por 5. Dividir por $4/5$ (partes 4 veces más grandes) da 4 veces menos: multiplicar por $5/4$.",
+    board: [
+      { expr: "3/5 ÷ 9/10" },
+      { expr: "3/5 · 10/9", note: "dividir es multiplicar por la inversa: damos vuelta $9/10$" },
+      { expr: "30/45", note: "arriba por arriba, abajo por abajo" },
+      { expr: "2/3", note: "simplificamos dividiendo por 15" },
+    ],
   },
 };
 
@@ -231,7 +398,7 @@ export const porcentajes: Lesson = {
   subtitle: "Proporciones del día a día",
   subjectId: S,
   topicIds: ["t-porcentajes"],
-  estimatedMinutes: 10,
+  estimatedMinutes: 11,
   prerequisites: ["t-fracciones"],
   cards: [
     intro("Porcentajes", "Calcular porcentajes, aumentos, descuentos y resolver proporciones con regla de tres.", "Aparecen en economía, estadística, eficiencia de máquinas y errores de medición. En Ingeniería Industrial, todo el tiempo."),
@@ -240,10 +407,32 @@ export const porcentajes: Lesson = {
       "$25\\%$ significa 25 de cada 100, o sea $25/100 = 0,25$.\n\nEl $p\\%$ de un número $N$ es $p/100 · N$. Probá cambiando los valores:",
       { widget: { type: "percent", base: 200, percent: 15 }, tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-porc-1",
+      subjectId: S,
+      topicId: "t-porcentajes",
+      prompt: "¿Cuánto es el $20\\%$ de $150$?",
+      options: ["$30$", "$7,5$", "$170$"],
+      answer: 0,
+      explanation: "20/100 · 150 = 0,2 · 150 = 30. Atajo: el 10% es 15, el 20% es el doble.",
+      hints: ["El p% de N es p/100 · N.", "Empezá por el 10%: dividí por 10.", "10% de 150 = 15; 20% = 30."],
+      errors: { 1: ["calculo", "Dividiste 150 por 20. El 20% es 20 de cada 100: multiplicá por 0,2."], 2: ["conceptual", "Sumaste 20. El porcentaje es una fracción del número, no una cantidad que se suma."] },
+    }),
     explain(
       "Aumentos y descuentos",
       "Un aumento del $20\\%$ sobre \\$500: el aumento es $0,20 · 500 = 100$, el precio nuevo es $600$.\n\n**Atajo**: aumentar un $p\\%$ es multiplicar por $(1 + p/100)$. $500 · 1,20 = 600$. Descontar es multiplicar por $(1 − p/100)$.",
       { tag: "cotidiano" },
+    ),
+    board(
+      "Pizarra: un descuento en un paso",
+      [
+        row("800·(1 − 15/100)", "descontar un $15\\%$ es quedarse con el resto"),
+        row("800·(1 − 0,15)", "$15/100 = 0,15$"),
+        row("800·0,85", "pagás el $85\\%$ del precio"),
+        row("680", "precio final"),
+      ],
+      "Un producto de \\$800 tiene un 15% de descuento.",
+      "Control: el descuento fue $800 − 680 = 120$, y $0,15·800 = 120$ ✓.",
     ),
     practice("Ejercicio guiado", "porcentaje", 1, 3, true),
     practice("Tu turno", "porcentaje", 3, 13),
@@ -252,6 +441,17 @@ export const porcentajes: Lesson = {
       "Si 3 kg cuestan \\$900, ¿cuánto cuestan 5 kg?\n\nMás kilos → más plata: es **directa**. Lo más claro es pasar por la unidad: 1 kg cuesta $900 ÷ 3 = 300$; 5 kg cuestan $5 · 300 = 1500$.",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-porc-tipo",
+      subjectId: S,
+      topicId: "t-porcentajes",
+      prompt: "Un mismo trayecto: si vas más rápido, ¿cómo cambia el tiempo de viaje?",
+      options: ["Disminuye: es una proporción inversa", "Aumenta: es una proporción directa", "No cambia"],
+      answer: 0,
+      explanation: "Más velocidad → menos tiempo. Cuando una crece y la otra achica (y el producto se mantiene: distancia = velocidad · tiempo), la proporción es inversa.",
+      hints: ["Pensá en ir a 100 km/h o a 50 km/h.", "¿A 100 km/h tardás más o menos?", "Una crece, la otra achica."],
+      errors: { 1: ["conceptual", "Si fuera directa, ir más rápido te haría tardar más. Es al revés: es inversa."] },
+    }),
     explain(
       "Regla de tres inversa",
       "Si 4 personas pintan una pared en 6 horas, ¿cuánto tardan 8?\n\nMás personas → **menos** tiempo: es **inversa**. El trabajo total es $4 · 6 = 24$ «horas-persona»; repartido entre 8: $24 ÷ 8 = 3$ horas.\n\nAntes de calcular, preguntate siempre: ¿si una crece, la otra crece o achica?",
@@ -263,9 +463,19 @@ export const porcentajes: Lesson = {
   tutor: {
     normal: "Un porcentaje es una fracción con denominador 100. La regla de tres resuelve proporciones: directas (crecen juntas) o inversas (el producto se mantiene constante).",
     simple: "El 10% es dividir por 10. El 50% es la mitad. El 25% es la cuarta parte. Con eso podés calcular casi todo mentalmente.",
-    nino: "Si en una clase de 100 chicos 30 usan anteojos, el 30% usa anteojos. Si la clase es de 20, el 30% son 6.",
+    nino: "En una factura, el IVA del 21% significa que de cada \\$100 de precio, \\$21 se agregan de impuesto. Si el servicio cuesta \\$10 000 sin impuestos, son 100 «billetes» de \\$100, y cada uno suma \\$21: en total \\$2100 de IVA.",
     ejemplo: "15% de 80: 10% es 8, 5% es 4 (la mitad), entonces 15% = 8 + 4 = 12.",
     visual: { type: "percent", base: 100, percent: 30 },
+    visualText: "Mové el porcentaje y la base: la parte coloreada es p/100 del total.",
+    fromZero: "«Por ciento» quiere decir «de cada cien». Decir $30\\%$ es decir 30 de cada 100, o sea la fracción $30/100 = 0,3$. Para calcular el $30\\%$ de una cantidad, la multiplicás por $0,3$. Si la cantidad es 100, da 30; si es 200, da 60: el porcentaje es siempre la misma **proporción**, aunque la cantidad cambie. La regla de tres es la misma idea con otros números: si sabés cuánto corresponde a una cantidad, podés calcular cuánto corresponde a otra, pasando primero por cuánto corresponde a **una** unidad.",
+    why: "Porque comparar con una base fija (100) permite comparar cosas de distinto tamaño: un aumento de \\$100 es enorme en un producto de \\$200 y mínimo en uno de \\$100 000. En Ingeniería Industrial se usan todo el tiempo: rendimiento de una máquina, desperdicio de material, inflación de costos, error relativo de una medición.",
+    origin: "El $p\\%$ de $N$ es $p/100 · N$ por definición: tomás $p$ partes de cada 100. El atajo de los aumentos sale de sacar factor común: $N + (p/100)·N = N·(1 + p/100)$. Y la regla de tres directa se justifica porque las dos magnitudes mantienen el mismo cociente (precio por kilo); en la inversa se mantiene el **producto** (personas · horas = trabajo total).",
+    board: [
+      { expr: "6·4 = 24", note: "6 canillas llenan el tanque en 4 h: trabajo total, 24 «canilla-horas»" },
+      { expr: "3·t = 24", note: "con 3 canillas el producto tiene que seguir dando 24" },
+      { expr: "t = 24 ÷ 3", note: "dividimos ambos lados por 3" },
+      { expr: "t = 8", note: "la mitad de canillas, el doble de tiempo" },
+    ],
   },
 };
 
@@ -284,20 +494,64 @@ export const potenciasLesson: Lesson = {
       "$2^5 = 2·2·2·2·2 = 32$. La **base** (2) se multiplica por sí misma tantas veces como dice el **exponente** (5).\n\nOjo: $2^5$ **no** es $2·5$. Probá:",
       { widget: { type: "power", base: 2, exponent: 5 }, tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-pot-1",
+      subjectId: S,
+      topicId: "t-potencias",
+      prompt: "¿Cuánto es $3^4$?",
+      options: ["$81$", "$12$", "$64$"],
+      answer: 0,
+      explanation: "3^4 = 3·3·3·3 = 9·9 = 81.",
+      hints: ["El exponente dice cuántas veces se multiplica la base.", "3·3·3·3.", "9·9."],
+      errors: { 1: ["potencias", "Multiplicaste base por exponente (3·4). La potencia es multiplicar el 3 por sí mismo 4 veces."], 2: ["potencias", "Calculaste 4³. La base es 3 y el exponente 4."] },
+    }),
     explain(
       "Signos y paréntesis",
       "$(−2)^4 = 16$: la base es $−2$ y exponente par → positivo.\n$(−2)^3 = −8$: exponente impar → negativo.\n$−2^4 = −16$: ¡sin paréntesis la base es solo el 2!",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-pot-signo",
+      subjectId: S,
+      topicId: "t-potencias",
+      prompt: "¿Cuánto es $(−1)^7$?",
+      options: ["$−1$", "$1$", "$−7$"],
+      answer: 0,
+      explanation: "Base negativa con exponente impar: el resultado es negativo. (−1)·(−1)·… siete veces da −1.",
+      hints: ["¿El exponente es par o impar?", "Impar con base negativa da negativo.", "Y 1 multiplicado por sí mismo sigue siendo 1."],
+      errors: { 1: ["signos", "Con exponente par daría 1. Con 7 (impar) queda un signo menos sin pareja: −1."], 2: ["potencias", "Multiplicaste por el exponente. (−1)^7 es multiplicar −1 por sí mismo 7 veces."] },
+    }),
     explain(
       "Exponente 0 y negativo",
       "Mirá el patrón: $2^3 = 8$, $2^2 = 4$, $2^1 = 2$. Cada vez se **divide por 2**. Siguiendo:\n\n$2^0 = 1$ · $2^{−1} = 1/2$ · $2^{−2} = 1/4$\n\nUn exponente negativo **no** da un número negativo: indica el inverso. $a^{−n} = 1/a^n$.",
       { tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-pot-neg",
+      subjectId: S,
+      topicId: "t-potencias",
+      prompt: "¿Cuánto es $5^{−2}$?",
+      options: ["$1/25$", "$−25$", "$−10$"],
+      answer: 0,
+      explanation: "El exponente negativo indica el inverso: 5^{−2} = 1/5² = 1/25.",
+      hints: ["Un exponente negativo no hace negativo al resultado.", "a^{−n} = 1/aⁿ.", "1/5²."],
+      errors: { 1: ["potencias", "El exponente negativo no cambia el signo: da el inverso, 1/25."], 2: ["potencias", "Multiplicaste base por exponente. Es 1/5² = 1/25."] },
+    }),
     explain(
       "Propiedades",
       "Con la **misma base**:\n\n$a^m · a^n = a^{m+n}$ (se suman)\n$a^m ÷ a^n = a^{m−n}$ (se restan)\n$(a^m)^n = a^{m·n}$ (se multiplican)\n\n**Cuidado**: $(a + b)^2 ≠ a^2 + b^2$. La potencia no se distribuye en la suma.",
       { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: usar las propiedades",
+      [
+        row("2^5 · 2^{−3} ÷ 2^{−1}"),
+        row("2^{5 + (−3)} ÷ 2^{−1}", "misma base multiplicando: se suman los exponentes"),
+        row("2^2 ÷ 2^{−1}", "$5 − 3 = 2$"),
+        row("2^{2 − (−1)}", "misma base dividiendo: se restan (ojo con el signo)"),
+        row("2^3", "$2 + 1 = 3$"),
+        row("8"),
+      ],
     ),
     example("Ejemplo resuelto", "Simplificá $3^4 · 3^2 ÷ 3^3$", ["Producto de igual base: $3^4 · 3^2 = 3^6$", "División de igual base: $3^6 ÷ 3^3 = 3^3$", "$3^3 = 27$"], "27"),
     practice("Ejercicio guiado", "potencias", 2, 9, true),
@@ -316,6 +570,17 @@ export const potenciasLesson: Lesson = {
     nino: "Si cada bacteria se divide en 2 cada hora, después de 5 horas tenés 2·2·2·2·2 = 2⁵ = 32 bacterias.",
     ejemplo: "10³ = 1000 (un 1 con tres ceros). 10⁻² = 1/100 = 0,01.",
     visual: { type: "power", base: 2, exponent: 4 },
+    visualText: "Cambiá el exponente: cada vez que sube 1, el resultado se multiplica por la base.",
+    fromZero: "Multiplicar es una suma abreviada: $3·4$ es sumar $3$ cuatro veces. La potencia es una **multiplicación abreviada**: $3^4$ es multiplicar $3$ por sí mismo cuatro veces, $3·3·3·3 = 81$. El número de abajo (base) es el que se repite; el chiquito de arriba (exponente) cuenta cuántas veces. Por eso $3^4$ no es $3·4$. La raíz hace el camino inverso: $√81$ pregunta «¿qué número multiplicado por sí mismo da 81?», y la respuesta es 9. Con eso alcanza para entender todo lo demás: las propiedades son solo formas rápidas de contar factores.",
+    why: "Porque las cantidades de la ingeniería van de lo muy chico a lo muy grande (micrones, megavatios) y las potencias de 10 permiten escribirlas sin llenar la hoja de ceros. Además aparecen en las unidades ($m^2$, $m/s^2$), en el crecimiento exponencial, en polinomios y en la regla para derivar $x^n$.",
+    origin: "Las propiedades salen de contar factores: $a^3·a^2 = (a·a·a)·(a·a)$, que son 5 factores: $a^5$. Al dividir, los factores repetidos se cancelan: $a^5 ÷ a^2 = a^3$. Si dividís $a^3 ÷ a^3$ da 1, y la regla dice $a^{3−3} = a^0$: por eso $a^0 = 1$. Y $a^0 ÷ a^2 = 1/a^2$, que la regla escribe $a^{−2}$: así aparece el exponente negativo.",
+    board: [
+      { expr: "(5^2)^3 ÷ 5^4" },
+      { expr: "5^6 ÷ 5^4", note: "potencia de potencia: se multiplican los exponentes, $2·3 = 6$" },
+      { expr: "5^{6 − 4}", note: "misma base dividiendo: se restan" },
+      { expr: "5^2" },
+      { expr: "25" },
+    ],
   },
 };
 

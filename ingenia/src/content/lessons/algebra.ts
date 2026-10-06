@@ -1,5 +1,5 @@
 import type { Lesson } from "@/engine/types";
-import { example, explain, intro, practice, quiz, summary } from "./helpers";
+import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
 
 const S = "preparacion";
 
@@ -9,7 +9,7 @@ export const expresiones: Lesson = {
   subtitle: "Letras que guardan números",
   subjectId: S,
   topicIds: ["t-expresiones"],
-  estimatedMinutes: 10,
+  estimatedMinutes: 11,
   prerequisites: ["t-jerarquia", "t-potencias"],
   cards: [
     intro("Variables", "Qué es una variable, cómo evaluar una expresión y la propiedad distributiva.", "Todo el álgebra, la física y la programación se escriben con variables. Es el idioma de la ingeniería."),
@@ -18,15 +18,47 @@ export const expresiones: Lesson = {
       "Una **variable** es un lugar que guarda un número que todavía no conocemos o que puede cambiar. Se suele escribir con una letra: $x$, $t$, $v$.\n\n$3x$ significa «3 por x». Si $x = 4$, entonces $3x = 12$.",
       { tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-expr-1",
+      subjectId: S,
+      topicId: "t-expresiones",
+      prompt: "Si $x = 6$, ¿cuánto vale $3x$?",
+      options: ["$18$", "$36$", "$9$"],
+      answer: 0,
+      explanation: "3x significa 3 · x. Con x = 6: 3 · 6 = 18.",
+      hints: ["Entre el 3 y la x hay una multiplicación escondida.", "3x = 3 · x.", "3 · 6."],
+      errors: { 1: ["conceptual", "Pegaste los dígitos: «3» y «6» → 36. Pero 3x es 3 POR x."], 2: ["conceptual", "Sumaste. 3x es una multiplicación: 3 · 6."] },
+    }),
     explain(
       "Ejemplo cotidiano",
       "Un remis cobra \\$800 de bajada de bandera más \\$300 por kilómetro. El precio de un viaje de $k$ kilómetros es:\n\n$P = 800 + 300k$\n\nPara 5 km: $P = 800 + 300·5 = 2300$. La fórmula sirve para **cualquier** distancia.",
       { tag: "cotidiano" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-expr-2",
+      subjectId: S,
+      topicId: "t-expresiones",
+      prompt: "Con $P = 800 + 300k$, ¿cuánto cuesta un viaje de 3 km?",
+      options: ["$1700$", "$3300$", "$1103$"],
+      answer: 0,
+      explanation: "Primero el producto: 300 · 3 = 900. Después la suma: 800 + 900 = 1700.",
+      hints: ["Reemplazá k por 3.", "La multiplicación va antes que la suma.", "800 + 900."],
+      errors: { 1: ["jerarquia", "Sumaste antes de multiplicar: (800 + 300) · 3. La bajada de bandera se cobra una sola vez."], 2: ["conceptual", "Sumaste el 3 en lugar de multiplicarlo: 300k es 300 · k."] },
+    }),
     explain(
       "Evaluar: reemplazar con paréntesis",
       "Para evaluar $2x^2 − 3x$ en $x = −1$, reemplazá **con paréntesis**:\n\n$2·(−1)^2 − 3·(−1) = 2·1 + 3 = 5$\n\nSin paréntesis es fácil confundir $(−1)^2 = 1$ con $−1^2 = −1$.",
       { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: evaluar con paréntesis",
+      [
+        row("3x^2 − 2x + 4", "queremos el valor para $x = −3$"),
+        row("3·(−3)^2 − 2·(−3) + 4", "reemplazamos $x$ por $(−3)$, con paréntesis"),
+        row("3·9 − 2·(−3) + 4", "potencia primero: $(−3)^2 = 9$"),
+        row("27 + 6 + 4", "productos: $3·9 = 27$ y $−2·(−3) = +6$"),
+        row("37"),
+      ],
     ),
     example("Ejemplo resuelto", "Calculá $x^2 − 4x + 1$ para $x = −2$", ["Reemplazo: $(−2)^2 − 4·(−2) + 1$", "Potencia: $(−2)^2 = 4$", "Producto: $−4·(−2) = +8$", "$4 + 8 + 1 = 13$"], "13"),
     practice("Ejercicio guiado", "evaluar-expresion", 2, 3, true),
@@ -42,8 +74,16 @@ export const expresiones: Lesson = {
   tutor: {
     normal: "Una variable representa un número desconocido o que cambia. Una expresión algebraica combina variables y números; evaluarla es reemplazar la variable por un valor.",
     simple: "La x es un espacio en blanco. Cuando te dicen cuánto vale, la reemplazás (entre paréntesis) y hacés la cuenta.",
-    nino: "Es como una receta: «x huevos por persona». Si vienen 4 personas, x es 4.",
-    ejemplo: "Si x = 5, entonces 2x + 1 = 2·5 + 1 = 11.",
+    nino: "Es como la tarifa de un plan de celular: «\\$5000 fijos más \\$200 por cada GB extra». La regla es la misma para todos los clientes; lo que cambia es cuántos GB usó cada uno. La letra es ese «cuántos»: cuando la conocés, la reemplazás y sale la cuenta. Con 3 GB: 5000 + 200·3 = \\$5600.",
+    ejemplo: "Si x = 5, entonces 2x + 1 = 2·5 + 1 = 11. Con dos variables: si a = −2 y b = 3, a² + a·b = (−2)² + (−2)·3 = 4 − 6 = −2.",
+    fromZero: "En la escuela las cuentas tenían todos los números: $2·5 + 1$. Pero muchas veces una cuenta se repite con distintos valores: el precio de un viaje según los kilómetros, el área de un cuadrado según el lado. En vez de escribir una cuenta para cada caso, se usa una **letra** que ocupa el lugar del número que cambia: $2x + 1$. Esa letra es la **variable**. Escribir $2x$ es abreviar $2·x$. Cuando te dicen cuánto vale $x$, la reemplazás (entre paréntesis) y hacés la cuenta respetando el orden de las operaciones. Eso se llama **evaluar**.",
+    why: "Porque las fórmulas de la ingeniería son expresiones con variables: $x_0 + v·t$, $P·V$, $m·a$. Saber evaluarlas sin errores de signo es lo que te permite usar una fórmula para cualquier caso. La distributiva y el factor común son las dos herramientas básicas para transformarlas sin cambiar su valor, algo que vas a hacer en cada despeje.",
+    origin: "La distributiva viene de contar: $3(x + 2)$ son tres grupos iguales, cada uno con $x$ y con $2$. Si juntás los tres grupos, tenés tres $x$ y tres $2$: $3x + 6$. Con números se ve: $3·(10 + 2) = 3·12 = 36$, y $3·10 + 3·2 = 30 + 6 = 36$. El factor común es leer esa misma igualdad de derecha a izquierda.",
+    board: [
+      { expr: "−2(3x − 5) + 4x" },
+      { expr: "−6x + 10 + 4x", note: "distributiva: el $−2$ multiplica a cada término, $−2·(−5) = +10$" },
+      { expr: "−2x + 10", note: "juntamos los términos con $x$: $−6x + 4x = −2x$" },
+    ],
   },
 };
 
@@ -53,7 +93,7 @@ export const ecuaciones: Lesson = {
   subtitle: "La balanza en equilibrio",
   subjectId: S,
   topicIds: ["t-ecuaciones"],
-  estimatedMinutes: 15,
+  estimatedMinutes: 12,
   prerequisites: ["t-expresiones"],
   cards: [
     intro("Ecuaciones", "Resolver ecuaciones de primer grado, entendiendo por qué cada paso es válido.", "Resolver ecuaciones es la herramienta que más vas a usar en el CBC: en física para encontrar tiempos y velocidades, en análisis para encontrar raíces, en álgebra para sistemas."),
@@ -62,10 +102,33 @@ export const ecuaciones: Lesson = {
       "Una ecuación es una **balanza en equilibrio**: lo de la izquierda pesa lo mismo que lo de la derecha.\n\nSi sacás 5 de un platillo, para que siga equilibrada tenés que sacar 5 del otro. **Todo lo que hagas de un lado, hacelo del otro.**",
       { widget: { type: "balance", equation: "2x + 5 = 15" }, tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-ec-balanza",
+      subjectId: S,
+      topicId: "t-ecuaciones",
+      prompt: "En la balanza $2x + 5 = 15$ sacás 5 del platillo izquierdo. ¿Qué tenés que hacer con el derecho?",
+      options: ["Sacarle 5 también", "Agregarle 5", "Nada"],
+      answer: 0,
+      explanation: "Para que siga en equilibrio, cualquier cambio se hace en los dos platillos: 2x + 5 − 5 = 15 − 5, o sea 2x = 10.",
+      hints: ["La balanza tiene que seguir equilibrada.", "Lo que hacés de un lado, lo hacés del otro.", "Sacás 5 de los dos lados."],
+      errors: { 1: ["despeje", "Si a un lado le sacás 5 y al otro le sumás 5, la balanza se desequilibra. Es la misma operación en los dos."], 2: ["despeje", "Si solo cambiás un platillo, la igualdad deja de valer."] },
+    }),
     explain(
       "Despejar = deshacer",
       "En $2x + 5 = 15$, a la $x$ le hicieron dos cosas: la multiplicaron por 2 y le sumaron 5.\n\nPara liberarla, se deshace en **orden inverso**:\n1. Deshacer el $+5$: restar 5 en ambos lados → $2x = 10$\n2. Deshacer el $·2$: dividir por 2 en ambos lados → $x = 5$",
       { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: resolver paso a paso",
+      [
+        row("3x + 6 = 18"),
+        row("3x + 6 − 6 = 18 − 6", "restamos 6 en ambos lados para deshacer el $+6$"),
+        row("3x = 12"),
+        row("3x/3 = 12/3", "dividimos ambos lados por 3 para deshacer el $·3$"),
+        row("x = 4"),
+        row("3·4 + 6 = 18", "verificamos en la ecuación original: $12 + 6 = 18$ ✓"),
+      ],
+      "Primero lo que suma, después lo que multiplica:",
     ),
     explain(
       "«Pasar al otro lado»",
@@ -100,10 +163,20 @@ export const ecuaciones: Lesson = {
   tutor: {
     normal: "Una ecuación lineal se resuelve aplicando la misma operación a ambos miembros hasta aislar la incógnita. Cada paso produce una ecuación equivalente: con la misma solución.",
     simple: "Sacá primero lo que está sumando o restando a la x (haciendo lo contrario en los dos lados). Después sacá lo que la multiplica (dividiendo los dos lados).",
-    nino: "Hay una caja con x caramelos. Dos cajas iguales más 5 caramelos sueltos son 15 caramelos. Si sacás los 5 sueltos quedan 10 en las dos cajas; entonces cada caja tiene 5.",
-    ejemplo: "x + 7 = 10 → x = 10 − 7 = 3. Verificación: 3 + 7 = 10 ✓",
+    nino: "Pagaste \\$1500 por 2 entradas iguales más \\$300 de cargo por servicio. ¿Cuánto salió cada entrada? Primero sacás el cargo: 1500 − 300 = 1200. Después repartís entre las dos: 1200 ÷ 2 = 600. Sin darte cuenta, resolviste 2x + 300 = 1500 deshaciendo en orden inverso.",
+    ejemplo: "x/4 − 1 = 2 → sumo 1: x/4 = 3 → multiplico por 4: x = 12. Verificación: 12/4 − 1 = 3 − 1 = 2 ✓",
     visual: { type: "balance", equation: "2x + 5 = 15" },
     visualText: "La balanza: cada operación se aplica a los dos platillos a la vez.",
+    fromZero: "Una **ecuación** es una igualdad con un número desconocido, que llamamos $x$. Por ejemplo, $2x + 5 = 15$ dice: «el doble de un número, más 5, da 15». Resolverla es encontrar qué número cumple eso. La regla es una sola: una igualdad sigue siendo cierta si hacés **lo mismo en los dos lados** (sumar, restar, multiplicar o dividir por el mismo número, salvo dividir por cero). Usando esa regla, se van sacando de a una las cosas que rodean a la $x$, hasta que queda sola: $x = 5$. Al final, reemplazás y comprobás: $2·5 + 5 = 15$ ✓.",
+    why: "Porque casi todo problema de ingeniería termina en «encontrá el valor que cumple esta condición»: el tiempo en que un móvil llega, la corriente en un circuito, la cantidad que iguala costo e ingreso. Resolver bien una ecuación lineal es la base de todos esos despejes, y hacerlo con pasos válidos (no con «trucos» mal recordados) evita los errores de signo.",
+    origin: "Cada paso es válido porque si dos cantidades son iguales, siguen siendo iguales después de hacerles lo mismo: si $A = B$, entonces $A − 6 = B − 6$ y $A/3 = B/3$. Así cada ecuación nueva tiene exactamente la misma solución que la anterior (son **equivalentes**). El atajo «lo que suma pasa restando» es solo el resultado de restar en ambos lados, escrito en un paso.",
+    board: [
+      { expr: "4(x − 2) = x + 7" },
+      { expr: "4x − 8 = x + 7", note: "distributiva" },
+      { expr: "3x − 8 = 7", note: "restamos $x$ en ambos lados" },
+      { expr: "3x = 15", note: "sumamos 8 en ambos lados" },
+      { expr: "x = 5", note: "dividimos por 3; verificación: $4·3 = 12$ y $5 + 7 = 12$ ✓" },
+    ],
   },
 };
 
@@ -122,10 +195,32 @@ export const despeje: Lesson = {
       "Despejar $t$ de $d = v·t$ es lo mismo que resolver $10 = 2t$, pero con letras.\n\nLa $t$ está multiplicada por $v$ → dividí ambos lados por $v$:\n\n$d/v = t$",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-desp-1",
+      subjectId: S,
+      topicId: "t-despeje",
+      prompt: "De $F = m·a$, ¿cuánto vale $a$?",
+      options: ["$a = F/m$", "$a = m/F$", "$a = F − m$"],
+      answer: 0,
+      explanation: "La a está multiplicada por m: se divide ambos lados por m y queda a = F/m.",
+      hints: ["¿Qué le están haciendo a la a?", "La multiplican por m.", "Deshacé dividiendo por m en ambos lados."],
+      errors: { 1: ["despeje", "Lo diste vuelta. Probá con números: 10 = 2·5 → a = 10/2 = 5, no 2/10."], 2: ["despeje", "La m multiplica, no suma: se deshace dividiendo."] },
+    }),
     explain(
       "Truco: probá con números",
       "Si dudás, reemplazá por números fáciles. Si un auto va a 2 m/s durante 5 s, recorre 10 m. ¿El tiempo es $d/v = 10/2 = 5$? ✓ ¿O $v/d = 2/10$? ✗\n\nCon números chicos podés **verificar** cualquier despeje.",
       { tag: "cotidiano" },
+    ),
+    board(
+      "Pizarra: despejar la altura de un triángulo",
+      [
+        row("A = b·h/2"),
+        row("2A = b·h", "multiplicamos ambos lados por 2 para deshacer el $/2$"),
+        row("2A/b = h", "dividimos ambos lados por $b$"),
+        row("h = 2A/b", "lo escribimos con la incógnita a la izquierda"),
+      ],
+      "Queremos $h$ en función del área $A$ y la base $b$:",
+      "Verificación con números: base 4 y altura 3 dan $A = 6$; y $2·6/4 = 3$ ✓.",
     ),
     example("Ejemplo resuelto", "Despejá $a$ de $v = v_0 + a·t$", ["Resto $v_0$ en ambos lados: $v − v_0 = a·t$", "Divido por $t$ en ambos lados: $(v − v_0)/t = a$", "Los paréntesis son obligatorios: se divide toda la resta"], "a = (v − v₀)/t"),
     practice("Ejercicio guiado", "despeje-formula", 2, 1, true),
@@ -137,8 +232,16 @@ export const despeje: Lesson = {
   tutor: {
     normal: "Despejar una variable es aislarla aplicando operaciones inversas en ambos miembros, igual que en una ecuación numérica.",
     simple: "Fijate qué le está haciendo cada cosa a la letra que querés (sumar, multiplicar, dividir) y hacé lo contrario de los dos lados.",
-    nino: "Si sabés que «distancia = velocidad por tiempo», y querés el tiempo, dividís la distancia por la velocidad: 100 km a 50 km/h son 2 horas.",
-    ejemplo: "F = m·a. Si querés m: m = F/a. Verificación con números: 10 = 2·5 → m = 10/5 = 2 ✓",
+    nino: "Es como planificar un viaje: si sabés que vas a hacer 300 km y que el auto va a unos 100 km/h, sin pensarlo dividís 300 ÷ 100 y decís «3 horas». Ese razonamiento es despejar t de d = v·t. Despejar es hacer en general, con letras, lo que ya hacés con números cuando planificás.",
+    ejemplo: "P = 2·(a + b), perímetro de un rectángulo. Si querés a: divido por 2 → P/2 = a + b → resto b → a = P/2 − b. Con P = 20 y b = 6: a = 10 − 6 = 4, y 2·(4 + 6) = 20 ✓",
+    fromZero: "Una **fórmula** es una ecuación que relaciona varias magnitudes con letras: $d = v·t$ dice que la distancia es la velocidad por el tiempo. Está «resuelta» para $d$ porque $d$ está sola a la izquierda. Pero si lo que querés es el tiempo, tenés que dejar sola a la $t$. Eso es **despejar**. Se hace exactamente igual que con una ecuación numérica: mirás qué operaciones rodean a la letra que buscás y las deshacés, haciendo lo mismo en ambos lados, en orden inverso. La única diferencia es que el resultado queda con letras: $t = d/v$.",
+    why: "Porque en Física las fórmulas se aprenden de una sola forma, pero los problemas preguntan por cualquiera de sus letras. Saber despejar te ahorra memorizar tres versiones de cada fórmula ($d = v·t$, $v = d/t$, $t = d/v$) y te permite trabajar con fórmulas nuevas que nunca viste.",
+    origin: "Es la misma regla de las ecuaciones: si dos expresiones son iguales, siguen siéndolo después de aplicarles la misma operación. Que las cantidades sean letras no cambia nada, porque cada letra representa un número. Por eso un despeje se puede verificar siempre poniendo números concretos.",
+    board: [
+      { expr: "x = x_0 + v·t", note: "queremos despejar $t$" },
+      { expr: "x − x_0 = v·t", note: "restamos $x_0$ en ambos lados" },
+      { expr: "(x − x_0)/v = t", note: "dividimos ambos lados por $v$ (la resta completa, con paréntesis)" },
+    ],
   },
 };
 

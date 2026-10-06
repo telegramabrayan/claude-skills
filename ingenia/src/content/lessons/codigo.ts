@@ -1,5 +1,5 @@
 import type { Lesson } from "@/engine/types";
-import { example, explain, intro, practice, quiz, summary } from "./helpers";
+import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
 
 const S = "pensamiento-computacional";
 
@@ -18,10 +18,32 @@ export const algoritmos: Lesson = {
       "Un **algoritmo** es una secuencia finita de pasos precisos para resolver un problema. Una receta es casi un algoritmo; lo que le falta es precisión: «sal a gusto» no es una instrucción que una computadora pueda seguir.\n\nPensar algorítmicamente es **descomponer** el problema en pasos tan claros que no admitan dudas.",
       { tag: "cotidiano" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-alg-preciso",
+      subjectId: S,
+      topicId: "t-variables-codigo",
+      prompt: "¿Cuál de estas instrucciones podría seguir una computadora sin ambigüedad?",
+      options: ["Sumar 1 al contador hasta que valga 10", "Hervir un rato", "Agregar sal a gusto"],
+      answer: 0,
+      explanation: "«Sumar 1 hasta que valga 10» dice exactamente qué hacer y cuándo parar. «Un rato» y «a gusto» dependen de la interpretación de quien lo lee.",
+      hints: ["¿Cuál no deja nada librado a la interpretación?", "«Un rato», ¿cuánto es?", "La que tiene una condición de fin exacta."],
+      errors: { 1: ["algoritmico", "«Un rato» no dice cuánto: una máquina no puede decidirlo. Falta precisión."], 2: ["algoritmico", "«A gusto» depende de quien lo ejecuta. Un algoritmo no admite dudas."] },
+    }),
     explain(
       "Variables en programación",
       "En un programa, una variable es una **caja con nombre** que guarda un valor. `x = 5` significa «guardá 5 en la caja x».\n\n¡Ojo! El `=` de programación **no** es el igual de matemática: es una **orden** («asigná»). Por eso `x = x + 1` tiene sentido: «calculá x + 1 y guardalo en x».",
       { tag: "intuitivo" },
+    ),
+    board(
+      "Pizarra: seguir un programa a mano",
+      [
+        row("a = 4", "la caja `a` guarda 4"),
+        row("b = a + 1 → b = 5", "se calcula la derecha con el valor ACTUAL de `a` y se guarda en `b`"),
+        row("a = a·3 → a = 12", "en Python se escribe `a = a * 3`: la derecha da 12 y pisa el 4"),
+        row("b = b − a → b = −7", "$5 − 12 = −7$"),
+        row("a = 12, b = −7", "estado final: `b` no se «actualizó» cuando cambió `a`"),
+      ],
+      "Leé cada renglón como una orden: primero se calcula lo de la derecha, después se guarda a la izquierda.",
     ),
     explain(
       "Seguir la ejecución",
@@ -42,9 +64,20 @@ export const algoritmos: Lesson = {
   tutor: {
     normal: "Un algoritmo es una secuencia finita y ordenada de instrucciones no ambiguas. Una variable es un nombre asociado a un valor que puede cambiar; la asignación evalúa la expresión de la derecha y guarda el resultado en la variable de la izquierda.",
     simple: "Un programa son instrucciones que se hacen una por una, de arriba hacia abajo. Las variables son cajitas donde se guardan números.",
-    nino: "Es como darle instrucciones a un robot muy obediente pero que no entiende nada que no le digas exactamente.",
-    ejemplo: "x = 2, después x = x + 3 → ahora x vale 5. El valor 2 se reemplazó.",
+    nino: "Es como dejarle instrucciones a alguien que te cuida la casa y no te puede llamar: «regá las plantas» no alcanza; tenés que decir cuáles, con cuánta agua y cada cuánto. Si hay una ambigüedad, la va a resolver mal. Una computadora es ese cuidador llevado al extremo: hace exactamente lo escrito, ni más ni menos.",
+    ejemplo: "precio = 100; precio = precio * 2; precio = precio - 30 → la caja precio pasa por 100, 200 y termina en 170. Cada línea usa el valor que dejó la anterior.",
     visual: { type: "code", code: "contador = 0\ncontador = contador + 1\ncontador = contador + 1\nprint(contador)" },
+    visualText: "Avanzá línea por línea: cada asignación calcula la derecha y pisa el valor de la caja.",
+    fromZero: "Una computadora no entiende intenciones: ejecuta órdenes, de a una, en el orden en que están escritas. Un **algoritmo** es una lista de órdenes tan precisas que no dejan nada a interpretación, y que en algún momento terminan. Para recordar datos mientras trabaja, el programa usa **variables**: casilleros con nombre donde guarda un valor. La orden `x = 5` significa «guardá 5 en el casillero x». Si después aparece `x = x + 1`, la máquina lee el valor actual (5), le suma 1 y guarda el 6 en el mismo casillero, borrando el 5. Seguir un programa es llevar una tabla con el valor de cada casillero después de cada línea.",
+    why: "Porque la habilidad central de Pensamiento Computacional es predecir qué hace un programa sin ejecutarlo: así se diseñan algoritmos y se encuentran errores. Y en ingeniería vas a automatizar cálculos (planillas, simulaciones, scripts) donde un error de asignación da resultados equivocados sin ningún aviso.",
+    origin: "La asignación imita cómo funciona la memoria de una computadora: posiciones con un contenido, donde escribir un dato nuevo borra el anterior. Por eso `=` en programación es una orden, no una afirmación de igualdad. Algunos lenguajes y el pseudocódigo usan `←` o `:=` justamente para que no se confunda con el igual matemático.",
+    board: [
+      { expr: "a = 1, b = 2", note: "queremos intercambiarlos" },
+      { expr: "aux = 1", note: "`aux = a`: guardamos una copia de `a`" },
+      { expr: "a = 2", note: "`a = b`: el 1 original se pisó, pero tenemos la copia" },
+      { expr: "b = 1", note: "`b = aux`: recuperamos el valor original de `a`" },
+      { expr: "a = 2, b = 1", note: "intercambiados" },
+    ],
   },
 };
 
@@ -63,6 +96,17 @@ export const condicionales: Lesson = {
       "Una **condición** es una pregunta que se responde con `True` (verdadero) o `False` (falso):\n\n`5 > 3` → True · `2 == 7` → False · `x != 0` → «¿x es distinto de 0?»\n\nOjo: `==` **compara**; `=` **asigna**.",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-cond-bool",
+      subjectId: S,
+      topicId: "t-condicionales",
+      prompt: "Con `x = 7`, ¿cuánto vale la condición `x != 7`?",
+      options: ["False", "True", "7"],
+      answer: 0,
+      explanation: "`!=` pregunta «¿es distinto?». x vale 7, así que no es distinto de 7: la respuesta es False.",
+      hints: ["`!=` significa «distinto de».", "¿7 es distinto de 7?", "No: entonces es False."],
+      errors: { 1: ["logica", "`!=` es «distinto», no «igual». 7 no es distinto de 7: False."], 2: ["logica", "Una condición siempre da True o False, nunca un número."] },
+    }),
     explain(
       "if / elif / else",
       "El programa elige **un solo** camino: el primero cuya condición sea verdadera.\n\nAvanzá paso a paso y fijate qué líneas se saltean:",
@@ -73,6 +117,15 @@ export const condicionales: Lesson = {
       "and, or, not",
       "• `A and B`: verdadero solo si **ambas** lo son.\n• `A or B`: verdadero si **al menos una** lo es.\n• `not A`: lo contrario.\n\nEjemplo: para aprobar hace falta `nota >= 4 and asistencia >= 75`.",
       { tag: "cotidiano" },
+    ),
+    board(
+      "Pizarra: evaluar una condición compuesta",
+      [
+        row("`nota >= 4 and asistencia >= 75`", "con `nota = 6` y `asistencia = 60`"),
+        row("`6 >= 4 and 60 >= 75`", "reemplazamos los valores"),
+        row("`True and False`", "cada comparación por separado"),
+        row("`False`", "`and` necesita que las dos sean verdaderas: no aprueba"),
+      ],
     ),
     practice("Tu turno", "logica-booleana", 2, 5),
     practice("Tu turno", "traza-if", 4, 11),
@@ -93,8 +146,19 @@ export const condicionales: Lesson = {
   tutor: {
     normal: "Una estructura condicional evalúa expresiones booleanas en orden y ejecuta el bloque de la primera que resulte verdadera; si ninguna lo es, ejecuta el else.",
     simple: "«Si pasa esto, hacé aquello; si no, hacé otra cosa». El programa revisa las condiciones de arriba hacia abajo y entra en la primera que se cumple.",
-    nino: "Si llueve, llevo paraguas. Si no, si hace sol, llevo gorra. Si no, no llevo nada.",
-    ejemplo: "x = −3 → `if x < 0:` es verdadero, así que entra ahí y no mira el else.",
+    nino: "Es como el control de un boliche: primero pregunta «¿tenés entrada VIP?» y si sí, pasás por la puerta VIP; si no, «¿tenés entrada común?» y pasás por la fila; si no, no entrás. Una sola de las tres cosas te pasa, y el orden de las preguntas importa: al VIP nunca le preguntan por la entrada común.",
+    ejemplo: "edad = 16. `if edad >= 18:` → False, se saltea. `elif edad >= 16:` → True: entra acá («puede votar») y ya no mira el else.",
+    visual: { type: "code", code: "x = -3\nif x < 0:\n    signo = \"negativo\"\nelse:\n    signo = \"no negativo\"\nprint(signo)" },
+    visualText: "Avanzá paso a paso: como la condición es verdadera, el bloque del else se saltea.",
+    fromZero: "Hasta ahora un programa ejecutaba todas sus líneas, una tras otra. Pero muchas veces hay que **elegir**: si el usuario es mayor de edad, hacer una cosa; si no, otra. Para eso existen las **condiciones**: preguntas cuya respuesta es solo verdadero (`True`) o falso (`False`), como `x > 0`. La instrucción `if` evalúa una condición: si es verdadera ejecuta su bloque (las líneas con sangría debajo), y si no, lo saltea. Con `elif` se agregan más preguntas en orden y con `else` lo que se hace si ninguna se cumplió. Siempre se ejecuta **un solo** bloque: el de la primera condición verdadera.",
+    why: "Porque casi todo programa útil toma decisiones: validar un dato, clasificar un resultado, elegir una fórmula según el caso. La lógica de verdadero/falso con `and`, `or` y `not` es la misma que se usa en circuitos digitales y en las demostraciones de Álgebra, así que aprenderla bien sirve mucho más allá de programar.",
+    origin: "Viene de la lógica proposicional: una proposición es verdadera o falsa, y los conectivos «y», «o», «no» combinan proposiciones según tablas fijas (la de «y» solo da verdadero si ambas lo son). Las computadoras representan esos dos valores con 1 y 0, y los circuitos que hacen esas combinaciones se llaman compuertas lógicas.",
+    board: [
+      { expr: "`temperatura = 20`" },
+      { expr: "`20 > 30` → `False`", note: "el `if` no se cumple: se saltea su bloque" },
+      { expr: "`20 > 15` → `True`", note: "el `elif` sí se cumple: entra acá" },
+      { expr: "`consejo = \"templado\"`", note: "el `else` ya no se mira" },
+    ],
   },
 };
 
@@ -104,7 +168,7 @@ export const bucles: Lesson = {
   subtitle: "Repetir sin copiar y pegar",
   subjectId: S,
   topicIds: ["t-bucles"],
-  estimatedMinutes: 15,
+  estimatedMinutes: 12,
   prerequisites: ["t-condicionales"],
   cards: [
     intro("Bucles", "Repetir instrucciones con for y while, y usar acumuladores y contadores.", "Los bucles son lo que hace poderosa a una computadora: repetir millones de veces sin cansarse. Y los errores de «una vuelta de más o de menos» son de los más comunes en programación."),
@@ -113,10 +177,32 @@ export const bucles: Lesson = {
       "`for i in range(5):` repite el bloque 5 veces, con `i` valiendo **0, 1, 2, 3, 4**.\n\n`range(a, b)` va de `a` hasta `b − 1`: **el último no se incluye**. `range(1, 4)` → 1, 2, 3.",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-buc-range",
+      subjectId: S,
+      topicId: "t-bucles",
+      prompt: "¿Qué valores toma `i` en `for i in range(2, 6):`?",
+      options: ["2, 3, 4, 5", "2, 3, 4, 5, 6", "3, 4, 5, 6"],
+      answer: 0,
+      explanation: "range(a, b) empieza en a y termina en b − 1. De 2 a 5: cuatro vueltas.",
+      hints: ["¿Se incluye el primero? ¿Y el último?", "El primero sí, el último no.", "De 2 hasta 6 − 1."],
+      errors: { 1: ["programacion", "El último valor de range NO se incluye: termina en 5."], 2: ["programacion", "El primero sí se incluye: arranca en 2."] },
+    }),
     explain(
       "Acumuladores",
       "Para sumar muchos números, se usa una variable que empieza en 0 y en cada vuelta suma algo. Avanzá y mirá cómo crece `suma`:",
       { widget: { type: "code", code: "suma = 0\nfor i in range(1, 6):\n    suma = suma + i\nprint(suma)" } },
+    ),
+    board(
+      "Pizarra: un acumulador vuelta por vuelta",
+      [
+        row("`suma = 0`", "antes del bucle: el acumulador empieza vacío"),
+        row("`i = 1` → `suma = 0 + 1 = 1`"),
+        row("`i = 2` → `suma = 1 + 2 = 3`"),
+        row("`i = 3` → `suma = 3 + 3 = 6`"),
+        row("`i = 4` → `suma = 6 + 4 = 10`", "`range(1, 5)` termina en 4: el 5 no se incluye"),
+      ],
+      "Programa: `for i in range(1, 5): suma = suma + i`",
     ),
     example("Ejemplo resuelto", "¿Cuánto vale `total` al final?\n`total = 0`\n`for i in range(3):`\n`    total += 10`", ["range(3) genera 0, 1, 2: son 3 vueltas", "Cada vuelta suma 10", "0 + 10 + 10 + 10 = 30"], "30"),
     practice("Ejercicio guiado", "traza-for", 1, 4, true),
@@ -133,9 +219,19 @@ export const bucles: Lesson = {
   tutor: {
     normal: "Un bucle for itera sobre una secuencia (como range(a, b), que genera a, …, b−1); un while repite mientras su condición sea verdadera. Los acumuladores combinan valores a lo largo de las iteraciones.",
     simple: "Un bucle repite un pedazo de código. Con for decís cuántas veces; con while decís hasta cuándo.",
-    nino: "«Hacé 10 sentadillas» es un for. «Corré hasta que te canses» es un while.",
-    ejemplo: "for i in range(4): print(i) imprime 0, 1, 2, 3 (cuatro números, sin el 4).",
+    nino: "En el gimnasio, «hacé 3 series de 10 sentadillas» es un for: sabés de antemano cuántas repeticiones. «Corré en la cinta hasta que el reloj marque 30 minutos» es un while: repetís mientras no se cumpla la condición. Y el contador de calorías que va sumando es un acumulador.",
+    ejemplo: "p = 1; for i in range(1, 5): p = p * i → p pasa por 1, 2, 6, 24. Es 4! (factorial de 4). El acumulador de un producto empieza en 1, no en 0.",
     visual: { type: "code", code: "for i in range(3):\n    print(\"vuelta\", i)" },
+    visualText: "Avanzá paso a paso: el bloque se repite una vez por cada valor de i.",
+    fromZero: "Muchas tareas son lo mismo repetido: sumar 100 números, revisar cada alumno de una lista. Escribir la misma línea 100 veces sería absurdo. Un **bucle** le dice a la computadora «repetí este bloque». Con `for` decís de antemano cuántas veces: `for i in range(5):` repite 5 veces, y en cada vuelta la variable `i` toma otro valor (0, 1, 2, 3, 4). Con `while` repetís **mientras** una condición sea verdadera, sin saber cuántas vueltas serán. Para juntar resultados se usa un **acumulador**: una variable que empieza en 0 y a la que en cada vuelta se le suma algo.",
+    why: "Porque repetir rápido y sin cansarse es lo que hace útil a una computadora: procesar mediciones, simular miles de pasos de tiempo, buscar en una lista. Los errores de «una vuelta de más o de menos» y los bucles infinitos son de los más frecuentes en programación, así que entender exactamente qué valores recorre un bucle te ahorra muchas horas.",
+    origin: "Un bucle es la forma en que un programa expresa una suma o un proceso repetido, como la sumatoria $Σ$ de matemática: $1 + 2 + … + 5$ es exactamente un acumulador con `range(1, 6)`. Que `range(a, b)` no incluya `b` es una convención que hace que `range(n)` dé exactamente `n` vueltas, empezando en 0.",
+    board: [
+      { expr: "`n = 100, pasos = 0`", note: "`while n > 1: n = n // 2; pasos += 1`" },
+      { expr: "100 → 50 → 25 → 12", note: "`//` es división entera: $25 // 2 = 12$" },
+      { expr: "12 → 6 → 3 → 1", note: "con $n = 1$ la condición es falsa y el bucle termina" },
+      { expr: "`pasos = 6`", note: "una vuelta por cada flecha" },
+    ],
   },
 };
 

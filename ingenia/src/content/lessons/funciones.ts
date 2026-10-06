@@ -1,5 +1,5 @@
 import type { Lesson } from "@/engine/types";
-import { example, explain, intro, practice, quiz, summary } from "./helpers";
+import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
 
 const S = "am-a";
 
@@ -18,15 +18,47 @@ export const funcionesLesson: Lesson = {
       "Una función es una máquina: entra un número $x$ y sale **exactamente un** número $f(x)$.\n\nSi $f(x) = 2x + 1$: entra 3, sale $2·3 + 1 = 7$. Se escribe $f(3) = 7$.\n\nLa clave es «exactamente uno»: para cada entrada, una única salida.",
       { tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-fun-eval",
+      subjectId: S,
+      topicId: "t-funciones",
+      prompt: "Si $f(x) = 3x − 2$, ¿cuánto vale $f(4)$?",
+      options: ["$10$", "$32$", "$14$"],
+      answer: 0,
+      explanation: "Entra 4: 3 · 4 − 2 = 12 − 2 = 10.",
+      hints: ["f(4) significa: reemplazá x por 4.", "3 · 4 = 12.", "12 − 2."],
+      errors: { 1: ["conceptual", "Pegaste el 3 y el 4 como «34». 3x es 3 por x: 3 · 4 = 12."], 2: ["signos", "Sumaste el 2. La fórmula dice −2: 12 − 2 = 10."] },
+    }),
     explain(
       "En la vida real",
       "El precio de un viaje depende de los kilómetros. La temperatura depende de la hora. La posición de un auto depende del tiempo.\n\nCada vez que decís «**depende de**», hay una función escondida. La variable de la que depende ($x$, $t$) es la **variable independiente**.",
       { tag: "cotidiano" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-fun-depende",
+      subjectId: S,
+      topicId: "t-funciones",
+      prompt: "«El costo de un envío depende del peso del paquete.» ¿Cuál es la variable independiente?",
+      options: ["El peso", "El costo", "Ninguna de las dos"],
+      answer: 0,
+      explanation: "La independiente es la que elegís o medís primero (el peso); la otra se calcula a partir de ella: costo = f(peso).",
+      hints: ["¿Cuál se calcula a partir de la otra?", "El costo sale del peso.", "La independiente es la entrada de la máquina."],
+      errors: { 1: ["interpretacion", "El costo es la salida: depende del peso. La independiente es la entrada, el peso."] },
+    }),
     explain(
       "El plano cartesiano",
       "Para dibujar una función se usan dos ejes: el horizontal ($x$, la entrada) y el vertical ($y$, la salida).\n\nCada par $(x, f(x))$ es un **punto**. Uniendo muchos puntos aparece el gráfico. Probá cambiar la fórmula:",
       { widget: { type: "plot", mode: "free", initial: "x^2" }, tag: "matematico" },
+    ),
+    board(
+      "Pizarra: de la fórmula a los puntos",
+      [
+        row("f(x) = 2x − 1", "vamos a armar una tabla de valores"),
+        row("f(−1) = 2·(−1) − 1 = −3", "punto $(−1, −3)$"),
+        row("f(0) = 2·0 − 1 = −1", "punto $(0, −1)$"),
+        row("f(1) = 2·1 − 1 = 1", "punto $(1, 1)$"),
+        row("f(2) = 2·2 − 1 = 3", "punto $(2, 3)$: uniéndolos aparece una recta"),
+      ],
     ),
     explain(
       "Mové x y mirá el punto",
@@ -53,10 +85,19 @@ export const funcionesLesson: Lesson = {
   tutor: {
     normal: "Una función f de A en B asigna a cada elemento x de A un único elemento f(x) de B. Su gráfico es el conjunto de puntos (x, f(x)) del plano.",
     simple: "Una función es una regla: le das un número y te devuelve otro, siempre el mismo para la misma entrada.",
-    nino: "Una máquina expendedora: apretás el botón 3 y sale siempre el mismo chocolate. Si a veces saliera otra cosa, no sería una función.",
-    ejemplo: "f(x) = x + 10. f(0) = 10, f(5) = 15, f(−3) = 7.",
+    nino: "Una máquina expendedora: apretás el botón 3 y sale siempre el mismo producto. Dos botones distintos pueden dar el mismo producto (no pasa nada), pero si un mismo botón a veces diera una cosa y a veces otra, no podrías confiar en ella: no sería una función.",
+    ejemplo: "f(x) = 10 − x². f(0) = 10, f(1) = 9, f(3) = 1, f(−3) = 1: dos entradas distintas con la misma salida, y sigue siendo función.",
     visual: { type: "plot", mode: "free", initial: "2x + 1" },
     visualText: "Cambiá la fórmula y mirá cómo cambia el dibujo.",
+    fromZero: "Muchas cantidades dependen de otras: lo que pagás de luz depende de los kilowatts consumidos; la posición de un auto, del tiempo. Una **función** es la regla que dice cómo se obtiene una cantidad a partir de la otra. Se escribe $f(x)$: $x$ es lo que entra y $f(x)$ lo que sale. Si $f(x) = 2x + 1$ y entra 3, sale $2·3 + 1 = 7$, y se anota $f(3) = 7$. La condición para que sea función es que cada entrada tenga **una sola** salida. Para verla de un golpe, se dibujan los pares (entrada, salida) como puntos en un plano: eso es el **gráfico**.",
+    why: "Porque Análisis Matemático estudia funciones de punta a punta: límites, derivadas e integrales son operaciones que se hacen sobre funciones. Y en Física, cada fórmula del movimiento es una función del tiempo. Leer un gráfico (dónde crece, dónde corta los ejes) es una habilidad que se usa en todas las materias de la carrera.",
+    origin: "La idea de función nace de describir cómo una cantidad cambia con otra, por ejemplo la posición de un cuerpo en el tiempo. El plano cartesiano permite convertir esa relación en un dibujo: a cada número de entrada le corresponde una posición horizontal y a su salida una altura. La condición «una sola salida» es lo que permite hablar de **el** valor de la función en cada punto, sin ambigüedad.",
+    board: [
+      { expr: "f(x) = x^2 − 3x", note: "calculemos $f(−2)$" },
+      { expr: "f(−2) = (−2)^2 − 3·(−2)", note: "reemplazamos $x$ por $(−2)$, con paréntesis" },
+      { expr: "f(−2) = 4 + 6", note: "$(−2)^2 = 4$ y $−3·(−2) = +6$" },
+      { expr: "f(−2) = 10", note: "el punto $(−2, 10)$ está en el gráfico" },
+    ],
   },
 };
 
@@ -72,18 +113,52 @@ export const rectaLesson: Lesson = {
     intro("Función lineal", "Qué significan la pendiente y la ordenada al origen, cómo calcular la pendiente entre dos puntos y dónde corta una recta al eje x.", "La función lineal modela cualquier cosa que cambia a ritmo constante: MRU, costos, conversiones. Y la derivada (Análisis A) es, en el fondo, una pendiente."),
     explain(
       "Dos números lo definen todo",
-      "En $y = m·x + b$:\n\n• $m$ es la **pendiente**: cuánto sube $y$ por cada paso de 1 en $x$.\n• $b$ es la **ordenada al origen**: dónde corta al eje $y$.\n\nMové los controles y mirá qué hace cada uno:",
-      { widget: { type: "plot", mode: "linear" }, tag: "intuitivo" },
+      "En $y = m·x + b$:\n\n• $m$ es la **pendiente**: cuánto sube $y$ por cada paso de 1 en $x$.\n• $b$ es la **ordenada al origen**: dónde corta al eje $y$.\n\nMové los controles (o tocá ▶ para animarlos) y mirá qué hace cada uno:",
+      { widget: { type: "param-function", family: "lineal" }, tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-recta-elem",
+      subjectId: S,
+      topicId: "t-recta",
+      prompt: "En $y = −2x + 5$, ¿cuánto valen la pendiente y la ordenada al origen?",
+      options: ["$m = −2$ y $b = 5$", "$m = 5$ y $b = −2$", "$m = 2$ y $b = 5$"],
+      answer: 0,
+      explanation: "La pendiente es el número que multiplica a x (con su signo): −2. La ordenada es el término solo: 5.",
+      hints: ["Compará con y = m·x + b.", "m es el que acompaña a la x.", "El signo es parte de la pendiente."],
+      errors: { 1: ["interpretacion", "Los intercambiaste: m es el coeficiente de x, b el término independiente."], 2: ["signos", "El signo menos es parte de la pendiente: m = −2 (la recta baja)."] },
+    }),
     explain(
       "La pendiente en la vida real",
       "Una pendiente de $0,08$ en una calle significa: por cada metro horizontal, sube 8 cm. En un gráfico de posición-tiempo, la pendiente es la **velocidad**.\n\n$m > 0$ sube · $m < 0$ baja · $m = 0$ horizontal.",
       { tag: "cotidiano" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-recta-m",
+      subjectId: S,
+      topicId: "t-recta",
+      prompt: "Una recta tiene pendiente $−3$. ¿Qué pasa con $y$ cuando $x$ aumenta 1?",
+      options: ["Baja 3", "Sube 3", "Baja 1/3"],
+      answer: 0,
+      explanation: "La pendiente es el cambio de y por cada paso de 1 en x. Si es −3, y baja 3.",
+      hints: ["La pendiente mide cuánto cambia y por cada paso en x.", "El signo dice si sube o baja.", "−3: baja 3."],
+      errors: { 1: ["signos", "Pendiente negativa significa que la recta baja al avanzar hacia la derecha."] },
+    }),
     explain(
       "Pendiente entre dos puntos",
       "Dados $(x_1, y_1)$ y $(x_2, y_2)$:\n\n$m = (y_2 − y_1)/(x_2 − x_1)$\n\n«Cuánto cambió $y$» dividido «cuánto cambió $x$». El cambio se escribe con la letra griega $Δ$ (delta): $m = Δy/Δx$.",
       { tag: "matematico" },
+    ),
+    board(
+      "Pizarra: la recta por dos puntos",
+      [
+        row("m = (y_2 − y_1)/(x_2 − x_1)", "puntos $(−2, 7)$ y $(3, −3)$"),
+        row("m = (−3 − 7)/(3 − (−2))", "reemplazamos, con paréntesis en los negativos"),
+        row("m = −10/5"),
+        row("m = −2", "negativa: baja 2 por cada paso a la derecha"),
+        row("7 = −2·(−2) + b", "para hallar $b$, usamos el punto $(−2, 7)$ en $y = mx + b$"),
+        row("7 = 4 + b"),
+        row("b = 3", "la recta es $y = −2x + 3$; control: con $x = 3$ da $−3$ ✓"),
+      ],
     ),
     example("Ejemplo resuelto", "Pendiente de la recta por $(1, 2)$ y $(4, 11)$", ["$Δy = 11 − 2 = 9$", "$Δx = 4 − 1 = 3$", "$m = 9/3 = 3$", "Por cada paso a la derecha, sube 3"], "m = 3"),
     practice("Ejercicio guiado", "pendiente", 2, 2, true),
@@ -100,10 +175,19 @@ export const rectaLesson: Lesson = {
   tutor: {
     normal: "Una función lineal f(x) = mx + b tiene como gráfico una recta. La pendiente m es la razón de cambio Δy/Δx, constante en toda la recta; b es el valor en x = 0.",
     simple: "La pendiente dice cuánto sube la recta cuando avanzás un paso a la derecha. La ordenada al origen dice a qué altura arranca.",
-    nino: "Subís una escalera: si cada escalón te sube 2 cm por cada cm que avanzás, la pendiente es 2. Si empezás parado en una caja de 5 cm, b = 5.",
-    ejemplo: "y = 3x − 2: arranca en −2 (eje y) y sube 3 por cada paso. Puntos: (0, −2), (1, 1), (2, 4).",
+    nino: "Un plan de taxi: \\$800 de bajada de bandera y \\$300 por kilómetro. La bajada es lo que pagás aunque no avances (eso es b = 800) y los \\$300 por km son el ritmo al que crece la cuenta (eso es m = 300). La cuenta del viaje es y = 300x + 800: una recta.",
+    ejemplo: "y = −x/2 + 4: arranca en 4 sobre el eje y y baja medio paso por cada paso a la derecha. Puntos: (0, 4), (2, 3), (4, 2). Corta al eje x donde −x/2 + 4 = 0, o sea en x = 8.",
     visual: { type: "plot", mode: "linear" },
     visualText: "Mové m y b para ver cómo cambia la recta.",
+    fromZero: "Pensá en algo que cambia siempre al mismo ritmo: un taxi que suma \\$300 por kilómetro, un tanque que se llena 2 litros por minuto. Si anotás cuánto vale la cantidad en cada momento y lo dibujás, los puntos quedan alineados: forman una **recta**. Para describirla alcanzan dos números. Uno es el **punto de partida** (cuánto vale cuando $x = 0$), que se llama ordenada al origen, $b$. El otro es el **ritmo**: cuánto aumenta $y$ cada vez que $x$ aumenta 1. Ese ritmo es la pendiente, $m$. Juntos: $y = m·x + b$.",
+    why: "Porque es el modelo más simple de cambio, y aparece en todas partes: el MRU es una recta con pendiente igual a la velocidad, un costo fijo más un costo por unidad es una recta, una conversión de unidades es una recta. Y en Análisis la derivada se define como la pendiente de una recta tangente: entender bien qué es una pendiente es la puerta de entrada.",
+    origin: "Si la recta cambia a ritmo constante, entre dos puntos cualesquiera el cociente «cuánto subió / cuánto avanzó» da siempre lo mismo. Por eso $m = (y_2 − y_1)/(x_2 − x_1)$ se puede calcular con cualquier par de puntos. Y $b$ es simplemente el valor en $x = 0$: reemplazando, $y = m·0 + b = b$.",
+    board: [
+      { expr: "y = 4x − 10", note: "buscamos dónde corta al eje $x$" },
+      { expr: "4x − 10 = 0", note: "sobre el eje $x$ la altura es 0" },
+      { expr: "4x = 10", note: "sumamos 10 en ambos lados" },
+      { expr: "x = 10/4 = 2,5", note: "dividimos por 4: la raíz es $(2,5; 0)$" },
+    ],
   },
 };
 
@@ -113,7 +197,7 @@ export const dominioLesson: Lesson = {
   subtitle: "Qué números pueden entrar",
   subjectId: S,
   topicIds: ["t-dominio"],
-  estimatedMinutes: 10,
+  estimatedMinutes: 11,
   prerequisites: ["t-funciones", "t-ecuaciones"],
   cards: [
     intro("Dominio", "Qué valores de x se pueden usar en una función y cuáles salen.", "En Análisis A, lo primero que se pide al estudiar una función es su dominio. Y muchas «trampas» de parcial están justamente ahí."),
@@ -122,6 +206,17 @@ export const dominioLesson: Lesson = {
       "El **dominio** son todos los $x$ que se pueden reemplazar sin que la cuenta sea imposible. La **imagen** son todos los valores que efectivamente salen.\n\nEn los números reales ($ℝ$) hay dos operaciones prohibidas:\n1. **Dividir por cero.**\n2. **Raíz cuadrada (o de índice par) de un negativo.**",
       { tag: "matematico" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-dom-1",
+      subjectId: S,
+      topicId: "t-dominio",
+      prompt: "¿Qué valor de $x$ **no** está en el dominio de $f(x) = 1/(x + 5)$?",
+      options: ["$x = −5$", "$x = 5$", "$x = 0$"],
+      answer: 0,
+      explanation: "Con x = −5 el denominador da −5 + 5 = 0, y no se puede dividir por cero.",
+      hints: ["¿Qué número anula el denominador?", "x + 5 = 0.", "x = −5."],
+      errors: { 1: ["signos", "Con x = 5 el denominador da 10, que no es problema. El que lo anula es −5."], 2: ["conceptual", "Con x = 0 queda 1/5: el numerador o el valor 0 no son el problema, sí el denominador cero."] },
+    }),
     explain(
       "Por qué no se divide por cero",
       "$6/2 = 3$ porque $3·2 = 6$. ¿Cuánto sería $6/0$? Un número que multiplicado por 0 dé 6. No existe: todo número por 0 da 0.\n\nMirá el gráfico de $1/x$: cerca de $x = 0$ se dispara hacia arriba y hacia abajo.",
@@ -129,6 +224,16 @@ export const dominioLesson: Lesson = {
     ),
     example("Ejemplo resuelto", "Dominio de $f(x) = 5/(x − 3)$", ["El denominador no puede ser 0: $x − 3 ≠ 0$", "$x ≠ 3$", "Dominio: $ℝ − \\{3\\}$ (todos los reales menos el 3)"], "ℝ − {3}"),
     example("Ejemplo resuelto", "Dominio de $g(x) = √(x + 4)$", ["Lo de adentro de la raíz tiene que ser ≥ 0: $x + 4 ≥ 0$", "$x ≥ −4$", "Dominio: $[−4, +∞)$ — el corchete indica que −4 está incluido"], "[−4, +∞)"),
+    board(
+      "Pizarra: un caso con trampa",
+      [
+        row("g(x) = √(6 − 2x)", "lo de adentro de la raíz tiene que ser mayor o igual a 0"),
+        row("6 − 2x ≥ 0"),
+        row("−2x ≥ −6", "restamos 6 en ambos lados"),
+        row("x ≤ 3", "dividimos por $−2$: al dividir por un negativo, la desigualdad **se da vuelta**"),
+        row("Dom = (−∞, 3]", "control: $x = 0$ da $√6$ (vale) y $x = 4$ da $√(−2)$ (no vale) ✓"),
+      ],
+    ),
     practice("Ejercicio guiado", "dominio", 2, 3, true),
     practice("Tu turno", "dominio", 4, 8),
     practice("Mini desafío", "dominio", 5, 15),
@@ -137,8 +242,20 @@ export const dominioLesson: Lesson = {
   tutor: {
     normal: "El dominio de una función real es el mayor subconjunto de ℝ donde la fórmula está definida. Se excluyen los x que anulan denominadores y los que hacen negativo el radicando de una raíz de índice par.",
     simple: "Preguntate: ¿hay algún número que rompa la cuenta? Si hay una división, el de abajo no puede ser 0. Si hay una raíz cuadrada, lo de adentro no puede ser negativo.",
-    nino: "Es como una máquina de jugo que no acepta piedras: hay entradas que la rompen. El dominio es la lista de cosas que sí puede recibir.",
-    ejemplo: "f(x) = 1/x no acepta x = 0. f(x) = √x no acepta negativos: su dominio es [0, +∞).",
+    nino: "Es como el surtidor de una estación de servicio: hay combustibles que tu auto acepta y otros que lo arruinan. El dominio es la lista de lo que la función «acepta» sin romperse; antes de cargar, conviene leer la etiqueta.",
+    ejemplo: "h(x) = √(x − 1)/(x − 4): la raíz pide x − 1 ≥ 0, o sea x ≥ 1; el denominador pide x ≠ 4. Dominio: [1, 4) ∪ (4, +∞). Por ejemplo h(5) = √4/1 = 2, pero h(0) y h(4) no existen.",
+    visual: { type: "plot", mode: "free", initial: "1/(x - 3)" },
+    visualText: "Mirá el gráfico de 1/(x − 3): en x = 3 no hay punto; la curva se dispara a los dos lados de esa recta vertical.",
+    fromZero: "Una función es una cuenta que se le hace a un número de entrada. Pero hay cuentas que no se pueden hacer. En los números reales hay dos imposibles: **dividir por cero** (no existe ningún número que multiplicado por 0 dé, por ejemplo, 6) y sacar **raíz cuadrada de un negativo** (ningún número al cuadrado da negativo). El **dominio** es la lista de entradas con las que la cuenta sí se puede hacer. Para encontrarlo, buscás en la fórmula si hay divisiones o raíces, planteás la condición (denominador distinto de 0, o lo de adentro de la raíz mayor o igual a 0) y la resolvés.",
+    why: "Porque una fórmula no sirve fuera de su dominio: si ignorás que $x = 3$ anula un denominador, cualquier cálculo que hagas ahí es basura. En Análisis, el dominio es lo primero que se estudia de una función, y los bordes del dominio son justamente donde aparecen las asíntotas y los límites interesantes. En problemas aplicados, además, el dominio físico (tiempos positivos, longitudes positivas) recorta todavía más.",
+    origin: "Las dos prohibiciones salen de las definiciones. Dividir $a$ por $b$ es buscar el número que multiplicado por $b$ da $a$; si $b = 0$, ese número no existe (o, si $a = 0$, cualquiera sirve). La raíz cuadrada de $a$ es el número no negativo que al cuadrado da $a$; como todo cuadrado es positivo o cero, no hay raíz real de un negativo.",
+    board: [
+      { expr: "f(x) = (x + 1)/(x^2 − 9)", note: "el denominador no puede ser 0" },
+      { expr: "x^2 − 9 ≠ 0" },
+      { expr: "x^2 ≠ 9", note: "sumamos 9 en ambos lados" },
+      { expr: "x ≠ 3 y x ≠ −3", note: "tanto $3^2$ como $(−3)^2$ dan 9" },
+      { expr: "Dom = ℝ − \\{−3, 3\\}" },
+    ],
   },
 };
 

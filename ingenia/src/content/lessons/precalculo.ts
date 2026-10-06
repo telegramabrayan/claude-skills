@@ -1,5 +1,5 @@
 import type { Lesson } from "@/engine/types";
-import { example, explain, intro, practice, quiz, summary } from "./helpers";
+import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
 
 export const factorizacion: Lesson = {
   id: "l-factorizacion",
@@ -37,6 +37,17 @@ export const factorizacion: Lesson = {
       { tag: "matematico" },
     ),
     example("Ejemplo resuelto", "Factorizá $x^2 + 2x − 15$", ["Producto −15 y suma 2", "Probamos pares: (5, −3) → 5·(−3) = −15 y 5 + (−3) = 2 ✓", "$x^2 + 2x − 15 = (x + 5)(x − 3)$", "Verifico: $x^2 − 3x + 5x − 15$ ✓"], "(x + 5)(x − 3)"),
+    board(
+      "Pizarra: factorizar en dos pasos",
+      [
+        row("2x^2 − 18"),
+        row("2(x^2 − 9)", "factor común 2: $2x^2 ÷ 2 = x^2$ y $18 ÷ 2 = 9$"),
+        row("2(x^2 − 3^2)", "adentro hay una diferencia de cuadrados"),
+        row("2(x − 3)(x + 3)", "$a^2 − b^2 = (a − b)(a + b)$"),
+      ],
+      "Siempre conviene empezar por el factor común y después mirar qué quedó adentro.",
+      "Verificación con $x = 4$: $2·16 − 18 = 14$ y $2·1·7 = 14$ ✓.",
+    ),
     practice("Tu turno", "factorizar", 4, 8),
     practice("Mini desafío", "factorizar", 6, 13),
     summary(["Factorizar = escribir como producto (la distributiva al revés).", "Factor común: dividí cada término por lo que comparten.", "a² − b² = (a − b)(a + b).", "Trinomio x² + Sx + P: dos números con suma S y producto P.", "Siempre se puede verificar distribuyendo."]),
@@ -44,8 +55,20 @@ export const factorizacion: Lesson = {
   tutor: {
     normal: "Factorizar una expresión es escribirla como producto de factores más simples. Los casos básicos son factor común, diferencia de cuadrados y trinomio cuadrado.",
     simple: "Es deshacer la distributiva. Si tenés 3x + 6, preguntate qué número está «metido» en los dos términos: el 3. Entonces 3x + 6 = 3(x + 2).",
-    nino: "Tenés 12 caramelos y querés armar bolsitas iguales: podés hacer 3 bolsitas de 4. Factorizar es encontrar cómo armar esas bolsitas con una expresión.",
-    ejemplo: "x² − 25 = (x − 5)(x + 5). x² + 7x + 10 = (x + 2)(x + 5), porque 2·5 = 10 y 2 + 5 = 7.",
+    nino: "Es como armar un pedido mayorista: en vez de anotar «3 cajas de tornillos + 3 cajas de tuercas», anotás «3 × (caja de tornillos + caja de tuercas)». Es el mismo pedido, pero agrupando lo que se repite. Factorizar es encontrar ese «3 ×» que se repite en todos los términos.",
+    ejemplo: "x² − 25 = (x − 5)(x + 5). x² + 7x + 10 = (x + 2)(x + 5), porque 2·5 = 10 y 2 + 5 = 7. Con x = 1: 1 + 7 + 10 = 18 y 3·6 = 18 ✓.",
+    visual: { type: "plot", mode: "free", initial: "x^2 + 2x - 15" },
+    visualText: "La parábola x² + 2x − 15 corta al eje x en −5 y en 3: son los números que aparecen en (x + 5)(x − 3), con el signo cambiado.",
+    fromZero: "Un número se puede escribir como suma o como producto: $12 = 7 + 5$, pero también $12 = 3·4$. **Factorizar** es escribirlo como producto. Con expresiones algebraicas pasa lo mismo: $3x + 6$ es una suma, pero también se puede escribir $3·(x + 2)$; si distribuís, volvés a $3x + 6$. Factorizar es, entonces, hacer la distributiva al revés: buscar qué está multiplicando «escondido» en todos los términos. Hay unas pocas formas típicas (factor común, diferencia de cuadrados, trinomio) y siempre se puede comprobar distribuyendo.",
+    why: "Porque un producto tiene propiedades que una suma no tiene: se simplifica en fracciones ($\\frac{(x − 2)(x + 2)}{x − 2} = x + 2$) y, si da cero, alguno de sus factores es cero. Por eso factorizar destraba límites del tipo 0/0, resuelve ecuaciones cuadráticas y simplifica expresiones en todo Análisis.",
+    origin: "Cada caso sale de distribuir y leer al revés. $(a − b)(a + b) = a^2 + ab − ab − b^2 = a^2 − b^2$: los términos del medio se cancelan. $(x + p)(x + q) = x^2 + (p + q)x + p·q$: por eso en un trinomio $x^2 + Sx + P$ se buscan dos números con suma $S$ y producto $P$.",
+    board: [
+      { expr: "x^2 − 7x + 12", note: "buscamos dos números con producto 12 y suma $−7$" },
+      { expr: "(−3)·(−4) = 12, (−3) + (−4) = −7", note: "los dos negativos: producto positivo, suma negativa" },
+      { expr: "(x − 3)(x − 4)" },
+      { expr: "x^2 − 4x − 3x + 12", note: "verificamos distribuyendo" },
+      { expr: "x^2 − 7x + 12", note: "✓" },
+    ],
   },
 };
 
@@ -79,6 +102,19 @@ export const cuadratica: Lesson = {
       { tag: "matematico" },
     ),
     example("Ejemplo resuelto", "Resolvé $x^2 − 5x + 6 = 0$", ["Factorizo: producto 6, suma −5 → −2 y −3", "$(x − 2)(x − 3) = 0$", "$x = 2$ o $x = 3$", "Con la fórmula: $Δ = 25 − 24 = 1$, $x = (5 ± 1)/2$ → 3 y 2 ✓"], "x = 2 y x = 3"),
+    board(
+      "Pizarra: la fórmula resolvente",
+      [
+        row("2x^2 + 3x − 2 = 0", "$a = 2$, $b = 3$, $c = −2$"),
+        row("Δ = 3^2 − 4·2·(−2)", "discriminante $b^2 − 4ac$"),
+        row("Δ = 9 + 16 = 25", "positivo: hay dos soluciones"),
+        row("x = (−3 ± √25)/(2·2)", "reemplazamos en la fórmula"),
+        row("x = (−3 ± 5)/4"),
+        row("x = 1/2 o x = −2", "con $+$: $2/4 = 1/2$; con $−$: $−8/4 = −2$"),
+      ],
+      undefined,
+      "Verificación con $x = −2$: $2·4 − 6 − 2 = 0$ ✓.",
+    ),
     practice("Ejercicio guiado", "ecuacion-cuadratica", 2, 4, true),
     practice("Tu turno", "ecuacion-cuadratica", 4, 9),
     practice("Mini desafío", "ecuacion-cuadratica", 6, 12),
@@ -87,10 +123,19 @@ export const cuadratica: Lesson = {
   tutor: {
     normal: "Una ecuación cuadrática ax² + bx + c = 0 se resuelve factorizando y usando que un producto es cero solo si algún factor es cero, o con la fórmula resolvente.",
     simple: "Convertí la ecuación en una multiplicación igualada a cero, y después pensá: ¿qué valor de x hace cero cada paréntesis?",
-    nino: "Si multiplicás dos números y te da 0, uno de los dos tiene que ser 0. Con eso se encuentran las soluciones.",
-    ejemplo: "x² − 9 = 0 → (x − 3)(x + 3) = 0 → x = 3 o x = −3.",
+    nino: "Si un amigo te cuenta que multiplicó dos números y le dio 0, sin saber nada más podés asegurar que uno de los dos era 0: es la única forma. Las cuadráticas se resuelven con ese mismo razonamiento de detective: se escriben como «algo por algo = 0» y se pregunta qué hace cero a cada parte.",
+    ejemplo: "x² − 9 = 0 → (x − 3)(x + 3) = 0 → x = 3 o x = −3. Y x² + 4 = 0 no tiene solución real: Δ = 0 − 16 = −16 < 0 (ningún número al cuadrado da −4).",
     visual: { type: "plot", mode: "free", initial: "x^2 - 5x + 6" },
     visualText: "Las soluciones son los puntos donde la parábola corta al eje x.",
+    fromZero: "Una ecuación lineal tiene la $x$ «sola» ($3x + 1 = 7$). Una **cuadrática** tiene además $x^2$: por ejemplo $x^2 − 5x + 6 = 0$. Ya no alcanza con pasar números de lado, porque $x^2$ y $x$ no se pueden juntar. La idea clave es otra: si un producto da cero, alguno de los factores es cero ($3·0 = 0$, pero $3·2 ≠ 0$). Entonces, si se logra escribir la expresión como producto, $(x − 2)(x − 3) = 0$, alcanza con ver qué $x$ anula cada paréntesis. Cuando factorizar es difícil, la fórmula resolvente da las soluciones directamente a partir de los coeficientes $a$, $b$ y $c$.",
+    why: "Porque muchas situaciones físicas y geométricas producen un $x^2$: la posición en el MRUV tiene $t^2$ (¿cuándo toca el suelo?), las áreas son longitudes al cuadrado, y los máximos de una ganancia suelen salir de una parábola. Además, saber cuántas soluciones hay (con el discriminante) dice si un problema tiene respuesta.",
+    origin: "La fórmula sale de completar cuadrados. Partiendo de $ax^2 + bx + c = 0$, se divide por $a$ y se suma $(b/2a)^2$ en ambos lados para formar un cuadrado perfecto: $(x + b/2a)^2 = (b^2 − 4ac)/(4a^2)$. Sacando raíz: $x + b/2a = ±√(b^2 − 4ac)/(2a)$, y despejando $x$ aparece la resolvente. Por eso, si $b^2 − 4ac < 0$, no hay raíz real.",
+    board: [
+      { expr: "x^2 − 6x + 9 = 0", note: "$a = 1$, $b = −6$, $c = 9$" },
+      { expr: "Δ = (−6)^2 − 4·1·9" },
+      { expr: "Δ = 36 − 36 = 0", note: "discriminante cero: una sola solución" },
+      { expr: "x = 6/2 = 3", note: "$x = −b/(2a)$; de hecho $x^2 − 6x + 9 = (x − 3)^2$" },
+    ],
   },
 };
 
@@ -100,7 +145,7 @@ export const pitagorasLesson: Lesson = {
   subtitle: "El teorema más usado de la geometría",
   subjectId: "preparacion",
   topicIds: ["t-pitagoras"],
-  estimatedMinutes: 8,
+  estimatedMinutes: 9,
   prerequisites: ["t-potencias"],
   cards: [
     intro("Pitágoras", "Calcular lados de triángulos rectángulos y distancias entre puntos.", "Es la base del módulo de un vector, de la distancia en el plano, de la trigonometría y de la física en dos dimensiones."),
@@ -124,6 +169,16 @@ export const pitagorasLesson: Lesson = {
       "Entre $(x_1, y_1)$ y $(x_2, y_2)$ se forma un triángulo rectángulo con catetos $Δx$ y $Δy$:\n\n$d = √((x_2 − x_1)^2 + (y_2 − y_1)^2)$\n\nEs Pitágoras con coordenadas.",
       { tag: "matematico" },
     ),
+    board(
+      "Pizarra: distancia entre dos puntos",
+      [
+        row("d = √((x_2 − x_1)^2 + (y_2 − y_1)^2)", "puntos $(1, −2)$ y $(7, 6)$"),
+        row("d = √((7 − 1)^2 + (6 − (−2))^2)", "reemplazamos con paréntesis"),
+        row("d = √(6^2 + 8^2)", "$Δx = 6$ y $Δy = 8$: los catetos"),
+        row("d = √(36 + 64)"),
+        row("d = √100 = 10"),
+      ],
+    ),
     practice("Tu turno", "pitagoras", 3, 6),
     practice("Mini desafío", "pitagoras", 5, 11),
     summary(["h² = a² + b² (solo en triángulos rectángulos).", "Para un cateto: b² = h² − a².", "Distancia: d = √(Δx² + Δy²)."]),
@@ -131,9 +186,20 @@ export const pitagorasLesson: Lesson = {
   tutor: {
     normal: "En todo triángulo rectángulo, el cuadrado de la hipotenusa es igual a la suma de los cuadrados de los catetos.",
     simple: "Si conocés dos lados de un triángulo con ángulo recto, podés calcular el tercero: elevás al cuadrado, sumás (o restás) y sacás la raíz.",
-    nino: "Si caminás 3 cuadras al este y 4 al norte, en línea recta estás a 5 cuadras del inicio.",
-    ejemplo: "Catetos 6 y 8: h = √(36 + 64) = √100 = 10.",
+    nino: "Un televisor «de 50 pulgadas» mide 50 en diagonal, no de ancho. Ancho, alto y diagonal forman un triángulo rectángulo: si el mueble tiene 44 pulgadas de ancho libre, Pitágoras te dice qué alto va a ocupar la pantalla (√(50² − 44²) ≈ 23,7 pulgadas) antes de comprarla.",
+    ejemplo: "Catetos 5 y 12: h = √(25 + 144) = √169 = 13. Con hipotenusa 10 y un cateto 6, el otro es √(100 − 36) = √64 = 8.",
     visual: { type: "vector", x: 6, y: 8 },
+    visualText: "Arrastrá la punta: los catetos son las componentes y el largo de la flecha es la hipotenusa.",
+    fromZero: "Un **triángulo rectángulo** es uno que tiene una esquina recta, de 90°, como la esquina de una hoja. El lado opuesto a esa esquina es el más largo y se llama **hipotenusa**; los otros dos son los **catetos**. Pitágoras dice que, si armás un cuadrado sobre cada lado, el área del cuadrado grande (el de la hipotenusa) es igual a la suma de las áreas de los otros dos: $h^2 = a^2 + b^2$. Con eso, conociendo dos lados, calculás el tercero: elevás al cuadrado, sumás (o restás, si buscás un cateto) y sacás raíz. Solo vale para triángulos con ángulo recto.",
+    why: "Porque cada vez que algo se mueve o se mide en dos direcciones perpendiculares aparece un triángulo rectángulo: el módulo de un vector, la distancia entre dos puntos del plano, la resultante de dos fuerzas perpendiculares, la diagonal de una pieza. También es la base de la trigonometría.",
+    origin: "Una demostración clásica: dibujá un cuadrado de lado $a + b$ y adentro cuatro copias del triángulo, de modo que dejen en el centro un cuadrado inclinado de lado $h$. El área total es $(a + b)^2$, y también es $4·(a·b/2) + h^2$. Igualando: $a^2 + 2ab + b^2 = 2ab + h^2$, o sea $a^2 + b^2 = h^2$.",
+    board: [
+      { expr: "h = 13, a = 5", note: "buscamos el otro cateto $b$" },
+      { expr: "13^2 = 5^2 + b^2", note: "Pitágoras" },
+      { expr: "169 = 25 + b^2" },
+      { expr: "b^2 = 144", note: "restamos 25 en ambos lados" },
+      { expr: "b = 12", note: "raíz positiva: es una longitud" },
+    ],
   },
 };
 
@@ -166,6 +232,18 @@ export const trigonometriaLesson: Lesson = {
       "Una rampa de 10 m forma 30° con el piso. ¿Qué altura sube?\n\nAltura = opuesto al ángulo → $10 · sen 30° = 10 · 0,5 = 5$ m.\n\nEsto mismo se hace en Física para descomponer una velocidad o una fuerza en sus componentes.",
       { tag: "cotidiano" },
     ),
+    board(
+      "Pizarra: alto y avance de un cable",
+      [
+        row("sen 60° = h/20", "cable de 20 m a 60° del suelo; la altura es el cateto opuesto"),
+        row("h = 20·sen 60°", "multiplicamos ambos lados por 20"),
+        row("h ≈ 20·0,866 ≈ 17,32", "metros"),
+        row("d = 20·cos 60°", "el avance horizontal es el adyacente: coseno"),
+        row("d = 20·0,5 = 10", "metros"),
+      ],
+      undefined,
+      "Control con Pitágoras: $17,32^2 + 10^2 ≈ 400 = 20^2$ ✓.",
+    ),
     practice("Ejercicio guiado", "trigonometria", 2, 5, true),
     explain(
       "Grados y radianes",
@@ -180,10 +258,19 @@ export const trigonometriaLesson: Lesson = {
   tutor: {
     normal: "Las razones trigonométricas relacionan un ángulo agudo de un triángulo rectángulo con los cocientes entre sus lados.",
     simple: "El seno te dice qué fracción de la hipotenusa «sube» (cateto opuesto); el coseno, qué fracción «avanza» (cateto adyacente).",
-    nino: "Si subís por una rampa de 10 metros muy inclinada, subís mucha altura; si es poco inclinada, subís poco. El seno del ángulo te dice exactamente cuánto.",
-    ejemplo: "Hipotenusa 8 y ángulo 60°: adyacente = 8·cos 60° = 8·0,5 = 4.",
+    nino: "Pensá en una escalera apoyada contra la pared: cuanto más parada la ponés, más alto llega y menos lugar ocupa en el piso. El seno del ángulo con el piso dice qué fracción del largo de la escalera se convierte en altura; el coseno, qué fracción queda «acostada» en el piso. Con 30°, la mitad del largo es altura.",
+    ejemplo: "Hipotenusa 8 y ángulo 60°: adyacente = 8·cos 60° = 8·0,5 = 4. Catetos 7 y 7: tan α = 7/7 = 1, así que α = 45°.",
     visual: { type: "trig", angle: 45, hyp: 8 },
     visualText: "Mové el ángulo: el seno es la altura relativa y el coseno el avance relativo.",
+    fromZero: "Dibujá un triángulo rectángulo y elegí uno de sus ángulos agudos, $α$. Desde ese ángulo, un cateto queda **enfrente** (opuesto) y el otro queda **pegado** (adyacente); la hipotenusa es el lado largo. Si agrandás el triángulo sin cambiar el ángulo, todos los lados crecen en la misma proporción, así que los **cocientes** entre lados no cambian: dependen solo del ángulo. Esos cocientes tienen nombre: seno = opuesto/hipotenusa, coseno = adyacente/hipotenusa, tangente = opuesto/adyacente. La calculadora los conoce para cada ángulo, y con eso podés calcular lados que no podés medir.",
+    why: "Porque en Física casi nada viene alineado con los ejes: una fuerza inclinada, una rampa, un tiro con ángulo. Seno y coseno permiten descomponer cualquier vector en una parte horizontal y una vertical. Además, en Análisis las funciones seno y coseno describen todo lo que oscila: ondas, corriente alterna, vibraciones.",
+    origin: "Salen de la semejanza de triángulos: dos triángulos rectángulos con el mismo ángulo agudo tienen la misma forma, así que sus lados son proporcionales y los cocientes coinciden. Por eso tiene sentido hablar de «el seno de 30°», sin importar el tamaño del triángulo. El radián sale de medir el ángulo con el arco: en un círculo de radio 1, una vuelta mide $2π$, así que $360° = 2π$ rad.",
+    board: [
+      { expr: "150° · π/180", note: "pasar 150° a radianes: multiplicamos por $π/180$" },
+      { expr: "150π/180" },
+      { expr: "5π/6", note: "simplificamos dividiendo por 30" },
+      { expr: "≈ 2,618", note: "en radianes; control: $π ≈ 3,14$ son 180°" },
+    ],
   },
 };
 
@@ -202,6 +289,17 @@ export const limitesLesson: Lesson = {
       "$lim_{x→2} f(x) = L$ se lee: «cuando x se acerca a 2, f(x) se acerca a L».\n\nNo importa qué pasa **exactamente** en $x = 2$; importa hacia dónde van los valores cerca de 2.",
       { tag: "intuitivo" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-lim-directo",
+      subjectId: "am-a",
+      topicId: "t-limites",
+      prompt: "¿Cuánto vale $lim_{x→1} (3x + 2)$?",
+      options: ["$5$", "$1$", "No existe"],
+      answer: 0,
+      explanation: "La función no tiene ningún problema en x = 1: al acercarse x a 1, 3x + 2 se acerca a 3·1 + 2 = 5.",
+      hints: ["Probá reemplazar.", "3·1 + 2.", "Si al reemplazar da un número, ese es el límite."],
+      errors: { 1: ["limites", "1 es hacia donde va x. El límite es hacia dónde van los valores de la función."], 2: ["limites", "La función está bien definida en 1: el límite existe y se obtiene reemplazando."] },
+    }),
     explain(
       "Mirá la tabla",
       "La función $f(x) = \\frac{x^2 − 4}{x − 2}$ no existe en $x = 2$ (sería 0/0). Pero cerca de 2 los valores se acercan a 4. El gráfico es una recta con un hueco:",
@@ -221,6 +319,16 @@ export const limitesLesson: Lesson = {
       "1. **Reemplazá.** Si da un número, ese es el límite: $lim_{x→3} (x^2 + 1) = 10$.\n2. Si da **0/0**, es una **indeterminación**: no vale 0 ni 1. Numerador y denominador comparten un factor.\n3. **Factorizá, simplificá y reemplazá** de nuevo:\n\n$\\frac{x^2 − 4}{x − 2} = \\frac{(x − 2)(x + 2)}{x − 2} = x + 2$ → con $x = 2$ da **4**.",
       { tag: "matematico" },
     ),
+    board(
+      "Pizarra: destrabar un 0/0",
+      [
+        row("lim_{x→−3} (x^2 + 5x + 6)/(x + 3)"),
+        row("(9 − 15 + 6)/(−3 + 3) = 0/0", "reemplazar da $0/0$: indeterminación"),
+        row("lim_{x→−3} (x + 2)(x + 3)/(x + 3)", "factorizamos: producto 6, suma 5 → 2 y 3"),
+        row("lim_{x→−3} (x + 2)", "simplificamos: cerca de $−3$, $x + 3$ no vale cero"),
+        row("−3 + 2 = −1", "ahora sí reemplazamos"),
+      ],
+    ),
     practice("Ejercicio guiado", "limite", 1, 4, true),
     practice("Tu turno", "limite", 3, 9),
     practice("Tu turno", "limite", 4, 15),
@@ -230,9 +338,19 @@ export const limitesLesson: Lesson = {
   tutor: {
     normal: "El límite de f(x) cuando x tiende a a es el valor al que se aproximan las imágenes de f para x suficientemente cercanos a a, sin importar el valor (o la ausencia de valor) en a.",
     simple: "Preguntá: si me acerco muchísimo a ese x, ¿a qué número se acerca la función? Primero probá reemplazar; si da 0/0, simplificá.",
-    nino: "Si caminás hacia una pared dando pasos cada vez más cortos, nunca la tocás, pero está clarísimo hacia dónde vas. El límite es esa pared.",
-    ejemplo: "lim x→3 de (x² − 9)/(x − 3): reemplazar da 0/0; (x − 3)(x + 3)/(x − 3) = x + 3 → 6.",
+    nino: "Es como estimar a qué hora llega un tren mirando el cartel que se actualiza: 5 minutos, 2 minutos, 30 segundos… Aunque el cartel se apague justo antes de que llegue, sabés perfectamente a qué hora iba a llegar. El límite es ese valor al que apuntan los datos, aunque falte el dato exacto.",
+    ejemplo: "lim x→3 de (x² − 9)/(x − 3): reemplazar da 0/0; (x − 3)(x + 3)/(x − 3) = x + 3 → 6. Con números: f(2,9) = 5,9 y f(3,1) = 6,1, los dos cerca de 6.",
     visual: { type: "plot", mode: "free", initial: "(x^2 - 9)/(x - 3)" },
+    visualText: "Es la recta y = x + 3 con un hueco en x = 3: la función no existe ahí, pero los valores cercanos se acercan a 6.",
+    fromZero: "Una función toma un $x$ y devuelve un valor. A veces, en un punto justo, la cuenta no se puede hacer (por ejemplo, da $0/0$). El **límite** pregunta otra cosa: no qué pasa **en** ese punto, sino qué pasa **cerca**. Si probás con $x = 1,9$, $1,99$, $1,999$ y también con $2,1$, $2,01$, $2,001$, y los resultados se van pegando a un número, ese número es el límite. En la práctica: primero reemplazás; si da un número, listo. Si da $0/0$, factorizás, simplificás el factor que se anula y volvés a reemplazar.",
+    why: "Porque con límites se define todo lo demás de Análisis: la continuidad (no hay saltos), la derivada (el límite de una pendiente) y la integral (el límite de una suma). También describen comportamientos reales: hacia qué valor tiende una temperatura con el tiempo, o qué pasa cuando una magnitud se hace muy chica.",
+    origin: "La idea viene de calcular cosas que no se pueden calcular de forma directa: la velocidad en un instante, el área bajo una curva. Se aproximan con cantidades calculables cada vez mejores y se mira a qué valor se acercan. En $0/0$, simplificar es válido porque el límite nunca usa el punto exacto: para $x ≠ 2$, $\\frac{(x − 2)(x + 2)}{x − 2}$ y $x + 2$ dan exactamente lo mismo.",
+    board: [
+      { expr: "lim_{x→1} (2x^2 − 2x)/(x − 1)", note: "reemplazar da $0/0$" },
+      { expr: "lim_{x→1} 2x(x − 1)/(x − 1)", note: "factor común $2x$ en el numerador" },
+      { expr: "lim_{x→1} 2x", note: "simplificamos el factor que se anulaba" },
+      { expr: "2·1 = 2" },
+    ],
   },
 };
 
@@ -251,6 +369,17 @@ export const derivadasLesson: Lesson = {
       "Si un auto recorre 100 km en 2 horas, su velocidad **media** fue 50 km/h. Pero el velocímetro muestra la velocidad **en cada instante**.\n\nLa derivada es eso: cuánto cambia una función **en un instante**, no en promedio.",
       { tag: "cotidiano" },
     ),
+    quiz("Pregunta rápida", {
+      id: "q3-der-instante",
+      subjectId: "am-a",
+      topicId: "t-derivadas",
+      prompt: "Un viaje de 120 km dura 2 h. En cierto momento el velocímetro marca 80 km/h. ¿Cuál de esos datos se parece a una derivada?",
+      options: ["Los 80 km/h del velocímetro", "Los 60 km/h de promedio", "Los 120 km del total"],
+      answer: 0,
+      explanation: "La derivada es la tasa de cambio en un instante: lo que marca el velocímetro. Los 60 km/h (120 ÷ 2) son una tasa media.",
+      hints: ["¿Cuál habla de un instante y cuál de todo el viaje?", "El promedio mira el viaje entero.", "El velocímetro mira un instante."],
+      errors: { 1: ["derivacion", "60 km/h es la velocidad media de todo el viaje. La derivada es la del instante."], 2: ["derivacion", "120 km es una distancia, no una tasa de cambio."] },
+    }),
     explain(
       "Pendiente de la tangente",
       "En un gráfico, la derivada en un punto es la **pendiente de la recta tangente** (la recta que «roza» la curva ahí). Mové el punto:",
@@ -267,10 +396,20 @@ export const derivadasLesson: Lesson = {
     }),
     explain(
       "Regla de la potencia",
-      "No hace falta dibujar cada vez. Para potencias de x:\n\n$(x^n)′ = n · x^{n−1}$\n\nEl exponente baja multiplicando y se le resta 1. Ejemplos: $(x^2)′ = 2x$, $(x^3)′ = 3x^2$, $(5x^4)′ = 20x^3$.\n\nUna constante sumando desaparece: $(x^2 + 7)′ = 2x$. Y $(kx)′ = k$.",
-      { tag: "matematico" },
+      "No hace falta dibujar cada vez. Para potencias de x:\n\n$(x^n)′ = n · x^{n−1}$\n\nEl exponente baja multiplicando y se le resta 1. Ejemplos: $(x^2)′ = 2x$, $(x^3)′ = 3x^2$, $(5x^4)′ = 20x^3$.\n\nUna constante sumando desaparece: $(x^2 + 7)′ = 2x$. Y $(kx)′ = k$.\n\nDale play: la tangente recorre $x^2$ y abajo se dibujan sus pendientes. Forman la recta $2x$.",
+      { tag: "matematico", widget: { type: "tangent-sweep", expr: "x^2" } },
     ),
     example("Ejemplo resuelto", "Derivá $f(x) = 3x^4 − 2x + 5$", ["$(3x^4)′ = 3 · 4 · x^3 = 12x^3$", "$(−2x)′ = −2$", "$(5)′ = 0$", "$f′(x) = 12x^3 − 2$"], "f′(x) = 12x³ − 2"),
+    board(
+      "Pizarra: derivar y evaluar",
+      [
+        row("f(x) = x^3 − 6x^2 + 4"),
+        row("f′(x) = 3x^2 − 6·2x + 0", "regla de la potencia en cada término; la constante da 0"),
+        row("f′(x) = 3x^2 − 12x"),
+        row("f′(2) = 3·4 − 12·2", "pendiente en $x = 2$"),
+        row("f′(2) = −12", "negativa: en $x = 2$ la función baja"),
+      ],
+    ),
     practice("Ejercicio guiado", "derivada-potencia", 2, 6, true),
     practice("Tu turno", "derivada-potencia", 3, 10),
     practice("Mini desafío", "derivada-potencia", 5, 3),
@@ -279,10 +418,20 @@ export const derivadasLesson: Lesson = {
   tutor: {
     normal: "La derivada de f en a es el límite del cociente incremental [f(a + h) − f(a)]/h cuando h → 0: la pendiente de la recta tangente al gráfico en ese punto.",
     simple: "La derivada te dice qué tan rápido está cambiando algo justo ahora. Si es grande y positiva, la función sube rápido; si es 0, está «quieta» por un instante.",
-    nino: "Es el velocímetro de la función: no te dice dónde está, te dice qué tan rápido va.",
-    ejemplo: "f(x) = x²: f′(x) = 2x. En x = 3 la pendiente es 6: por cada paso chiquito a la derecha, sube unas 6 veces ese paso.",
+    nino: "Es el velocímetro de la función. El cuentakilómetros te dice cuánto recorriste (eso es la función); el velocímetro te dice qué tan rápido vas en este momento (eso es la derivada). Si el velocímetro marca 0 es porque en ese instante estás detenido, por ejemplo en el punto más alto de una subida antes de empezar a bajar.",
+    ejemplo: "f(x) = x²: f′(x) = 2x. En x = 3 la pendiente es 6: si pasás de 3 a 3,01, f pasa de 9 a 9,0601, o sea sube ≈ 0,06, unas 6 veces el paso de 0,01.",
     visual: { type: "tangent", initial: "x^2" },
     visualText: "Mové el punto y mirá cómo cambia la pendiente de la tangente.",
+    fromZero: "La pendiente de una recta dice cuánto sube por cada paso a la derecha, y es la misma en toda la recta. Una curva, en cambio, sube más en algunos lugares y menos en otros. Para medir cuánto sube **en un punto**, se usa la recta que apenas roza la curva ahí: la **recta tangente**. Su pendiente es la **derivada** en ese punto. Pensado como movimiento: si $f(t)$ es la posición, la derivada es la velocidad en cada instante. No hace falta dibujar cada vez: para potencias hay una regla, $(x^n)′ = n·x^{n−1}$, y las constantes sumando no aportan nada porque no cambian.",
+    why: "Porque responder «¿qué tan rápido cambia esto ahora?» es la pregunta central de la ingeniería: velocidad y aceleración, costo marginal, rapidez de enfriamiento. Y donde la derivada vale cero la tangente es horizontal: ahí están los candidatos a máximo y mínimo, que es como se optimiza un diseño, un costo o un rendimiento.",
+    origin: "Se parte de una pendiente entre dos puntos cercanos, $x$ y $x + h$: $\\frac{f(x + h) − f(x)}{h}$, y se acerca $h$ a cero (un límite). Para $f(x) = x^2$: $\\frac{(x + h)^2 − x^2}{h} = \\frac{2xh + h^2}{h} = 2x + h$, que tiende a $2x$. Haciendo lo mismo con $x^3$ aparece $3x^2$; de ahí sale el patrón $n·x^{n−1}$.",
+    board: [
+      { expr: "f(x) = x^2, en x = 1", note: "buscamos la recta tangente" },
+      { expr: "f(1) = 1", note: "el punto de tangencia es $(1, 1)$" },
+      { expr: "f′(x) = 2x → f′(1) = 2", note: "la pendiente de la tangente" },
+      { expr: "y = 1 + 2(x − 1)", note: "recta que pasa por $(1, 1)$ con pendiente 2" },
+      { expr: "y = 2x − 1" },
+    ],
   },
 };
 
