@@ -4,6 +4,7 @@
  * la cátedra (ejemplos propios, nunca enunciados copiados).
  */
 import type { BoardStep, Lesson, LessonCard } from "@/engine/types";
+import { mathFix } from "@/engine/generators/am";
 import { example, explain, intro, practice, quiz, summary } from "./helpers";
 
 const board = (title: string, steps: BoardStep[], introText?: string, outro?: string): LessonCard => ({ kind: "board", title, steps, intro: introText, outro });
@@ -1081,6 +1082,296 @@ export const amPartesFracciones: Lesson = {
   },
 };
 
-// @@LESSONS@@
+const TFC_BOARD: BoardStep[] = [
+  { expr: "F(x) = ∫_0^(x² + 2x) √(t + 1) dt", note: "El límite superior es una función de x: u(x) = x² + 2x" },
+  { expr: "F′(x) = √(x² + 2x + 1)·(2x + 2)", note: "TFC: integrando evaluado en u(x), por u′(x)" },
+  { expr: "F′(1) = √4·4", note: "Reemplazamos x = 1: u(1) = 3, u′(1) = 4" },
+  { expr: "F′(1) = 8", note: "√4 = 2" },
+];
 
-export const amLessons: Lesson[] = [amLimRaices, amLimInfinito, amLimE, amContinuidad, amAsintotas, amReglasDerivacion, amRectaTangente, amDerivabilidad, amLhopital, amEstudioFuncion, amExtremosAbsolutos, amTaylor, amPrimitivas, amPartesFracciones];
+export const amTfc: Lesson = {
+  id: "l-am-tfc",
+  title: "Teorema fundamental del cálculo",
+  subtitle: "Derivar una integral",
+  subjectId: "am-a",
+  topicIds: ["t-am-tfc"],
+  estimatedMinutes: 9,
+  prerequisites: ["t-am-primitivas", "t-am-reglas-derivacion"],
+  cards: [
+    intro("TFC", "Derivar funciones definidas como integrales con límites variables, y usarlo en límites con L'Hôpital.", "Vale un punto fijo en el segundo parcial y aparece combinado con L'Hôpital en el final."),
+    explain(
+      "La función área",
+      "Definí $F(x)$ como el área bajo una curva g desde 0 hasta x. Si corrés x un poquito, el área crece una tira finita de altura $g(x)$.\n\nPor eso **la velocidad a la que crece el área es la altura de la curva**: $F′(x) = g(x)$. Mirá cómo el área se arma con rectángulos:",
+      { tag: "intuitivo", widget: { type: "riemann", expr: "sqrt(x + 1)", a: 0, b: 3 } },
+    ),
+    explain(
+      "El teorema, con cadena",
+      "Si g es continua y $F(x) = ∫_a^{u(x)} g(t) dt$, entonces\n\n$F′(x) = g(u(x))·u′(x)$\n\nSi la x está en el límite **inferior**, cambia el signo: $(∫_{u(x)}^{b} g)′ = −g(u(x))·u′(x)$. No hace falta calcular la integral.",
+      { tag: "matematico" },
+    ),
+    quiz("Pregunta rápida", {
+      id: "q-am-tfc-1", subjectId: "am-a", topicId: "t-am-tfc",
+      prompt: "Si $F(x) = ∫_0^{x^2} cos(t) dt$, ¿cuánto vale $F′(x)$?",
+      options: ["$cos(x^2)·2x$", "$cos(x^2)$", "$sen(x^2)$"],
+      answer: 0,
+      explanation: "TFC con cadena: g(u(x))·u′(x) = cos(x²)·2x.",
+      hints: ["El límite superior es u(x) = x².", "Evaluá el integrando en u(x).", "Multiplicá por u′(x) = 2x."],
+      errors: { 1: ["derivacion", "Faltó multiplicar por la derivada del límite superior (2x)."], 2: ["conceptual", "Eso es (casi) la integral, no su derivada. El TFC dice que la derivada es el integrando."] },
+    }),
+    board("Pizarra: TFC con regla de la cadena", TFC_BOARD),
+    example("Ejemplo: límite con integral", "Calculá $lim_{x→0} \\frac{∫_0^x sen(3t) dt}{x^2}$", ["Arriba y abajo → 0: es 0/0", "L'Hôpital + TFC: $\\frac{sen(3x)}{2x}$", "$= \\frac{3}{2}·\\frac{sen(3x)}{3x} → \\frac{3}{2}$"], "3/2"),
+    practice("Ejercicio guiado", "am-tfc", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "• Calcular la integral cuando solo piden la derivada.\n• Olvidar el factor $u′(x)$.\n• Evaluar el integrando en x en lugar de en $u(x)$.\n• Olvidar el signo menos cuando la variable está abajo.",
+      { tag: "matematico" },
+    ),
+    practice("Tu turno", "am-tfc", 3, 7),
+    practice("Mini desafío", "am-tfc", 5, 10),
+    summary([
+      "(∫_a^x g)′ = g(x).",
+      "(∫_a^{u(x)} g)′ = g(u(x))·u′(x).",
+      "Variable abajo: signo menos.",
+      "En límites 0/0 con integrales: L'Hôpital + TFC.",
+    ]),
+  ],
+  tutor: {
+    normal: "Teorema fundamental del cálculo: si g es continua, F(x) = ∫_a^x g(t) dt es derivable y F′(x) = g(x). Combinado con la regla de la cadena, (∫_a^{u(x)} g(t) dt)′ = g(u(x))·u′(x).",
+    simple: "Derivar una integral «deshace» la integral: te queda la función de adentro evaluada en el límite de arriba. Si ese límite es una función de x, multiplicás por su derivada.",
+    nino: "Si llenás un balde con una canilla, la velocidad a la que sube el agua depende de cuánto abriste la canilla en ese momento, no de cuánta agua juntaste antes.",
+    ejemplo: "F(x) = ∫_1^{3x} t² dt: F′(x) = (3x)²·3 = 27x².",
+    visual: { type: "riemann", expr: "sqrt(x + 1)", a: 0, b: 3 },
+    visualText: "El área acumulada crece, en cada x, a razón de la altura de la curva.",
+    fromZero: "Una integral definida con un límite variable es una función: a cada x le asigna un área. El teorema fundamental dice cómo cambia esa área: la derivada es la altura de la curva en el borde que se mueve. Por eso derivar e integrar son operaciones inversas.",
+    why: "Conecta derivadas e integrales: justifica Barrow (calcular áreas con primitivas) y permite derivar funciones que no se pueden integrar en forma explícita, como ∫ e^{t²} dt.",
+    origin: "[F(x + h) − F(x)]/h es el área de una tira de ancho h dividida por h, o sea la altura promedio de g en [x, x + h], que tiende a g(x) por continuidad.",
+    board: TFC_BOARD,
+  },
+};
+
+// ───────────────────────── am-10 · Integrales, áreas y EDO ─────────────────────────
+
+const AREA_BOARD: BoardStep[] = [
+  { expr: "x² = 2x", note: "Igualamos para hallar los cortes" },
+  { expr: "x(x − 2) = 0  →  x = 0,  x = 2", note: "Factor común" },
+  { expr: "x = 1:  1² = 1 < 2·1 = 2", note: "Probamos un punto: la recta está arriba" },
+  { expr: "A = ∫_0^2 (2x − x²) dx", note: "Arriba menos abajo, entre los cortes" },
+  { expr: "A = [x² − x³/3]_0^2 = 4 − 8/3", note: "Barrow" },
+  { expr: "A = 4/3", note: "Restamos" },
+];
+
+export const amArea: Lesson = {
+  id: "l-am-area",
+  title: "Integral definida y áreas",
+  subtitle: "Barrow, áreas entre curvas y parámetros",
+  subjectId: "am-a",
+  topicIds: ["t-am-integral-area"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-am-primitivas"],
+  cards: [
+    intro("Áreas", "Calcular integrales definidas con Barrow, plantear el área entre dos curvas y hallar un parámetro a partir de un área.", "El segundo parcial siempre trae un planteo de área (opción múltiple) y un área con parámetro."),
+    explain(
+      "Sumar rectángulos",
+      "El área bajo una curva se aproxima con rectángulos. Con más y más finos, la suma se acerca al valor exacto: la **integral definida**.\n\nAumentá la cantidad de rectángulos:",
+      { tag: "intuitivo", widget: { type: "riemann", expr: "x^2", a: 0, b: 2 } },
+    ),
+    explain(
+      "Barrow",
+      "Si F es primitiva de f: $∫_a^b f(x) dx = F(b) − F(a)$.\n\nOjo: si f es negativa, la integral da negativo. El **área** entre dos curvas es $∫ (arriba − abajo)$, partiendo en los puntos de corte cuando cambian de posición.\n\nY si f es **impar**, $∫_{−L}^0 f = −∫_0^L f$.",
+      { tag: "matematico" },
+    ),
+    quiz("Pregunta rápida", {
+      id: "q-am-area-1", subjectId: "am-a", topicId: "t-am-integral-area",
+      prompt: "f es impar y $∫_0^3 f(x) dx = 5$. ¿Cuánto vale $∫_{−3}^{3} f(x) dx$?",
+      options: ["0", "10", "−5"],
+      answer: 0,
+      explanation: "Para f impar, ∫_{−3}^0 f = −5, y sumado a ∫_0^3 f = 5 da 0.",
+      hints: ["Impar: simétrica respecto del origen.", "∫_{−3}^0 f = −∫_0^3 f.", "−5 + 5."],
+      errors: { 1: ["conceptual", "Duplicar vale para funciones PARES. Las impares se cancelan."], 2: ["conceptual", "−5 es solo la mitad izquierda."] },
+    }),
+    board("Pizarra: área entre curvas", AREA_BOARD, "Área entre $y = x^2$ e $y = 2x$."),
+    example("Ejemplo: área con parámetro", "Hallá $a > 0$ tal que el área bajo $f(x) = \\frac{a}{√x}$ entre $x = 1$ y $x = 4$ sea 6.", ["$∫_1^4 a x^{−1/2} dx = 2a√x |_1^4$", "$= 2a(2 − 1) = 2a$", "$2a = 6$ ⇒ $a = 3$"], "a = 3"),
+    practice("Ejercicio guiado", "am-area-planteo", 1, 3, true),
+    explain(
+      "Errores típicos",
+      "• Integrar f − g sin ver quién está arriba (da negativo o se cancela).\n• No partir en los cortes cuando las curvas se cruzan.\n• Usar límites que no son los puntos de corte.\n• Con $x·(…)$, recordar que multiplicar una desigualdad por x negativo la invierte.\n• Olvidar restar F(a), sobre todo si F(a) ≠ 0 (como $e^0 = 1$).",
+      { tag: "matematico" },
+    ),
+    practice("Tu turno: Barrow", "am-integral-definida", 2, 6),
+    practice("Tu turno: parámetro", "am-area-param", 3, 4),
+    practice("Mini desafío: planteo", "am-area-planteo", 5, 9),
+    summary([
+      "∫_a^b f = F(b) − F(a).",
+      "Área entre curvas: cortes → quién está arriba en cada tramo → ∫ (arriba − abajo).",
+      "f impar: ∫_{−L}^0 f = −∫_0^L f; ∫_{−L}^L f = 0.",
+      "Con parámetro: calculá el área en función del parámetro e igualá.",
+    ]),
+  ],
+  tutor: {
+    normal: "La integral definida ∫_a^b f es el límite de sumas de Riemann y, por la regla de Barrow, vale F(b) − F(a) para cualquier primitiva F. El área entre dos curvas se obtiene integrando la diferencia (superior − inferior) en cada intervalo determinado por los puntos de corte.",
+    simple: "Para un área: buscá dónde se cortan las curvas, fijate cuál está arriba en cada tramo y integrá «la de arriba menos la de abajo». Para calcular la integral, usás una primitiva y restás sus valores en los extremos.",
+    nino: "Querés saber cuánta pintura necesitás para una pared con forma rara: la cortás en tiritas finitas, sumás el área de cada una y, cuanto más finas, más exacto.",
+    ejemplo: "∫_0^3 x² dx = [x³/3]_0^3 = 9.",
+    visual: { type: "riemann", expr: "x^2", a: 0, b: 2 },
+    visualText: "Con más rectángulos, la suma se acerca a 8/3, el valor exacto de la integral.",
+    fromZero: "El área bajo una curva se aproxima sumando rectángulos de base pequeña y altura igual a la función. La integral definida es el valor al que tienden esas sumas. Barrow dice que no hace falta sumar: alcanza con una primitiva evaluada en los extremos.",
+    why: "Las áreas modelan acumulaciones: distancia a partir de la velocidad, trabajo, volúmenes. Y Barrow convierte un límite de sumas en una resta.",
+    origin: "Del teorema fundamental: si A(x) = ∫_a^x f, entonces A′ = f, así que A = F + C. Como A(a) = 0, C = −F(a) y A(b) = F(b) − F(a).",
+    board: AREA_BOARD,
+  },
+};
+
+const EDO_BOARD: BoardStep[] = [
+  { expr: "f′ = (2x − 4)·f,  f(0) = 3", note: "Ecuación separable" },
+  { expr: "f′/f = 2x − 4", note: "Dividimos por f: separamos variables" },
+  { expr: "ln|f| = x² − 4x + K", note: "Integramos ambos lados" },
+  { expr: "f = C·e^(x² − 4x)", note: "Aplicamos exponencial: $C = ±e^K$" },
+  { expr: "f(0) = C = 3", note: "Condición inicial" },
+  { expr: "f = 3e^(x² − 4x)", note: "Solución" },
+];
+
+export const amEdo: Lesson = {
+  id: "l-am-edo",
+  title: "Ecuaciones diferenciales separables",
+  subtitle: "Encontrar f a partir de f′",
+  subjectId: "am-a",
+  topicIds: ["t-am-edo"],
+  estimatedMinutes: 8,
+  prerequisites: ["t-am-primitivas"],
+  cards: [
+    intro("EDO separables", "Resolver ecuaciones como f′ = (αx + β)·f con una condición inicial.", "Aparecen en el final y modelan crecimiento poblacional, enfriamiento, desintegración radiactiva y circuitos."),
+    explain(
+      "Crecer en proporción",
+      "Una población que crece 3 % por año crece más cuanto más grande es: $f′ = 0,03·f$. Ecuaciones así relacionan una función con su propia derivada.\n\nSu solución es una exponencial. Mové los parámetros y mirá cómo cambia:",
+      { tag: "cotidiano", widget: { type: "param-function", family: "exponencial" } },
+    ),
+    explain(
+      "El método",
+      "Si $f′ = g(x)·f$:\n\n1. Separá: $\\frac{f′}{f} = g(x)$.\n2. Integrá: $ln|f| = G(x) + K$, con G primitiva de g.\n3. Despejá: $f(x) = C·e^{G(x)}$.\n4. Usá la condición inicial para hallar C.",
+      { tag: "matematico" },
+    ),
+    quiz("Pregunta rápida", {
+      id: "q-am-edo-1", subjectId: "am-a", topicId: "t-am-edo",
+      prompt: "¿Cuál es la solución de $f′ = 5f$ con $f(0) = 2$?",
+      options: ["$f(x) = 2e^{5x}$", "$f(x) = e^{5x} + 2$", "$f(x) = 5e^{2x}$"],
+      answer: 0,
+      explanation: "f′/f = 5 ⇒ ln|f| = 5x + K ⇒ f = Ce^{5x}; f(0) = C = 2.",
+      hints: ["Separá: f′/f = 5.", "Integrá: ln|f| = 5x + K.", "f = Ce^{5x} y usá f(0)."],
+      errors: { 1: ["conceptual", "La constante multiplica: (e^{5x} + 2)′ = 5e^{5x}, que no es 5·f."], 2: ["conceptual", "Intercambiaste los números: el 5 va en el exponente y el 2 = f(0) multiplica."] },
+    }),
+    board("Pizarra: EDO separable", EDO_BOARD),
+    example("Ejemplo resuelto", "$f′ = 3f$, $f(0) = 2$. Calculá $f(1)$.", ["$f(x) = Ce^{3x}$", "$f(0) = C = 2$", "$f(1) = 2e^3 ≈ 40,17$"], "2e³ ≈ 40,17"),
+    practice("Ejercicio guiado", "am-edo-separable", 1, 4, true),
+    explain(
+      "Errores típicos",
+      "• Escribir la constante sumando: es $Ce^{G(x)}$, no $e^{G(x)} + C$.\n• Copiar $αx + β$ en el exponente sin integrarlo.\n• Integrar mal: $∫ 2x dx = x^2$ (se divide por 2).\n• Verificá siempre: derivá tu f y comprobá que da $g(x)·f$.",
+      { tag: "matematico" },
+    ),
+    practice("Tu turno", "am-edo-separable", 4, 6),
+    practice("Mini desafío", "am-edo-separable", 6, 2),
+    summary([
+      "f′ = g(x)·f ⇒ f = C·e^{G(x)}, con G′ = g.",
+      "C sale de la condición inicial (C = f(0) si G(0) = 0).",
+      "La constante multiplica a la exponencial.",
+      "Verificá derivando.",
+    ]),
+  ],
+  tutor: {
+    normal: "Una ecuación diferencial separable de la forma f′ = g(x)·f se resuelve dividiendo por f e integrando: ln|f| = G(x) + K, de donde f(x) = C·e^{G(x)}. La condición inicial determina C.",
+    simple: "Pasás la f dividiendo, integrás los dos lados (a la izquierda queda ln f) y despejás con la exponencial. El número del dato inicial te dice cuánto vale la constante.",
+    nino: "Una bola de nieve que rueda junta más nieve cuanto más grande es. Si sabés cuánto crece según su tamaño y cuánto medía al principio, podés saber cuánto mide en cualquier momento.",
+    ejemplo: "f′ = 2x·f, f(0) = 4: ln|f| = x² + K ⇒ f = 4e^{x²}.",
+    visual: { type: "param-function", family: "exponencial" },
+    visualText: "Las soluciones de f′ = k·f son exponenciales: k decide qué tan rápido crecen o decrecen.",
+    fromZero: "Una ecuación diferencial pide encontrar una función a partir de una relación con su derivada. En las separables, f′/f depende solo de x. Como (ln|f|)′ = f′/f, alcanza con integrar esa expresión de x y despejar f.",
+    why: "Muchísimos fenómenos dicen «la velocidad de cambio es proporcional a la cantidad»: este método los resuelve.",
+    origin: "Por la regla de la cadena, (ln|f(x)|)′ = f′(x)/f(x). Si eso es g(x), entonces ln|f| es una primitiva de g, y aplicando exponencial se obtiene f.",
+    board: EDO_BOARD,
+  },
+};
+
+// ───────────────────────── am-11 · Series ─────────────────────────
+
+const SERIES_BOARD: BoardStep[] = [
+  { expr: "Σ (x − 1)^n/(n·3^n)", note: "Serie de potencias centrada en 1" },
+  { expr: "ⁿ√(|x − 1|^n/(n·3^n)) → |x − 1|/3", note: "Criterio de la raíz: $ⁿ√n → 1$" },
+  { expr: "|x − 1|/3 < 1  →  −2 < x < 4", note: "Converge en el abierto" },
+  { expr: "x = 4:  Σ 1/n", note: "Armónica: diverge" },
+  { expr: "x = −2:  Σ (−1)^n/n", note: "Alternada: converge por Leibniz" },
+  { expr: "[−2; 4)", note: "Intervalo de convergencia" },
+];
+
+export const amSeries: Lesson = {
+  id: "l-am-series",
+  title: "Series",
+  subtitle: "Geométricas y de potencias",
+  subjectId: "am-a",
+  topicIds: ["t-am-series"],
+  estimatedMinutes: 12,
+  prerequisites: ["t-am-lim-infinito"],
+  cards: [
+    intro("Series", "Sumar series geométricas y hallar dónde converge una serie de potencias con el criterio de la raíz y el análisis de los extremos.", "El segundo parcial trae una serie de potencias en opción múltiple, y el final suele traer una geométrica con parámetro."),
+    explain(
+      "Sumar infinitas cosas",
+      "Caminá la mitad de la distancia a una pared, después la mitad de lo que queda, y así: $\\frac{1}{2} + \\frac{1}{4} + \\frac{1}{8} + …$ Infinitos pasos, pero nunca pasás la pared: la suma es **1**.\n\nUna serie converge si sus sumas parciales se acercan a un número.",
+      { tag: "cotidiano" },
+    ),
+    explain(
+      "Geométrica",
+      "$Σ_{n=0}^{∞} r^n = \\frac{1}{1 − r}$ si $|r| < 1$; si $|r| ≥ 1$, diverge.\n\nEn general: **suma = primer término / (1 − r)**. Por ejemplo $Σ_{n=0}^{∞} 3(\\frac{2}{5})^n = \\frac{3}{1 − 2/5} = 5$. Mirá cómo $\\frac{1}{1 − x}$ explota en $x = 1$:",
+      { tag: "matematico", widget: { type: "plot", mode: "free", initial: "1/(1 - x)" } },
+    ),
+    quiz("Pregunta rápida", {
+      id: "q-am-ser-1", subjectId: "am-a", topicId: "t-am-series",
+      prompt: "¿Cuánto vale $Σ_{n=1}^{∞} (\\frac{1}{3})^n$?",
+      options: ["1/2", "3/2", "Diverge"],
+      answer: 0,
+      explanation: "Empieza en n = 1: primer término 1/3. Suma = (1/3)/(1 − 1/3) = 1/2.",
+      hints: ["¿Cuál es el primer término?", "Con n = 1: 1/3.", "Suma = primer término/(1 − r)."],
+      errors: { 1: ["formula", "3/2 sería empezando en n = 0. Acá el primer término es 1/3."], 2: ["limites", "|r| = 1/3 < 1: converge."] },
+    }),
+    explain(
+      "Series de potencias",
+      "Para $Σ a_n (x − c)^n$ usá el **criterio de la raíz**: si $ⁿ√|término| → L$, converge cuando $L < 1$ y diverge si $L > 1$.\n\nEso da un intervalo abierto. En los **extremos** el criterio no decide: reemplazá x y estudiá la serie numérica (armónica $Σ 1/n$ diverge; $Σ 1/n^2$ converge; alternada $Σ (−1)^n/n$ converge por Leibniz; si el término no tiende a 0, diverge).",
+      { tag: "matematico" },
+    ),
+    board("Pizarra: intervalo de convergencia", SERIES_BOARD),
+    example("Ejemplo: geométrica con parámetro", "Hallá $a > 0$ con $Σ_{n=0}^{∞} \\frac{2^{n+1}}{a^{2n}} = \\frac{8}{3}$", ["$= 2·Σ(\\frac{2}{a^2})^n = \\frac{2}{1 − 2/a^2} = \\frac{2a^2}{a^2 − 2}$", "$\\frac{2a^2}{a^2 − 2} = \\frac{8}{3}$ ⇒ $6a^2 = 8a^2 − 16$ ⇒ $a^2 = 8$", "$a = √8 = 2√2$ (y $|r| = 2/8 < 1$ ✓)"], "a = 2√2"),
+    practice("Ejercicio guiado", "am-serie-geometrica", 1, 4, true),
+    explain(
+      "Errores típicos",
+      "• Usar $\\frac{1}{1 − r}$ cuando la serie empieza en n = 1.\n• Incluir extremos donde $|r| = 1$ en una geométrica (ahí diverge).\n• No analizar los extremos de una serie de potencias.\n• Invertir el radio: $\\frac{2|x|}{5} < 1$ ⇒ $|x| < \\frac{5}{2}$.\n• Si x está en el denominador, la región queda afuera de un intervalo.",
+      { tag: "matematico" },
+    ),
+    practice("Tu turno", "am-serie-potencias", 2, 6),
+    practice("Tu turno", "am-serie-geometrica", 4, 9),
+    practice("Mini desafío", "am-serie-potencias", 6, 3),
+    summary([
+      "Geométrica: primer término/(1 − r), solo si |r| < 1.",
+      "Potencias: criterio de la raíz → intervalo abierto.",
+      "Extremos: reemplazar y comparar con series conocidas (armónica, 1/n², Leibniz).",
+      "Si el término general no tiende a 0, la serie diverge.",
+    ]),
+  ],
+  tutor: {
+    normal: "Una serie Σaₙ converge si la sucesión de sumas parciales tiene límite. La geométrica Σrⁿ converge a 1/(1 − r) si |r| < 1. Para series de potencias, el criterio de la raíz determina un intervalo abierto de convergencia; los extremos se analizan por separado.",
+    simple: "Sumar infinitos términos puede dar un número si los términos se achican lo suficientemente rápido. La geométrica tiene fórmula. Para las de potencias, el criterio de la raíz te da los x que sirven, y los dos bordes los revisás a mano.",
+    nino: "Si cada día comés la mitad de lo que queda de una torta, nunca te comés más de una torta entera, aunque sigas para siempre.",
+    ejemplo: "Σ_{n=0}^{∞} (1/2)ⁿ = 1/(1 − 1/2) = 2.",
+    visual: { type: "plot", mode: "free", initial: "1/(1 - x)" },
+    visualText: "1/(1 − x) es la suma de Σxⁿ para |x| < 1; en x = 1 explota.",
+    fromZero: "Una serie es una suma de infinitos términos. Para darle sentido se suman los primeros n y se mira si eso se acerca a un número cuando n crece. En la geométrica, la suma de los primeros n es (1 − rⁿ)/(1 − r), y si |r| < 1, rⁿ → 0.",
+    why: "Las series permiten escribir funciones como «polinomios infinitos» (Taylor) y calcular valores con la precisión que haga falta.",
+    origin: "S = 1 + r + … + rⁿ⁻¹ y rS = r + … + rⁿ; restando, S(1 − r) = 1 − rⁿ. El criterio de la raíz compara con una geométrica de razón L.",
+    board: SERIES_BOARD,
+  },
+};
+
+
+/** Normaliza el markup matemático de todos los textos de una lección (ver mathFix). */
+function fixLesson(l: Lesson): Lesson {
+  const fix = (v: unknown): unknown => (typeof v === "string" ? mathFix(v) : Array.isArray(v) ? v.map(fix) : v && typeof v === "object" ? Object.fromEntries(Object.entries(v).map(([k, x]) => [k, fix(x)])) : v);
+  return fix(l) as Lesson;
+}
+
+export const amLessons: Lesson[] = [amLimRaices, amLimInfinito, amLimE, amContinuidad, amAsintotas, amReglasDerivacion, amRectaTangente, amDerivabilidad, amLhopital, amEstudioFuncion, amExtremosAbsolutos, amTaylor, amPrimitivas, amPartesFracciones, amTfc, amArea, amEdo, amSeries].map(fixLesson);

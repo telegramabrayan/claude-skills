@@ -14,6 +14,59 @@ import { base, byDifficulty, choice, coef, par, sgn, termX, type BaseArgs } from
 
 // ───────────────────────── utilidades ─────────────────────────
 
+/**
+ * MathText lee los grupos de \frac hasta la primera «}»: un exponente con
+ * llaves dentro de una fracción (\frac{e^{2x}}{3}) se cortaría. Reescribe esos
+ * grupos internos con paréntesis (^{2x} → ^(2x)), que MathText sí anida.
+ */
+export function mathFix(s: string): string {
+  if (!s.includes("\\frac{")) return s;
+  const group = (str: string, i: number): number => {
+    let depth = 0;
+    for (let j = i; j < str.length; j++) {
+      if (str[j] === "{") depth++;
+      else if (str[j] === "}" && --depth === 0) return j;
+    }
+    return -1;
+  };
+  const inner = (g: string): string => {
+    let out = "";
+    for (let i = 0; i < g.length; i++) {
+      if ((g[i] === "^" || g[i] === "_") && g[i + 1] === "{") {
+        const end = group(g, i + 1);
+        if (end > 0) {
+          out += `${g[i]}(${inner(g.slice(i + 2, end))})`;
+          i = end;
+          continue;
+        }
+      }
+      out += g[i];
+    }
+    return out;
+  };
+  let out = "";
+  for (let i = 0; i < s.length; ) {
+    if (s.startsWith("\\frac{", i)) {
+      const e1 = group(s, i + 5);
+      const e2 = e1 > 0 && s[e1 + 1] === "{" ? group(s, e1 + 1) : -1;
+      if (e1 > 0 && e2 > 0) {
+        out += `\\frac{${inner(s.slice(i + 6, e1))}}{${inner(s.slice(e1 + 2, e2))}}`;
+        i = e2 + 1;
+        continue;
+      }
+    }
+    out += s[i++];
+  }
+  return out;
+}
+
+/** Aplica mathFix a todos los textos visibles de un ejercicio. */
+function fixExercise<T extends Exercise>(ex: T): T {
+  const out = { ...ex, prompt: mathFix(ex.prompt), hints: ex.hints.map(mathFix) as [string, string, string], solution: ex.solution.map(mathFix), explanation: mathFix(ex.explanation), frequentErrors: ex.frequentErrors.map((f) => ({ ...f, message: mathFix(f.message) })) };
+  if (out.kind === "choice") out.options = out.options.map(mathFix);
+  return out;
+}
+
 type Args = Omit<BaseArgs, "gen" | "seed" | "difficulty" | "subjectId" | "topicId">;
 type Mk = (a: Args) => ExerciseBase;
 
@@ -26,7 +79,7 @@ function gen(id: string, topicId: string, description: string, fn: (r: Rng, d: D
     generate(seed, d) {
       const r = rng(seed);
       const mk: Mk = (a) => base({ ...a, gen: id, seed, difficulty: d, subjectId: "am-a", topicId });
-      return fn(r, d, mk);
+      return fixExercise(fn(r, d, mk));
     },
   };
 }
@@ -2130,5 +2183,5 @@ export const seriePotencias = gen("am-serie-potencias", "t-am-series", "Series d
   );
 });
 
-// @@GENERATORS@@
+
 export const AM_GENERATORS: Generator[] = [limRaices, limConjugado, limInfinito, limE, continuidadParam, asintotaOblicua, asintotas, derivadaReglas, tangente, tangenteDatos, derivabilidad, lhopital, estudioFuncion, extremosAbsolutos, taylor, primitivas, primitivasPartes, tfc, integralDefinida, areaParam, areaPlanteo, edoSeparable, serieGeometrica, seriePotencias];
