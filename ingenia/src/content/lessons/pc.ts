@@ -439,12 +439,14 @@ export const pcMetodosStr: Lesson = {
 
 // ═══════════════════════════ listas ═══════════════════════════
 
+const LISTAS_CODE = "a = [1, 2, 3]\na.append(4)\na.insert(0, 9)\nx = a.pop()\na.reverse()";
+const TRAZA_CODE = "s = 0\nfor i in range(1, 5):\n    s = s + i\nprint(s)";
 const listasBoard: BoardStep[] = [
-  { expr: "a = [1, 2, 3]" },
-  { expr: "a.append(4) → [1, 2, 3, 4]", note: "Agrega al final" },
-  { expr: "a.insert(0, 9) → [9, 1, 2, 3, 4]", note: "Agrega en la posición 0" },
-  { expr: "x = a.pop() → x = 4, a = [9, 1, 2, 3]", note: "Saca el último y lo devuelve" },
-  { expr: "a.reverse() → [3, 2, 1, 9]", note: "Invierte la MISMA lista; devuelve None" },
+  { expr: "a = [1, 2, 3]", figure: { kind: "code", code: LISTAS_CODE, line: 1, vars: { a: "[1, 2, 3]" } } },
+  { expr: "a.append(4) → [1, 2, 3, 4]", note: "Agrega al final", figure: { kind: "code", code: LISTAS_CODE, line: 2, vars: { a: "[1, 2, 3, 4]" } } },
+  { expr: "a.insert(0, 9) → [9, 1, 2, 3, 4]", note: "Agrega en la posición 0", figure: { kind: "code", code: LISTAS_CODE, line: 3, vars: { a: "[9, 1, 2, 3, 4]" } } },
+  { expr: "x = a.pop() → x = 4, a = [9, 1, 2, 3]", note: "Saca el último y lo devuelve", figure: { kind: "code", code: LISTAS_CODE, line: 4, vars: { a: "[9, 1, 2, 3]", x: "4" } } },
+  { expr: "a.reverse() → [3, 2, 1, 9]", note: "Invierte la MISMA lista; devuelve None", figure: { kind: "code", code: LISTAS_CODE, line: 5, vars: { a: "[3, 2, 1, 9]", x: "4" } } },
 ];
 
 export const pcListas: Lesson = {
@@ -818,11 +820,11 @@ export const pcDibujos: Lesson = {
 // ═══════════════════════════ traza a mano ═══════════════════════════
 
 const trazaBoard: BoardStep[] = [
-  { expr: "s = 0", note: "Antes del ciclo" },
-  { expr: "i = 1, s = 1", note: "range(1, 5): primera vuelta" },
-  { expr: "i = 2, s = 3" },
-  { expr: "i = 3, s = 6" },
-  { expr: "i = 4, s = 10", note: "Última vuelta: i queda en 4 después del for" },
+  { expr: "s = 0", note: "Antes del ciclo", figure: { kind: "code", code: TRAZA_CODE, line: 1, vars: { s: "0" } } },
+  { expr: "i = 1, s = 1", note: "range(1, 5): primera vuelta", figure: { kind: "code", code: TRAZA_CODE, line: 3, vars: { s: "1", i: "1" } } },
+  { expr: "i = 2, s = 3", figure: { kind: "code", code: TRAZA_CODE, line: 3, vars: { s: "3", i: "2" } } },
+  { expr: "i = 3, s = 6", figure: { kind: "code", code: TRAZA_CODE, line: 3, vars: { s: "6", i: "3" } } },
+  { expr: "i = 4, s = 10", note: "Última vuelta: i queda en 4 después del for", figure: { kind: "code", code: TRAZA_CODE, line: 4, vars: { s: "10", i: "4" } } },
 ];
 
 export const pcTraza: Lesson = {

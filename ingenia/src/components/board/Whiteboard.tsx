@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import type { BoardStep } from "@/engine/types";
 import { MathText } from "../math/MathText";
 import { Icon } from "../ui/Icon";
+import { BoardFigure } from "./BoardFigure";
 
 /** ¿Es un renglón puramente matemático (sin palabras)? Entonces se muestra con tipografía matemática. */
 function isMath(s: string) {
@@ -36,6 +37,7 @@ function Line({ step, prev, fresh, index }: { step: BoardStep; prev?: string; fr
     <li className={`board-line grid grid-cols-[1.75rem_1fr] items-baseline gap-x-2 ${fresh ? "board-write" : ""}`}>
       <span className="text-xs font-bold text-[color:var(--board-muted)]">{index + 1}</span>
       <div className="min-w-0">
+        {step.expr && (
         <span className="board-expr text-xl sm:text-2xl">
           {same1 && <MathText text={wrap(same1)} block={false} />}
           {changed && (
@@ -45,6 +47,7 @@ function Line({ step, prev, fresh, index }: { step: BoardStep; prev?: string; fr
           )}
           {same2 && <MathText text={wrap(same2)} block={false} />}
         </span>
+        )}
         {step.note && (
           <span className={`board-note mt-1 block text-sm ${fresh ? "board-note-in" : ""}`}>
             ↳ <MathText text={step.note} block={false} />
@@ -73,6 +76,10 @@ export function Whiteboard({
   const [shown, setShown] = useState(1);
   const [playing, setPlaying] = useState(autoPlay);
   const done = shown >= steps.length;
+  // El dibujo evoluciona con los pasos: se muestra el último y se compara con el anterior.
+  const figIdx = steps.slice(0, shown).flatMap((st, i) => (st.figure ? [i] : []));
+  const figure = figIdx.length ? steps[figIdx[figIdx.length - 1]].figure : undefined;
+  const prevFigure = figIdx.length > 1 ? steps[figIdx[figIdx.length - 2]].figure : undefined;
 
   useEffect(() => {
     setShown(1);
@@ -100,6 +107,7 @@ export function Whiteboard({
           <Line key={i} step={st} prev={i > 0 ? steps[i - 1].expr : undefined} fresh={i === shown - 1 && i > 0} index={i} />
         ))}
       </ol>
+      {figure && <BoardFigure key={figIdx[figIdx.length - 1]} figure={figure} prev={prevFigure} />}
       {steps.length > 1 && (
         <div className="mt-4 flex flex-wrap items-center gap-2">
           {!done ? (

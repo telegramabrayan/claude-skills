@@ -752,11 +752,11 @@ export const posicionesDistanciasLesson: Lesson = {
 // ═════════════════════════ alg-3 · Matrices y sistemas lineales ═════════════════════════
 
 const matricesBoard: BoardStep[] = [
-  { expr: "A = [1  2 ; 3  4],  B = [0  1 ; 2  −1]", note: "Filas separadas por «;»" },
-  { expr: "c₁₁ = 1·0 + 2·2 = 4", note: "Fila 1 de A por columna 1 de B" },
-  { expr: "c₁₂ = 1·1 + 2·(−1) = −1", note: "Fila 1 por columna 2" },
-  { expr: "c₂₁ = 3·0 + 4·2 = 8", note: "Fila 2 por columna 1" },
-  { expr: "c₂₂ = 3·1 + 4·(−1) = −1", note: "Fila 2 por columna 2" },
+  { expr: "A = [1  2 ; 3  4],  B = [0  1 ; 2  −1]", note: "Filas separadas por «;»", figure: { kind: "matrix", label: "A·B", rows: [["?", "?"], ["?", "?"]] } },
+  { expr: "c₁₁ = 1·0 + 2·2 = 4", note: "Fila 1 de A por columna 1 de B", figure: { kind: "matrix", label: "A·B", rows: [[4, "?"], ["?", "?"]], mark: [[0, 0]] } },
+  { expr: "c₁₂ = 1·1 + 2·(−1) = −1", note: "Fila 1 por columna 2", figure: { kind: "matrix", label: "A·B", rows: [[4, -1], ["?", "?"]], mark: [[0, 1]] } },
+  { expr: "c₂₁ = 3·0 + 4·2 = 8", note: "Fila 2 por columna 1", figure: { kind: "matrix", label: "A·B", rows: [[4, -1], [8, "?"]], mark: [[1, 0]] } },
+  { expr: "c₂₂ = 3·1 + 4·(−1) = −1", note: "Fila 2 por columna 2", figure: { kind: "matrix", label: "A·B", rows: [[4, -1], [8, -1]], mark: [[1, 1]] } },
   { expr: "A·B = [4  −1 ; 8  −1]", note: "Resultado (y B·A = [3 4 ; −1 0]: ¡distinto!)" },
 ];
 

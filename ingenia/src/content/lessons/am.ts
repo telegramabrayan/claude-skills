@@ -711,11 +711,11 @@ export const amLhopital: Lesson = {
 // ───────────────────────── am-7 · Estudio de funciones ─────────────────────────
 
 const ESTUDIO_BOARD: BoardStep[] = [
-  { expr: "f(x) = ln(x − 1) + 3/(x − 1)", note: "Dominio: $x − 1 > 0$, o sea $(1; +∞)$" },
+  { expr: "f(x) = ln(x − 1) + 3/(x − 1)", note: "Dominio: $x − 1 > 0$, o sea $(1; +∞)$", figure: { kind: "plot", x: [0, 10], y: [-1, 7], fns: [{ expr: "ln(x-1)+3/(x-1)", label: "f" }] } },
   { expr: "f′(x) = 1/(x − 1) − 3/(x − 1)²", note: "Derivamos cada término" },
   { expr: "f′(x) = (x − 4)/(x − 1)²", note: "Común denominador" },
   { expr: "f′ < 0 en (1; 4),  f′ > 0 en (4; +∞)", note: "El denominador es positivo: manda x − 4" },
-  { expr: "f(4) = ln 3 + 1", note: "Mínimo local en x = 4: evaluamos f" },
+  { expr: "f(4) = ln 3 + 1", note: "Mínimo local en x = 4: evaluamos f", figure: { kind: "plot", x: [0, 10], y: [-1, 7], fns: [{ expr: "ln(x-1)+3/(x-1)", label: "f" }], points: [{ x: 4, y: 2.0986, label: "mínimo (4; 1 + ln 3)" }], tangent: { expr: "ln(x-1)+3/(x-1)", x: 4 } } },
   { expr: "x → 1⁺: f → +∞;  x → +∞: f → +∞", note: "Límites en los bordes del dominio" },
   { expr: "Im f = [1 + ln 3; +∞)", note: "El mínimo se alcanza: corchete" },
 ];
@@ -1152,10 +1152,10 @@ export const amTfc: Lesson = {
 // ───────────────────────── am-10 · Integrales, áreas y EDO ─────────────────────────
 
 const AREA_BOARD: BoardStep[] = [
-  { expr: "x² = 2x", note: "Igualamos para hallar los cortes" },
-  { expr: "x(x − 2) = 0  →  x = 0,  x = 2", note: "Factor común" },
+  { expr: "x² = 2x", note: "Igualamos para hallar los cortes", figure: { kind: "plot", x: [-1, 3], y: [-1, 6], fns: [{ expr: "x^2", label: "y = x²" }, { expr: "2x", label: "y = 2x" }] } },
+  { expr: "x(x − 2) = 0  →  x = 0,  x = 2", note: "Factor común", figure: { kind: "plot", x: [-1, 3], y: [-1, 6], fns: [{ expr: "x^2", label: "y = x²" }, { expr: "2x", label: "y = 2x" }], points: [{ x: 0, y: 0, label: "(0; 0)" }, { x: 2, y: 4, label: "(2; 4)" }] } },
   { expr: "x = 1:  1² = 1 < 2·1 = 2", note: "Probamos un punto: la recta está arriba" },
-  { expr: "A = ∫_0^2 (2x − x²) dx", note: "Arriba menos abajo, entre los cortes" },
+  { expr: "A = ∫_0^2 (2x − x²) dx", note: "Arriba menos abajo, entre los cortes", figure: { kind: "plot", x: [-1, 3], y: [-1, 6], fns: [{ expr: "x^2", label: "y = x²" }, { expr: "2x", label: "y = 2x" }], points: [{ x: 0, y: 0, label: "(0; 0)" }, { x: 2, y: 4, label: "(2; 4)" }], area: { expr: "2x", lower: "x^2", a: 0, b: 2 } } },
   { expr: "A = [x² − x³/3]_0^2 = 4 − 8/3", note: "Barrow" },
   { expr: "A = 4/3", note: "Restamos" },
 ];

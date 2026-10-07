@@ -286,7 +286,28 @@ export interface EvaluationResult {
 export interface BoardStep {
   expr: string;
   note?: string;
+  /** Dibujo que acompaña al renglón: lo nuevo respecto del dibujo anterior se resalta. */
+  figure?: BoardFigure;
 }
+
+/** Dibujos de pizarra: gráficos, vectores, matrices, código, fuerzas y figuras. */
+export type BoardFigure =
+  | {
+      kind: "plot";
+      fns?: { expr: string; label?: string }[];
+      points?: { x: number; y: number; label?: string }[];
+      /** Área sombreada bajo `expr` entre a y b (integrales, Riemann). */
+      area?: { expr: string; a: number; b: number; rects?: number; lower?: string };
+      /** Recta tangente a `expr` en x. */
+      tangent?: { expr: string; x: number };
+      x?: [number, number];
+      y?: [number, number];
+    }
+  | { kind: "vectors"; vecs: { x: number; y: number; label?: string; from?: [number, number] }[]; size?: number }
+  | { kind: "matrix"; rows: (string | number)[][]; label?: string; mark?: [number, number][]; markRow?: number }
+  | { kind: "code"; code: string; line?: number; vars?: Record<string, string> }
+  | { kind: "forces"; incline?: number; forces: { label: string; angle: number; size?: number }[] }
+  | { kind: "shape"; shape: "triangle" | "rect" | "circle"; labels?: string[] };
 
 // ───────────────────────── Lecciones ─────────────────────────
 

@@ -9,10 +9,10 @@ const S = "fisica";
 // ═══════════════════════════ Unidad 1: Vectores II ═══════════════════════════
 
 const vecComponentesBoard: BoardStep[] = [
-  { expr: "|F| = 40 N,  α = 35° desde +y hacia −x", note: "datos: el ángulo NO está medido desde +x" },
+  { expr: "|F| = 40 N,  α = 35° desde +y hacia −x", note: "datos: el ángulo NO está medido desde +x", figure: { kind: "vectors", size: 5, vecs: [{ x: -2.29, y: 3.28, label: "F" }] } },
   { expr: "θ = 90° + 35° = 125°", note: "llevamos el ángulo a «desde +x, antihorario»" },
-  { expr: "F_x = 40 · cos 125° = −22,9 N", note: "x con coseno (porque θ es desde +x)" },
-  { expr: "F_y = 40 · sen 125° = 32,8 N", note: "y con seno" },
+  { expr: "F_x = 40 · cos 125° = −22,9 N", note: "x con coseno (porque θ es desde +x)", figure: { kind: "vectors", size: 5, vecs: [{ x: -2.29, y: 3.28, label: "F" }, { x: -2.29, y: 0, label: "Fx" }] } },
+  { expr: "F_y = 40 · sen 125° = 32,8 N", note: "y con seno", figure: { kind: "vectors", size: 5, vecs: [{ x: -2.29, y: 3.28, label: "F" }, { x: -2.29, y: 0, label: "Fx" }, { x: 0, y: 3.28, from: [-2.29, 0], label: "Fy" }] } },
   { expr: "F = (−22,9; 32,8) N", note: "control: 2.º cuadrante → x negativa, y positiva ✓" },
 ];
 
@@ -93,9 +93,9 @@ export const vecComponentesLesson: Lesson = {
 };
 
 const vecOperacionesBoard: BoardStep[] = [
-  { expr: "A = (4; −1) N,  B = (−2; 5) N", note: "datos" },
+  { expr: "A = (4; −1) N,  B = (−2; 5) N", note: "datos", figure: { kind: "vectors", vecs: [{ x: 4, y: -1, label: "A" }, { x: -2, y: 5, label: "B" }] } },
   { expr: "B − A = (−2 − 4; 5 − (−1))", note: "restamos componente a componente" },
-  { expr: "B − A = (−6; 6) N" },
+  { expr: "B − A = (−6; 6) N", figure: { kind: "vectors", vecs: [{ x: 4, y: -1, label: "A" }, { x: -2, y: 5, label: "B" }, { x: -6, y: 6, from: [4, -1], label: "B − A" }] } },
   { expr: "|B − A| = √(36 + 36) = 8,49 N", note: "Pitágoras" },
   { expr: "(A × B)_z = 4 · 5 − (−1)(−2)", note: "cruzado y restado: A_x·B_y − A_y·B_x" },
   { expr: "(A × B)_z = 20 − 2 = 18 N²" },
@@ -830,10 +830,10 @@ export const newtonLesson: Lesson = {
 };
 
 const planoBoard: BoardStep[] = [
-  { expr: "P = 4 · 9,80 = 39,2 N" },
-  { expr: "N = P · cos 30° = 33,9 N", note: "perpendicular al plano no hay aceleración" },
-  { expr: "F_roz = 0,25 · 33,9 = 8,49 N", note: "rozamiento dinámico μd·N" },
-  { expr: "m · a = P · sen 30° − F_roz", note: "paralelo al plano, positivo hacia abajo" },
+  { expr: "P = 4 · 9,80 = 39,2 N", figure: { kind: "forces", incline: 30, forces: [{ label: "P", angle: -90 }] } },
+  { expr: "N = P · cos 30° = 33,9 N", note: "perpendicular al plano no hay aceleración", figure: { kind: "forces", incline: 30, forces: [{ label: "P", angle: -90 }, { label: "N", angle: 120, size: 0.87 }] } },
+  { expr: "F_roz = 0,25 · 33,9 = 8,49 N", note: "rozamiento dinámico μd·N", figure: { kind: "forces", incline: 30, forces: [{ label: "P", angle: -90 }, { label: "N", angle: 120, size: 0.87 }, { label: "Froz", angle: 30, size: 0.35 }] } },
+  { expr: "m · a = P · sen 30° − F_roz", note: "paralelo al plano, positivo hacia abajo", figure: { kind: "forces", incline: 30, forces: [{ label: "N", angle: 120, size: 0.87 }, { label: "Froz", angle: 30, size: 0.35 }, { label: "P·sen θ", angle: 210, size: 0.5 }, { label: "P·cos θ", angle: -60, size: 0.87 }] } },
   { expr: "4 · a = 19,6 − 8,49", note: "reemplazamos" },
   { expr: "a = 2,78 m/s²", note: "= g(sen θ − μd cos θ)" },
 ];

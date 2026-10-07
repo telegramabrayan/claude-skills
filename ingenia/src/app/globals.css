@@ -287,3 +287,25 @@ body {
 .board .math { white-space: normal; overflow-wrap: anywhere; }
 .board-write .board-expr { display: inline; }
 @media (max-width: 640px) { .math { white-space: normal; overflow-wrap: anywhere; } }
+
+/* Dibujos de la pizarra */
+.board-figure { animation: pop-in 0.3s both; }
+.fig-svg { width: 100%; max-width: 30rem; height: auto; display: block; }
+.fig-square { max-width: 17rem; }
+.fig-new { color: var(--primary); }
+.fig-old { color: var(--board-ink); opacity: 0.45; }
+.fig-new .fig-draw, .fig-new.fig-draw { stroke-dasharray: 1; stroke-dashoffset: 1; animation: fig-draw 0.9s ease-out forwards; }
+.fig-new.fig-fade, .fig-new .fig-fade { animation: pop-in 0.5s 0.3s both; }
+@keyframes fig-draw { to { stroke-dashoffset: 0; } }
+.fig-matrix { position: relative; padding: 0 0.6rem; border-left: 2px solid var(--board-ink); border-right: 2px solid var(--board-ink); border-radius: 6px; }
+.fig-matrix td { padding: 0.2rem 0.6rem; text-align: center; font-size: 1.1rem; border-radius: 4px; }
+.fig-cell-mark { background: color-mix(in srgb, var(--primary) 18%, transparent); font-weight: 700; }
+.fig-cell-new { background: color-mix(in srgb, var(--board-hl) 70%, transparent); font-weight: 700; }
+.fig-code pre { font-family: var(--font-mono, ui-monospace, monospace); font-size: 0.85rem; line-height: 1.5; overflow-x: auto; background: color-mix(in srgb, var(--board-ink) 6%, transparent); border-radius: 0.6rem; padding: 0.5rem 0; }
+.fig-code pre > div { padding: 0 0.6rem; white-space: pre; }
+.fig-code-n { display: inline-block; width: 1.6rem; color: var(--board-muted); user-select: none; }
+.fig-code-line { background: color-mix(in srgb, var(--board-hl) 65%, transparent); }
+.fig-code-arrow { color: var(--primary); font-weight: 700; }
+.fig-var { font-family: ui-monospace, monospace; font-size: 0.85rem; border: 1px solid var(--board-line); border-radius: 0.5rem; padding: 0.1rem 0.5rem; }
+.fig-var-new { background: color-mix(in srgb, var(--board-hl) 70%, transparent); border-color: transparent; }
+@media (prefers-reduced-motion: reduce) { .fig-new .fig-draw, .fig-new.fig-draw { animation: none; stroke-dashoffset: 0; } .board-figure, .fig-fade { animation: none; } }
