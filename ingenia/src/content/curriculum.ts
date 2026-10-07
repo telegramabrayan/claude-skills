@@ -261,7 +261,28 @@ export const ICSE: Subject = {
   official: official("parcial", [SRC.icseProg], "Tres ejes de los contenidos mínimos del programa analítico. Las lecciones son contenido general de ciencias sociales e historia argentina escrito por Ingenia, NO tomado de material de una cátedra: los autores se citan solo como referencia general. Los contenidos específicos, autores y períodos dependen de la cátedra; si conseguís el programa o parciales de la tuya, se ajusta."),
   contentLevel: "partial",
 };
-export const QUIMICA = pendingSubject("quimica", "Química", "Química", "⚗️", "chem", "Estructura de la materia, reacciones y estequiometría.");
+export const QUIMICA: Subject = {
+  ...pendingSubject("quimica", "Química", "Química", "⚗️", "chem", "Estructura de la materia, reacciones y estequiometría."),
+  units: [
+    unit("qui-u1", "Sistemas materiales", "Fases, componentes, clasificación, densidad y composición de mezclas.", ["l-qui-sistemas"], ["t-qui-sistemas"], "🧪"),
+    unit("qui-u2", "Estructura atómica y tabla periódica", "Z, A, iones, isótopos, configuración electrónica y propiedades periódicas.", ["l-qui-atomo", "l-qui-tabla"], ["t-qui-atomo", "t-qui-tabla"], "⚛️"),
+    unit("qui-u3", "Uniones químicas y nomenclatura", "Iónica, covalente y metálica; números de oxidación y fórmulas.", ["l-qui-uniones", "l-qui-nomenclatura"], ["t-qui-uniones", "t-qui-nomenclatura"], "🔗"),
+    unit("qui-u4", "Fuerzas intermoleculares y propiedades físicas", "TRePEV, polaridad, fuerzas intermoleculares y punto de ebullición.", ["l-qui-fuerzas"], ["t-qui-fuerzas"], "💧"),
+    unit("qui-u5", "Magnitudes atómico-moleculares", "Masa molar, composición centesimal, mol y número de Avogadro.", ["l-qui-masa-molar", "l-qui-mol"], ["t-qui-masa-molar", "t-qui-mol"], "⚖️"),
+    unverified(unit("qui-u6", "Gases", "Leyes de los gases, PV = nRT y presiones parciales.", ["l-qui-gases", "l-qui-gas-ideal"], ["t-qui-gases-leyes", "t-qui-gas-ideal"], "🎈")),
+    unverified(unit("qui-u7", "Soluciones", "% m/m, % m/V, molaridad y diluciones.", ["l-qui-soluciones", "l-qui-diluciones"], ["t-qui-concentracion", "t-qui-dilucion"], "🥤")),
+    unverified(unit("qui-u8", "Reacciones y estequiometría", "Balanceo, estequiometría, reactivo limitante, pureza y rendimiento.", ["l-qui-balanceo", "l-qui-estequiometria", "l-qui-limitante"], ["t-qui-balanceo", "t-qui-estequiometria", "t-qui-limitante"], "🔥")),
+    unverified(unit("qui-u9", "Equilibrio químico", "Kc, tabla de avance y principio de Le Chatelier.", ["l-qui-equilibrio"], ["t-qui-equilibrio"], "🔄")),
+    unverified(unit("qui-u10", "Ácido-base y pH", "pH de ácidos y bases fuertes y débiles.", ["l-qui-ph"], ["t-qui-ph"], "🧫")),
+    unverified(unit("qui-u11", "Óxido-reducción", "Oxidante, reductor y electrones transferidos.", ["l-qui-redox"], ["t-qui-redox"], "🔋")),
+  ],
+  official: official(
+    "parcial",
+    [{ label: "Programa analítico de Química (CBC) publicado por FFyB-UBA", url: "https://www.ffyb.uba.ar/wp-content/uploads/2024/08/02.-Programa-Analitico-de-Quimica-CBC.pdf" }],
+    "Solo se confirmaron (por el resumen del buscador, el PDF no se pudo abrir) los títulos de las unidades 1 a 5. Las unidades 6 a 11 son los temas estándar de Química general y están marcadas para verificar. Las lecciones son contenido general escrito por Ingenia, no material de una cátedra. Si conseguís el programa o parciales de tu cátedra, se ajusta.",
+  ),
+  contentLevel: "partial",
+};
 
 // ───────────────────────── Segundo ciclo ─────────────────────────
 

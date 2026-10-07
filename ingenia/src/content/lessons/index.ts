@@ -11,9 +11,10 @@ import { amLessons } from "./am";
 import { algebraALessons } from "./algebra-a";
 import { ipcLessons } from "./ipc";
 import { icseLessons } from "./icse";
+import { quimicaLessons } from "./quimica";
 
 /** Todas las lecciones disponibles. Para agregar una, creala en su archivo y sumala acá. */
-export const LESSONS: Lesson[] = [...aritmeticaLessons, ...algebraLessons, ...funcionesLessons, ...fisicaLessons, ...codigoLessons, ...precalculoLessons, ...fisicaV3Lessons, ...pcLessons, ...amLessons, ...algebraALessons, ...ipcLessons, ...icseLessons];
+export const LESSONS: Lesson[] = [...aritmeticaLessons, ...algebraLessons, ...funcionesLessons, ...fisicaLessons, ...codigoLessons, ...precalculoLessons, ...fisicaV3Lessons, ...pcLessons, ...amLessons, ...algebraALessons, ...ipcLessons, ...icseLessons, ...quimicaLessons];
 
 const BY_ID = new Map(LESSONS.map((l) => [l.id, l]));
 

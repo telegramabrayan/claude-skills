@@ -40,6 +40,7 @@ const PATH_UNITS = [
   // IPC
   "ipc-u1", "ipc-u2", "ipc-u3", "ipc-u4",
   "icse-1", "icse-2", "icse-3",
+  "qui-u1", "qui-u2", "qui-u3", "qui-u4", "qui-u5", "qui-u6", "qui-u7", "qui-u8", "qui-u9", "qui-u10", "qui-u11",
 ];
 
 /** Materias que tienen camino, en orden. */

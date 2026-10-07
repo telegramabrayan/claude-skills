@@ -2184,8 +2184,8 @@ export const quiPhDebil: Generator = {
       const alfa = (x / C) * 100;
       return num({
         gen: this.id, seed, d, topicId: this.topicId, unit: "%", answer: alfa,
-        prompt: `¿Qué porcentaje de las moléculas de ${sp.name} ($${sp.f}$) está ionizado en una solución ${n(C)} M? ($${Ksym} = ${sci(sp.K)}$; usá la aproximación $x ≈ \\sqrt{${Ksym}·C}$.)`,
-        hints: ["Calculá x = concentración ionizada.", `$x ≈ \\sqrt{${Ksym}·C}$.`, "Porcentaje de ionización = x / C · 100."],
+        prompt: `¿Qué porcentaje de las moléculas de ${sp.name} ($${sp.f}$) está ionizado en una solución ${n(C)} M? ($${Ksym} = ${sci(sp.K)}$; usá la aproximación $x ≈ √(${Ksym}·C)$.)`,
+        hints: ["Calculá x = concentración ionizada.", `$x ≈ √(${Ksym}·C)$.`, "Porcentaje de ionización = x / C · 100."],
         solution: [`x = √(${sci(sp.K)} · ${n(C)}) = ${sci(x, 3)} M`, `α = x/C · 100 = ${s3(alfa)} %`],
         explanation: "Un electrolito débil se ioniza solo en una pequeña fracción; esa fracción aumenta al diluir.",
         errors: [[100, "conceptual", "Eso supone ionización total (electrolito fuerte)."], [x / C, "calculo", "Esa es la fracción; multiplicá por 100 para el porcentaje."]],
@@ -2195,8 +2195,8 @@ export const quiPhDebil: Generator = {
       const pH = -log10(x);
       return num({
         gen: this.id, seed, d, topicId: this.topicId, unit: "", mode: "dec2", answer: pH,
-        prompt: `Calculá el pH de una solución ${n(C)} M de ${sp.name} ($${sp.f}$), $K_a = ${sci(sp.K)}$. Usá la aproximación $[H^+] ≈ \\sqrt{K_a·C}$.`,
-        hints: ["Es un ácido DÉBIL: no se disocia por completo, [H⁺] ≠ C.", "$[H^+] ≈ \\sqrt{K_a·C}$ (vale si se disocia poco).", "pH = −log[H⁺]."],
+        prompt: `Calculá el pH de una solución ${n(C)} M de ${sp.name} ($${sp.f}$), $K_a = ${sci(sp.K)}$. Usá la aproximación $[H^+] ≈ √(K_a·C)$.`,
+        hints: ["Es un ácido DÉBIL: no se disocia por completo, [H⁺] ≠ C.", "$[H^+] ≈ √(K_a·C)$ (vale si se disocia poco).", "pH = −log[H⁺]."],
         solution: [`[H⁺] ≈ √(${sci(sp.K)} · ${n(C)}) = ${sci(x, 3)} M`, `pH = −log[H⁺] = ${n(pH, 2)}`],
         explanation: "Del equilibrio HA ⇌ H⁺ + A⁻: Ka = x²/(C − x) ≈ x²/C si x ≪ C, entonces x = √(Ka·C).",
         errors: [[-log10(C), "conceptual", "Lo trataste como ácido fuerte ([H⁺] = C). Un ácido débil se disocia muy poco."], [-log10(sp.K * C), "formula", "Te faltó la raíz cuadrada: x² = Ka·C, así que x = √(Ka·C)."], [log10(x), "signos", "Te faltó el signo menos del pH."]],
@@ -2206,8 +2206,8 @@ export const quiPhDebil: Generator = {
     const pH = 14 - pOH;
     return num({
       gen: this.id, seed, d, topicId: this.topicId, unit: "", mode: "dec2", answer: pH,
-      prompt: `Calculá el pH de una solución ${n(C)} M de amoníaco ($NH_3$), $K_b = ${sci(sp.K)}$. Usá $[OH^-] ≈ \\sqrt{K_b·C}$ y pH + pOH = 14.`,
-      hints: ["Es una base débil: calculá primero [OH⁻].", "$[OH^-] ≈ \\sqrt{K_b·C}$.", "pOH = −log[OH⁻] y pH = 14 − pOH."],
+      prompt: `Calculá el pH de una solución ${n(C)} M de amoníaco ($NH_3$), $K_b = ${sci(sp.K)}$. Usá $[OH^-] ≈ √(K_b·C)$ y pH + pOH = 14.`,
+      hints: ["Es una base débil: calculá primero [OH⁻].", "$[OH^-] ≈ √(K_b·C)$.", "pOH = −log[OH⁻] y pH = 14 − pOH."],
       solution: [`[OH⁻] ≈ √(${sci(sp.K)} · ${n(C)}) = ${sci(x, 3)} M`, `pOH = ${n(pOH, 2)}`, `pH = 14 − ${n(pOH, 2)} = ${n(pH, 2)}`],
       explanation: "Para una base débil B + H₂O ⇌ BH⁺ + OH⁻, con Kb = x²/(C − x) ≈ x²/C.",
       errors: [[pOH, "conceptual", "Ese es el pOH; falta pH = 14 − pOH."], [14 + log10(C), "conceptual", "La trataste como base fuerte."], [-log10(x), "conceptual", "Usaste [OH⁻] como si fuera [H⁺]."]],
