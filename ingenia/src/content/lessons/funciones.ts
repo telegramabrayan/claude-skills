@@ -1,5 +1,7 @@
-import type { Lesson } from "@/engine/types";
+import type { BoardFigure, Lesson } from "@/engine/types";
 import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
+
+const P = (f: Omit<Extract<BoardFigure, { kind: "plot" }>, "kind">): BoardFigure => ({ kind: "plot", ...f });
 
 const S = "am-a";
 
@@ -53,11 +55,11 @@ export const funcionesLesson: Lesson = {
     board(
       "Pizarra: de la fórmula a los puntos",
       [
-        row("f(x) = 2x − 1", "vamos a armar una tabla de valores"),
-        row("f(−1) = 2·(−1) − 1 = −3", "punto $(−1, −3)$"),
-        row("f(0) = 2·0 − 1 = −1", "punto $(0, −1)$"),
-        row("f(1) = 2·1 − 1 = 1", "punto $(1, 1)$"),
-        row("f(2) = 2·2 − 1 = 3", "punto $(2, 3)$: uniéndolos aparece una recta"),
+        row("f(x) = 2x − 1", "vamos a armar una tabla de valores", P({ x: [-3, 4], y: [-5, 5] })),
+        row("f(−1) = 2·(−1) − 1 = −3", "punto $(−1, −3)$", P({ x: [-3, 4], y: [-5, 5], points: [{ x: -1, y: -3, label: "(−1, −3)" }] })),
+        row("f(0) = 2·0 − 1 = −1", "punto $(0, −1)$", P({ x: [-3, 4], y: [-5, 5], points: [{ x: -1, y: -3, label: "(−1, −3)" }, { x: 0, y: -1, label: "(0, −1)" }] })),
+        row("f(1) = 2·1 − 1 = 1", "punto $(1, 1)$", P({ x: [-3, 4], y: [-5, 5], points: [{ x: -1, y: -3, label: "(−1, −3)" }, { x: 0, y: -1, label: "(0, −1)" }, { x: 1, y: 1, label: "(1, 1)" }] })),
+        row("f(2) = 2·2 − 1 = 3", "punto $(2, 3)$: uniéndolos aparece una recta", P({ x: [-3, 4], y: [-5, 5], points: [{ x: -1, y: -3, label: "(−1, −3)" }, { x: 0, y: -1, label: "(0, −1)" }, { x: 1, y: 1, label: "(1, 1)" }, { x: 2, y: 3, label: "(2, 3)" }], fns: [{ expr: "2x-1", label: "y = 2x − 1" }] })),
       ],
     ),
     explain(
@@ -151,13 +153,13 @@ export const rectaLesson: Lesson = {
     board(
       "Pizarra: la recta por dos puntos",
       [
-        row("m = (y_2 − y_1)/(x_2 − x_1)", "puntos $(−2, 7)$ y $(3, −3)$"),
+        row("m = (y_2 − y_1)/(x_2 − x_1)", "puntos $(−2, 7)$ y $(3, −3)$", P({ x: [-4, 5], y: [-5, 9], points: [{ x: -2, y: 7, label: "(−2, 7)" }, { x: 3, y: -3, label: "(3, −3)" }] })),
         row("m = (−3 − 7)/(3 − (−2))", "reemplazamos, con paréntesis en los negativos"),
         row("m = −10/5"),
         row("m = −2", "negativa: baja 2 por cada paso a la derecha"),
         row("7 = −2·(−2) + b", "para hallar $b$, usamos el punto $(−2, 7)$ en $y = mx + b$"),
         row("7 = 4 + b"),
-        row("b = 3", "la recta es $y = −2x + 3$; control: con $x = 3$ da $−3$ ✓"),
+        row("b = 3", "la recta es $y = −2x + 3$; control: con $x = 3$ da $−3$ ✓", P({ x: [-4, 5], y: [-5, 9], points: [{ x: -2, y: 7, label: "(−2, 7)" }, { x: 3, y: -3, label: "(3, −3)" }, { x: 0, y: 3, label: "b = 3" }], fns: [{ expr: "-2x+3", label: "y = −2x + 3" }] })),
       ],
     ),
     example("Ejemplo resuelto", "Pendiente de la recta por $(1, 2)$ y $(4, 11)$", ["$Δy = 11 − 2 = 9$", "$Δx = 4 − 1 = 3$", "$m = 9/3 = 3$", "Por cada paso a la derecha, sube 3"], "m = 3"),
@@ -231,7 +233,7 @@ export const dominioLesson: Lesson = {
         row("6 − 2x ≥ 0"),
         row("−2x ≥ −6", "restamos 6 en ambos lados"),
         row("x ≤ 3", "dividimos por $−2$: al dividir por un negativo, la desigualdad **se da vuelta**"),
-        row("Dom = (−∞, 3]", "control: $x = 0$ da $√6$ (vale) y $x = 4$ da $√(−2)$ (no vale) ✓"),
+        row("Dom = (−∞, 3]", "control: $x = 0$ da $√6$ (vale) y $x = 4$ da $√(−2)$ (no vale) ✓", P({ x: [-5, 5], y: [-1, 5], fns: [{ expr: "sqrt(6-2x)", label: "y = √(6 − 2x)" }], points: [{ x: 3, y: 0, label: "x = 3: termina" }] })),
       ],
     ),
     practice("Ejercicio guiado", "dominio", 2, 3, true),

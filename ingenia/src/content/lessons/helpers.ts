@@ -1,4 +1,4 @@
-import type { BoardStep, ChoiceExercise, Difficulty, ErrorType, LessonCard, Widget } from "@/engine/types";
+import type { BoardStep, ChoiceExercise, Difficulty, ErrorType, LessonCard, Widget, BoardFigure } from "@/engine/types";
 
 export const intro = (title: string, learn: string, why: string): LessonCard => ({ kind: "intro", title, learn, why });
 
@@ -65,4 +65,4 @@ export const board = (title: string, steps: BoardStep[], intro?: string, outro?:
 });
 
 /** Atajo para un renglón de pizarra. */
-export const row = (expr: string, note?: string): BoardStep => (note ? { expr, note } : { expr });
+export const row = (expr: string, note?: string, figure?: BoardFigure): BoardStep => ({ expr, ...(note ? { note } : {}), ...(figure ? { figure } : {}) });

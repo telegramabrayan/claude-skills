@@ -1,4 +1,4 @@
-import type { Lesson } from "@/engine/types";
+import type { BoardFigure, Lesson } from "@/engine/types";
 import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
 
 export const unidades: Lesson = {
@@ -130,8 +130,8 @@ export const vectores: Lesson = {
     board(
       "Pizarra: calcular un módulo",
       [
-        row("v = (5, −12)"),
-        row("|v| = √(5^2 + (−12)^2)", "Pitágoras con las componentes"),
+        row("v = (5, −12)", undefined, { kind: "vectors", size: 13, vecs: [{ x: 5, y: -12, label: "v" }] }),
+        row("|v| = √(5^2 + (−12)^2)", "Pitágoras con las componentes", { kind: "vectors", size: 13, vecs: [{ x: 5, y: -12, label: "v" }, { x: 5, y: 0, label: "5" }, { x: 0, y: -12, from: [5, 0], label: "−12" }] }),
         row("|v| = √(25 + 144)", "el cuadrado de un negativo es positivo"),
         row("|v| = √169"),
         row("|v| = 13", "un largo: siempre positivo"),

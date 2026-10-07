@@ -1,5 +1,8 @@
-import type { Lesson } from "@/engine/types";
+import type { BoardFigure, Lesson } from "@/engine/types";
 import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
+
+const C = (line: number, vars: Record<string, string>): BoardFigure => ({ kind: "code", code: "a = 4\nb = a + 1\na = a * 3\nb = b - a", line, vars });
+const SUMA = (line: number, vars: Record<string, string>): BoardFigure => ({ kind: "code", code: "suma = 0\nfor i in range(1, 5):\n    suma = suma + i", line, vars });
 
 const S = "pensamiento-computacional";
 
@@ -37,10 +40,10 @@ export const algoritmos: Lesson = {
     board(
       "Pizarra: seguir un programa a mano",
       [
-        row("a = 4", "la caja `a` guarda 4"),
-        row("b = a + 1 → b = 5", "se calcula la derecha con el valor ACTUAL de `a` y se guarda en `b`"),
-        row("a = a·3 → a = 12", "en Python se escribe `a = a * 3`: la derecha da 12 y pisa el 4"),
-        row("b = b − a → b = −7", "$5 − 12 = −7$"),
+        row("a = 4", "la caja `a` guarda 4", C(1, { a: "4" })),
+        row("b = a + 1 → b = 5", "se calcula la derecha con el valor ACTUAL de `a` y se guarda en `b`", C(2, { a: "4", b: "5" })),
+        row("a = a·3 → a = 12", "en Python se escribe `a = a * 3`: la derecha da 12 y pisa el 4", C(3, { a: "12", b: "5" })),
+        row("b = b − a → b = −7", "$5 − 12 = −7$", C(4, { a: "12", b: "-7" })),
         row("a = 12, b = −7", "estado final: `b` no se «actualizó» cuando cambió `a`"),
       ],
       "Leé cada renglón como una orden: primero se calcula lo de la derecha, después se guarda a la izquierda.",
@@ -196,11 +199,11 @@ export const bucles: Lesson = {
     board(
       "Pizarra: un acumulador vuelta por vuelta",
       [
-        row("`suma = 0`", "antes del bucle: el acumulador empieza vacío"),
-        row("`i = 1` → `suma = 0 + 1 = 1`"),
-        row("`i = 2` → `suma = 1 + 2 = 3`"),
-        row("`i = 3` → `suma = 3 + 3 = 6`"),
-        row("`i = 4` → `suma = 6 + 4 = 10`", "`range(1, 5)` termina en 4: el 5 no se incluye"),
+        row("`suma = 0`", "antes del bucle: el acumulador empieza vacío", SUMA(1, { suma: "0" })),
+        row("`i = 1` → `suma = 0 + 1 = 1`", undefined, SUMA(3, { suma: "1", i: "1" })),
+        row("`i = 2` → `suma = 1 + 2 = 3`", undefined, SUMA(3, { suma: "3", i: "2" })),
+        row("`i = 3` → `suma = 3 + 3 = 6`", undefined, SUMA(3, { suma: "6", i: "3" })),
+        row("`i = 4` → `suma = 6 + 4 = 10`", "`range(1, 5)` termina en 4: el 5 no se incluye", SUMA(3, { suma: "10", i: "4" })),
       ],
       "Programa: `for i in range(1, 5): suma = suma + i`",
     ),

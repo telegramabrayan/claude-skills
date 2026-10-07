@@ -1,5 +1,7 @@
-import type { Lesson } from "@/engine/types";
+import type { BoardFigure, Lesson } from "@/engine/types";
 import { board, example, explain, intro, practice, quiz, row, summary } from "./helpers";
+
+const P = (f: Omit<Extract<BoardFigure, { kind: "plot" }>, "kind">): BoardFigure => ({ kind: "plot", ...f });
 
 export const factorizacion: Lesson = {
   id: "l-factorizacion",
@@ -110,7 +112,7 @@ export const cuadratica: Lesson = {
         row("Δ = 9 + 16 = 25", "positivo: hay dos soluciones"),
         row("x = (−3 ± √25)/(2·2)", "reemplazamos en la fórmula"),
         row("x = (−3 ± 5)/4"),
-        row("x = 1/2 o x = −2", "con $+$: $2/4 = 1/2$; con $−$: $−8/4 = −2$"),
+        row("x = 1/2 o x = −2", "con $+$: $2/4 = 1/2$; con $−$: $−8/4 = −2$", P({ x: [-3.5, 2], y: [-4, 6], fns: [{ expr: "2x^2+3x-2", label: "y = 2x² + 3x − 2" }], points: [{ x: -2, y: 0, label: "−2" }, { x: 0.5, y: 0, label: "1/2" }] })),
       ],
       undefined,
       "Verificación con $x = −2$: $2·4 − 6 − 2 = 0$ ✓.",
@@ -172,11 +174,11 @@ export const pitagorasLesson: Lesson = {
     board(
       "Pizarra: distancia entre dos puntos",
       [
-        row("d = √((x_2 − x_1)^2 + (y_2 − y_1)^2)", "puntos $(1, −2)$ y $(7, 6)$"),
+        row("d = √((x_2 − x_1)^2 + (y_2 − y_1)^2)", "puntos $(1, −2)$ y $(7, 6)$", P({ x: [-1, 9], y: [-4, 8], points: [{ x: 1, y: -2, label: "(1, −2)" }, { x: 7, y: 6, label: "(7, 6)" }] })),
         row("d = √((7 − 1)^2 + (6 − (−2))^2)", "reemplazamos con paréntesis"),
-        row("d = √(6^2 + 8^2)", "$Δx = 6$ y $Δy = 8$: los catetos"),
+        row("d = √(6^2 + 8^2)", "$Δx = 6$ y $Δy = 8$: los catetos", { kind: "shape", shape: "triangle", labels: ["Δx = 6", "Δy = 8", "d = ?"] }),
         row("d = √(36 + 64)"),
-        row("d = √100 = 10"),
+        row("d = √100 = 10", undefined, { kind: "shape", shape: "triangle", labels: ["6", "8", "d = 10"] }),
       ],
     ),
     practice("Tu turno", "pitagoras", 3, 6),
@@ -235,11 +237,11 @@ export const trigonometriaLesson: Lesson = {
     board(
       "Pizarra: alto y avance de un cable",
       [
-        row("sen 60° = h/20", "cable de 20 m a 60° del suelo; la altura es el cateto opuesto"),
+        row("sen 60° = h/20", "cable de 20 m a 60° del suelo; la altura es el cateto opuesto", { kind: "vectors", size: 2, vecs: [{ x: 1, y: 1.732, label: "cable" }] }),
         row("h = 20·sen 60°", "multiplicamos ambos lados por 20"),
-        row("h ≈ 20·0,866 ≈ 17,32", "metros"),
+        row("h ≈ 20·0,866 ≈ 17,32", "metros", { kind: "vectors", size: 2, vecs: [{ x: 1, y: 1.732, label: "cable" }, { x: 0, y: 1.732, from: [1, 0], label: "h" }] }),
         row("d = 20·cos 60°", "el avance horizontal es el adyacente: coseno"),
-        row("d = 20·0,5 = 10", "metros"),
+        row("d = 20·0,5 = 10", "metros", { kind: "vectors", size: 2, vecs: [{ x: 1, y: 1.732, label: "cable" }, { x: 0, y: 1.732, from: [1, 0], label: "h" }, { x: 1, y: 0, label: "d" }] }),
       ],
       undefined,
       "Control con Pitágoras: $17,32^2 + 10^2 ≈ 400 = 20^2$ ✓.",
@@ -325,7 +327,7 @@ export const limitesLesson: Lesson = {
         row("lim_{x→−3} (x^2 + 5x + 6)/(x + 3)"),
         row("(9 − 15 + 6)/(−3 + 3) = 0/0", "reemplazar da $0/0$: indeterminación"),
         row("lim_{x→−3} (x + 2)(x + 3)/(x + 3)", "factorizamos: producto 6, suma 5 → 2 y 3"),
-        row("lim_{x→−3} (x + 2)", "simplificamos: cerca de $−3$, $x + 3$ no vale cero"),
+        row("lim_{x→−3} (x + 2)", "simplificamos: cerca de $−3$, $x + 3$ no vale cero", P({ x: [-6, 1], y: [-5, 2], fns: [{ expr: "x+2", label: "y = x + 2 (con agujero)" }], points: [{ x: -3, y: -1, label: "x = −3: hueco" }] })),
         row("−3 + 2 = −1", "ahora sí reemplazamos"),
       ],
     ),
@@ -403,11 +405,11 @@ export const derivadasLesson: Lesson = {
     board(
       "Pizarra: derivar y evaluar",
       [
-        row("f(x) = x^3 − 6x^2 + 4"),
+        row("f(x) = x^3 − 6x^2 + 4", undefined, P({ x: [-2, 6], y: [-30, 10], fns: [{ expr: "x^3-6x^2+4", label: "f" }] })),
         row("f′(x) = 3x^2 − 6·2x + 0", "regla de la potencia en cada término; la constante da 0"),
         row("f′(x) = 3x^2 − 12x"),
         row("f′(2) = 3·4 − 12·2", "pendiente en $x = 2$"),
-        row("f′(2) = −12", "negativa: en $x = 2$ la función baja"),
+        row("f′(2) = −12", "negativa: en $x = 2$ la función baja", P({ x: [-2, 6], y: [-30, 10], fns: [{ expr: "x^3-6x^2+4", label: "f" }], tangent: { expr: "x^3-6x^2+4", x: 2 } })),
       ],
     ),
     practice("Ejercicio guiado", "derivada-potencia", 2, 6, true),
