@@ -29,12 +29,13 @@ const result = await build({
 });
 
 const js = result.outputFiles[0].text.replace(/<\/script/gi, "<\\/script");
-const css = readFileSync(path.join(out, "app.css"), "utf8") + "body{font-size:16px}";
-const theme = `try{var s=JSON.parse(localStorage.getItem("ingenia:progress:v1")||"{}");var t=(s.settings&&s.settings.theme)||"system";if(t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark")}catch(e){}`;
+const css = readFileSync(path.join(out, "app.css"), "utf8") + "body{font-size:1rem}";
+const theme = `try{var s=JSON.parse(localStorage.getItem("ingenia:progress:v1")||"{}");var t=(s.settings&&s.settings.theme)||"system";if(t==="dark"||(t==="system"&&matchMedia("(prefers-color-scheme: dark)").matches))document.documentElement.classList.add("dark");var st=s.settings||{};document.documentElement.dataset.mode=st.mode||"juego";if(st.textScale&&st.textScale!==1)document.documentElement.style.fontSize=(st.textScale*100)+"%"}catch(e){}`;
 
 // Fragmento sin <html>/<head>/<body>: sirve tanto para publicar como página como para abrirlo directo.
 const html = `<title>Ingenia</title>
 <meta name="description" content="Tu camino a Ingeniería: matemática, física y programación desde cero hasta el CBC.">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800;900&display=swap">
 <style>${css}</style>
 <script>${theme}</script>
 <div id="root"></div>

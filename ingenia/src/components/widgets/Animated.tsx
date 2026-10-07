@@ -13,7 +13,7 @@ import { Slider } from "./Simple";
 const G = 9.8;
 
 function prefersReduced() {
-  return typeof window !== "undefined" && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+  return typeof window !== "undefined" && (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches || document.documentElement.dataset.motion === "reduce");
 }
 
 /** Reloj de animación en segundos, de 0 a `duration`. */

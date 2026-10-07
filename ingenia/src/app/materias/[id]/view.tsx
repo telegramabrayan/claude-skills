@@ -7,7 +7,9 @@ import { useProgress } from "@/lib/store";
 import { subjectProgress, unitProgress } from "@/lib/learning";
 import { Gate } from "@/components/layout/Gate";
 import { Icon } from "@/components/ui/Icon";
-import { ProgressBar, SectionTitle, SUBJECT_COLORS } from "@/components/ui/primitives";
+import { SectionTitle } from "@/components/ui/primitives";
+import { SubjectArt, subjectStyle } from "@/components/ui/SubjectArt";
+import { useSubjectTheme } from "@/lib/subjectTheme";
 import { OfficialBox } from "@/components/subject/OfficialBox";
 import { materialFor } from "@/content/material";
 
@@ -21,34 +23,46 @@ const CONTENT = {
 function Subject({ id }: { id: string }) {
   const s = useProgress();
   const sub = getSubject(id)!;
-  const color = SUBJECT_COLORS[sub.color];
   const pct = subjectProgress(s, sub);
   const hasLessons = sub.units.some((u) => u.lessonIds.length);
+  useSubjectTheme(sub.id);
+  const next = sub.units.flatMap((u) => u.lessonIds).find((l) => s.lessons[l]?.status !== "completada");
   return (
     <div>
       <Link href="/materias" className="btn btn-ghost mb-3 !px-2 text-sm">
         <Icon name="arrowLeft" size={18} /> Materias
       </Link>
-      <header className="card overflow-hidden">
-        <div className="h-2" style={{ background: color }} />
-        <div className="flex flex-wrap items-start gap-4 p-5">
-          <span className="grid h-14 w-14 place-items-center rounded-2xl text-2xl font-bold text-surface" style={{ background: color }} aria-hidden>
-            {sub.icon}
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm text-muted">{CYCLE[sub.cycle]}</p>
-            <h1 className="text-2xl font-black sm:text-3xl">{sub.name}</h1>
-            <p className="mt-2 text-muted">{sub.description || "Descripción pendiente de cargar desde el programa oficial."}</p>
+      <header className="card-hero anim-rise" style={subjectStyle(sub.id)}>
+        <div className="grid items-center gap-2 p-5 sm:grid-cols-[1fr_200px] sm:p-6">
+          <div className="min-w-0">
+            <p className="hero-muted text-sm font-bold uppercase tracking-wide text-white/85">
+              <span aria-hidden>{sub.icon}</span> {CYCLE[sub.cycle]}
+            </p>
+            <h1 className="mt-1 text-3xl font-black leading-tight sm:text-4xl">{sub.name}</h1>
+            <p className="hero-muted mt-2 max-w-prose text-white/85">{sub.description || "Descripción pendiente de cargar desde el programa oficial."}</p>
             {hasLessons && (
               <div className="mt-4 max-w-sm">
-                <div className="mb-1 flex justify-between text-sm">
-                  <span>Progreso</span>
-                  <span className="font-semibold">{Math.round(pct * 100)}%</span>
+                <div className="mb-1 flex justify-between text-sm font-bold">
+                  <span>Tu progreso</span>
+                  <span>{Math.round(pct * 100)}%</span>
                 </div>
-                <ProgressBar value={pct} color={color} label={`Progreso en ${sub.name}`} />
+                <div className="pbar !bg-white/25" role="progressbar" aria-valuenow={Math.round(pct * 100)} aria-valuemin={0} aria-valuemax={100} aria-label={`Progreso en ${sub.name}`}>
+                  <span style={{ width: `${Math.max(pct * 100, 3)}%`, ["--bar" as string]: "#fff" }} />
+                </div>
+              </div>
+            )}
+            {next && (
+              <div className="mt-5 flex flex-wrap gap-2">
+                <Link href={`/leccion/${next}`} className="btn-3d is-secondary">
+                  ▶ {s.lessons[next]?.status === "en-curso" ? "Seguir" : "Empezar"}: {getLesson(next)?.title}
+                </Link>
+                <Link href={`/camino?materia=${sub.id}`} className="btn btn-ghost !text-white/90 hover:!bg-white/15">
+                  <Icon name="path" size={18} /> Ver el camino
+                </Link>
               </div>
             )}
           </div>
+          <SubjectArt id={sub.id} height={150} className="hidden sm:block" />
         </div>
       </header>
 
@@ -91,9 +105,9 @@ function Subject({ id }: { id: string }) {
             const up = unitProgress(s, u);
             const c = CONTENT[u.contentStatus];
             return (
-              <details key={u.id} className="card group p-0" open={i === 0 && u.lessonIds.length > 0}>
+              <details key={u.id} className="card-subject group p-0" style={subjectStyle(sub.id)} open={i === 0 && u.lessonIds.length > 0}>
                 <summary className="flex cursor-pointer list-none items-center gap-3 p-4">
-                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-surface-2 text-sm font-bold">{i + 1}</span>
+                  <span className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl text-sm font-black text-white" style={{ background: up.total && up.done === up.total ? "var(--success)" : "var(--subj)" }}>{up.total && up.done === up.total ? "✓" : i + 1}</span>
                   <span className="min-w-0 flex-1">
                     <span className="block font-bold">{u.title}</span>
                     <span className={`chip mt-1 !text-[10px] ${c.cls}`}>{c.text}</span>

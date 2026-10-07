@@ -1,4 +1,5 @@
 "use client";
+import { useSubjectTheme } from "@/lib/subjectTheme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Lesson, LessonCard } from "@/engine/types";
@@ -209,6 +210,7 @@ interface Done {
 
 export function LessonPlayer({ lesson: raw }: { lesson: Lesson }) {
   const lesson = useMemo(() => ({ ...raw, cards: lessonCards(raw) }), [raw]);
+  useSubjectTheme(raw.subjectId);
   const s = useProgress();
   const saved = s.lessons[lesson.id];
   const [index, setIndex] = useState(saved?.status === "en-curso" ? Math.min(saved.card, lesson.cards.length - 1) : 0);

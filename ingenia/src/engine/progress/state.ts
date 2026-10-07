@@ -104,6 +104,12 @@ export interface ProgressState {
     guide: string;
     /** Modo «Enseñame desde cero»: explicaciones desde los fundamentos, chequeo de bases y más guía. */
     fromZero: boolean;
+    /** "juego": personaje, celebraciones y minijuegos; "estudio": más limpio y académico. El progreso es el mismo. */
+    mode: "juego" | "estudio";
+    /** Escala del texto: 1, 1.125 o 1.25. */
+    textScale: number;
+    /** Reducir animaciones aunque el sistema no lo pida. */
+    reduceMotion: boolean;
   };
   xp: number;
   streak: { current: number; longest: number; lastDay: string | null };
@@ -139,7 +145,7 @@ export function initialState(): ProgressState {
   return {
     version: 1,
     profile: { name: "", goal: null, onboarded: false, startMode: null, createdAt: new Date().toISOString() },
-    settings: { theme: "system", hearts: true, dailyMinutes: 15, sound: true, accent: "turquesa", guide: "", fromZero: false },
+    settings: { theme: "system", hearts: true, dailyMinutes: 15, sound: true, accent: "turquesa", guide: "", fromZero: false, mode: "juego", textScale: 1, reduceMotion: false },
     xp: 0,
     streak: { current: 0, longest: 0, lastDay: null },
     days: {},

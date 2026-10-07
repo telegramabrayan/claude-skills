@@ -31,6 +31,14 @@ function useCosmetics() {
   const s = useProgress();
   const accent = s.settings.accent;
   const guide = s.settings.guide;
+  const { mode, textScale, reduceMotion } = s.settings;
+  useEffect(() => {
+    const el = document.documentElement;
+    el.dataset.mode = mode ?? "juego";
+    if (reduceMotion) el.dataset.motion = "reduce";
+    else delete el.dataset.motion;
+    el.style.fontSize = textScale && textScale !== 1 ? `${textScale * 100}%` : "";
+  }, [mode, textScale, reduceMotion]);
   useEffect(() => {
     const el = document.documentElement;
     if (accent && accent !== "turquesa") el.dataset.accent = accent;

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./doodles.css";
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -87,7 +88,7 @@
   --color-danger-soft: var(--danger-soft);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-sans: "Nunito", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "JetBrains Mono", Menlo, Consolas, monospace;
   --font-math: "Cambria Math", "STIX Two Math", "Latin Modern Math", Cambria, Georgia, serif;
 }
@@ -309,3 +310,162 @@ body {
 .fig-var { font-family: ui-monospace, monospace; font-size: 0.85rem; border: 1px solid var(--board-line); border-radius: 0.5rem; padding: 0.1rem 0.5rem; }
 .fig-var-new { background: color-mix(in srgb, var(--board-hl) 70%, transparent); border-color: transparent; }
 @media (prefers-reduced-motion: reduce) { .fig-new .fig-draw, .fig-new.fig-draw { animation: none; stroke-dashoffset: 0; } .board-figure, .fig-fade { animation: none; } }
+
+
+/* ═════════════ Sistema visual v4 ═════════════ */
+:root {
+  --c-prep-soft: #d6f3ef; --c-prep-deep: #0b5a54;
+  --c-math-soft: #dbe7ff; --c-math-deep: #1e40af;
+  --c-algebra-soft: #ede6fd; --c-algebra-deep: #5b21b6;
+  --c-physics-soft: #ffe8d6; --c-physics-deep: #9a3412;
+  --c-code-soft: #d4f4fa; --c-code-deep: #155e75;
+  --c-ipc: #a21caf; --c-ipc-soft: #fae8ff; --c-ipc-deep: #701a75;
+  --c-humanities-soft: #fde2ef; --c-humanities-deep: #831843;
+  --c-chem-soft: #e6f4d0; --c-chem-deep: #3f6212;
+  --c-later-soft: #e2e8f0; --c-later-deep: #334155;
+  --subj: var(--primary); --subj-soft: var(--primary-soft); --subj-deep: color-mix(in srgb, var(--primary) 70%, black);
+  --doodle-color: var(--primary);
+  --doodle-opacity: 0.06;
+  --guide-deep: #0b5a54; --guide-screen: #083c38; --guide-hand: #5eead4;
+  --radius-sm: 0.75rem; --radius: 1.1rem; --radius-lg: 1.6rem;
+  --press: 4px;
+  --font-display: "Nunito", ui-rounded, "SF Pro Rounded", ui-sans-serif, system-ui, sans-serif;
+}
+.dark {
+  --c-prep-soft: #0f3b38; --c-prep-deep: #99f6e4;
+  --c-math-soft: #1b2a55; --c-math-deep: #c7d7ff;
+  --c-algebra-soft: #2a2152; --c-algebra-deep: #ddd0ff;
+  --c-physics-soft: #3d2210; --c-physics-deep: #fed7aa;
+  --c-code-soft: #0c3440; --c-code-deep: #a5f3fc;
+  --c-ipc: #e879f9; --c-ipc-soft: #3d1240; --c-ipc-deep: #f5d0fe;
+  --c-humanities-soft: #4a1630; --c-humanities-deep: #fbcfe8;
+  --c-chem-soft: #26360b; --c-chem-deep: #d9f99d;
+  --c-later-soft: #26324f; --c-later-deep: #cbd5e1;
+  --doodle-opacity: 0.07;
+  --guide-deep: #134e4a; --guide-screen: #042f2c; --guide-hand: #99f6e4;
+}
+:root { --guide-body: #14b8a6; --guide-face: #a7f3d0; }
+.dark { --guide-body: #2dd4bf; --guide-face: #ccfbf1; }
+:root[data-guide="noche"] { --guide-body: #4f46e5; --guide-deep: #312e81; --guide-screen: #1e1b4b; --guide-hand: #a5b4fc; --guide-face: #c7d2fe; }
+:root[data-guide="cobre"] { --guide-body: #ea580c; --guide-deep: #9a3412; --guide-screen: #431407; --guide-hand: #fdba74; --guide-face: #ffedd5; }
+:root[data-subject="math"] { --doodle-color: var(--c-math); }
+:root[data-subject="algebra"] { --doodle-color: var(--c-algebra); }
+:root[data-subject="physics"] { --doodle-color: var(--c-physics); }
+:root[data-subject="code"] { --doodle-color: var(--c-code); }
+:root[data-subject="chem"] { --doodle-color: var(--c-chem); }
+:root[data-subject="humanities"] { --doodle-color: var(--c-humanities); }
+:root[data-subject="ipc"] { --doodle-color: var(--c-ipc); }
+
+h1, h2, h3, .font-display { font-family: var(--font-display); letter-spacing: -0.01em; }
+body { font-weight: 500; }
+
+/* Fondo de cuaderno: doodles muy tenues, coloreados según la materia. */
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background-color: var(--doodle-color); opacity: var(--doodle-opacity);
+  -webkit-mask-image: var(--doodles); mask-image: var(--doodles);
+  -webkit-mask-size: 260px; mask-size: 260px;
+}
+
+/* Botones con relieve: se hunden al tocar. */
+.btn-3d {
+  --b: var(--primary); --b-deep: color-mix(in srgb, var(--primary) 62%, black); --b-ink: var(--on-primary);
+  display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+  min-height: 3.1rem; padding: 0.6rem 1.3rem; border-radius: var(--radius);
+  background: var(--b); color: var(--b-ink); font-weight: 800; font-family: var(--font-display);
+  letter-spacing: 0.02em; box-shadow: 0 var(--press) 0 var(--b-deep);
+  transform: translateY(0); transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.15s;
+  user-select: none;
+}
+.btn-3d:hover:not(:disabled) { filter: brightness(1.06); }
+.btn-3d:active:not(:disabled) { transform: translateY(var(--press)); box-shadow: 0 0 0 var(--b-deep); }
+.btn-3d:disabled { --b: var(--surface-2); --b-deep: var(--border); --b-ink: var(--muted); cursor: not-allowed; }
+.btn-3d.is-secondary { --b: var(--surface); --b-deep: var(--border); --b-ink: var(--text); border: 2px solid var(--border); }
+.btn-3d.is-success { --b: var(--success); --b-deep: color-mix(in srgb, var(--success) 60%, black); --b-ink: #fff; }
+.dark .btn-3d.is-success { --b-ink: #052e16; }
+.btn-3d.is-warn { --b: var(--warn); --b-deep: color-mix(in srgb, var(--warn) 60%, black); --b-ink: #fff; }
+.dark .btn-3d.is-warn { --b-ink: #2a1a00; }
+.btn-3d.is-subject { --b: var(--subj); --b-deep: var(--subj-deep); --b-ink: #fff; }
+.dark .btn-3d.is-subject { --b-ink: #0a0f1e; --b-deep: color-mix(in srgb, var(--subj) 55%, black); }
+.btn-3d.is-block { width: 100%; }
+
+/* Fichas táctiles (opciones, bloques para arrastrar). */
+.tile {
+  position: relative; display: flex; align-items: center; gap: 0.6rem; min-height: 3.2rem;
+  padding: 0.7rem 1rem; border-radius: var(--radius); background: var(--surface); color: var(--text);
+  border: 2px solid var(--border); box-shadow: 0 var(--press) 0 var(--border); font-weight: 700;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, border-color 0.15s, background-color 0.15s;
+  touch-action: manipulation;
+}
+.tile:hover:not(:disabled) { border-color: color-mix(in srgb, var(--primary) 55%, var(--border)); }
+.tile:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--border); }
+.tile[aria-pressed="true"], .tile[aria-checked="true"], .tile.is-selected { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 var(--press) 0 color-mix(in srgb, var(--primary) 55%, var(--border)); }
+.tile.is-correct { border-color: var(--success); background: var(--success-soft); box-shadow: 0 var(--press) 0 color-mix(in srgb, var(--success) 60%, var(--border)); }
+.tile.is-wrong { border-color: var(--warn); background: var(--warn-soft); box-shadow: 0 var(--press) 0 color-mix(in srgb, var(--warn) 60%, var(--border)); }
+.tile.is-ghost { background: var(--surface-2); border-style: dashed; box-shadow: none; color: transparent; }
+.tile-key { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; flex-shrink: 0; border-radius: 0.6rem; border: 2px solid var(--border); font-size: 0.8rem; font-weight: 900; color: var(--muted); }
+.tile[aria-checked="true"] .tile-key, .tile.is-selected .tile-key { border-color: var(--primary); color: var(--primary); }
+
+/* Tarjetas con jerarquía. */
+.card-hero { position: relative; overflow: hidden; border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--subj) 0%, var(--subj-deep) 130%); color: #fff; box-shadow: 0 6px 0 color-mix(in srgb, var(--subj) 45%, black), 0 18px 40px -18px var(--subj); }
+.dark .card-hero { background: linear-gradient(135deg, color-mix(in srgb, var(--subj) 75%, black) 0%, color-mix(in srgb, var(--subj) 35%, black) 100%); box-shadow: 0 6px 0 color-mix(in srgb, var(--subj) 25%, black); }
+.card-subject { position: relative; overflow: hidden; border-radius: var(--radius-lg); background: var(--surface); border: 2px solid var(--border); box-shadow: 0 var(--press) 0 var(--border); transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s; }
+.card-subject:hover { transform: translateY(-3px); border-color: var(--subj); box-shadow: 0 7px 0 color-mix(in srgb, var(--subj) 55%, var(--border)); }
+.card-subject:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--border); }
+.card-subject .art-band { background: linear-gradient(135deg, var(--subj), var(--subj-deep)); }
+.dark .card-subject .art-band { background: linear-gradient(135deg, color-mix(in srgb, var(--subj) 70%, black), color-mix(in srgb, var(--subj) 30%, black)); }
+
+/* Barra de progreso gruesa. */
+.pbar { height: 0.9rem; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.pbar > span { display: block; height: 100%; border-radius: inherit; background: var(--bar, var(--primary)); position: relative; transition: width 0.5s cubic-bezier(.2,.8,.3,1); }
+.pbar > span::after { content: ""; position: absolute; left: 0.5rem; right: 0.5rem; top: 0.2rem; height: 0.22rem; border-radius: 999px; background: rgba(255,255,255,.35); }
+
+/* Globo de diálogo del guía. */
+.speech::before { content: ""; position: absolute; left: -9px; top: 50%; width: 14px; height: 14px; background: var(--surface); border-left: 2px solid var(--border); border-bottom: 2px solid var(--border); transform: translateY(-50%) rotate(45deg); }
+
+/* Animaciones del guía y de las ilustraciones. */
+@keyframes nodo-jump { 0%, 100% { transform: translateY(0); } 30% { transform: translateY(-10px) scale(1.03); } 55% { transform: translateY(0) scaleY(.96); } }
+.nodo-jump { animation: nodo-jump 0.7s ease 2; transform-origin: bottom center; }
+@keyframes nodo-pop { 0% { transform: scale(.9); } 60% { transform: scale(1.08); } 100% { transform: scale(1); } }
+.nodo-pop { animation: nodo-pop 0.35s ease both; }
+@keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
+.nodo-eye { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+@keyframes wave { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(-12deg); } }
+.nodo-wave, .nodo-point { transform-box: view-box; transform-origin: 84px 88px; animation: wave 1.2s ease-in-out 2; }
+@keyframes glow { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+.nodo-bulb { animation: glow 0.9s ease-in-out infinite; }
+.subject-art { width: 100%; }
+@keyframes art-draw { from { stroke-dashoffset: 300; } to { stroke-dashoffset: 0; } }
+.art-draw { stroke-dasharray: 300; animation: art-draw 1.6s ease-out both; }
+@keyframes art-fly { 0% { transform: translate(14px, 76px); } 50% { transform: translate(60px, 32px); } 100% { transform: translate(108px, 76px); } }
+.art-fly { animation: art-fly 3.2s ease-in-out infinite alternate; }
+@keyframes art-spin { to { transform: rotate(360deg); } }
+.art-spin { animation: art-spin 14s linear infinite; }
+@keyframes art-bubble { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-20px); opacity: 0; } }
+.art-bubble { animation: art-bubble 1.8s ease-in infinite; }
+.art-blink { animation: glow 1.4s ease-in-out infinite; }
+@keyframes art-write { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(-6px, 3px); } }
+.art-write { animation: art-write 1.6s ease-in-out infinite; }
+@keyframes art-tangent { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+.art-tangent { transform-box: fill-box; transform-origin: center; animation: art-tangent 3s ease-in-out infinite; }
+
+/* Microinteracciones genéricas. */
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.anim-rise { animation: rise 0.35s cubic-bezier(.2,.8,.3,1) both; }
+.stagger > * { animation: rise 0.35s cubic-bezier(.2,.8,.3,1) both; }
+.stagger > *:nth-child(2) { animation-delay: 40ms; } .stagger > *:nth-child(3) { animation-delay: 80ms; } .stagger > *:nth-child(4) { animation-delay: 120ms; }
+.stagger > *:nth-child(5) { animation-delay: 160ms; } .stagger > *:nth-child(6) { animation-delay: 200ms; } .stagger > *:nth-child(n+7) { animation-delay: 240ms; }
+@keyframes xp-pop { 0% { transform: scale(.6) translateY(6px); opacity: 0; } 30% { transform: scale(1.15); opacity: 1; } 100% { transform: scale(1) translateY(-6px); opacity: 1; } }
+.xp-pop { animation: xp-pop 0.5s cubic-bezier(.2,.8,.3,1) both; }
+
+/* ───── Modo estudio: misma app, menos juego ───── */
+:root[data-mode="estudio"] { --doodle-opacity: 0; --press: 2px; }
+:root[data-mode="estudio"] .mascot, :root[data-mode="estudio"] .game-only { display: none !important; }
+:root[data-mode="estudio"] .card-hero { background: var(--surface); color: var(--text); border: 2px solid var(--subj); box-shadow: none; }
+:root[data-mode="estudio"] .card-hero .text-white\/85, :root[data-mode="estudio"] .card-hero .hero-muted { color: var(--muted); }
+:root[data-mode="estudio"] .subject-art, :root[data-mode="estudio"] .confetti-piece { display: none; }
+:root[data-mode="estudio"] .card-subject .art-band { display: none; }
+
+/* ───── Reducir animaciones (opción propia, además de la del sistema) ───── */
+:root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+@media (prefers-reduced-motion: reduce) { .art-fly, .art-spin, .art-bubble, .nodo-eye, .guide-bob { animation: none !important; } }

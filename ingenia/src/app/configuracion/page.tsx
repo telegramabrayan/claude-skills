@@ -74,6 +74,38 @@ function Settings() {
         ))}
       </div>
 
+      <div className="card mt-3 space-y-4 p-4">
+        <div>
+          <p className="font-semibold">Estilo de la app</p>
+          <p className="text-sm text-muted">El progreso es el mismo en los dos: podés cambiar cuando quieras.</p>
+          <div className="mt-2 grid gap-2 sm:grid-cols-2" role="radiogroup" aria-label="Estilo de la app">
+            {([["juego", "🎮 Modo interactivo", "Nodo te acompaña, celebraciones cortas, XP y minijuegos."], ["estudio", "📚 Modo estudio", "Más limpio y académico: sin personaje ni confeti, mismos ejercicios interactivos."]] as const).map(([k, t, d]) => (
+              <button key={k} role="radio" aria-checked={(s.settings.mode ?? "juego") === k} className="tile !items-start flex-col text-left" onClick={() => actions.updateSettings({ mode: k })}>
+                <span className="font-black">{t}</span>
+                <span className="text-sm font-medium text-muted">{d}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div>
+          <p className="font-semibold">Tamaño del texto</p>
+          <div className="mt-2 flex flex-wrap gap-2" role="radiogroup" aria-label="Tamaño del texto">
+            {([[1, "Normal"], [1.125, "Grande"], [1.25, "Muy grande"]] as const).map(([k, l]) => (
+              <button key={k} role="radio" aria-checked={(s.settings.textScale ?? 1) === k} className="tile !min-h-11 !py-1.5" onClick={() => actions.updateSettings({ textScale: k })} style={{ fontSize: `${k}rem` }}>
+                {l}
+              </button>
+            ))}
+          </div>
+        </div>
+        <label className="flex items-center justify-between gap-4">
+          <span>
+            <span className="block font-semibold">Reducir animaciones</span>
+            <span className="text-sm text-muted">Las pizarras y simulaciones muestran el resultado sin movimiento. Todo sigue funcionando igual.</span>
+          </span>
+          <input type="checkbox" className="h-6 w-6 accent-[var(--primary)]" checked={!!s.settings.reduceMotion} onChange={(e) => actions.updateSettings({ reduceMotion: e.target.checked })} />
+        </label>
+      </div>
+
       <SectionTitle>Cómo aprendés</SectionTitle>
       <div className="card space-y-4 p-4">
         <label className="flex items-center justify-between gap-4">

@@ -6,6 +6,7 @@
  * Las pistas se revelan de a una (3 niveles) y recién después la solución,
  * también de a un paso. Solo el primer intento cuenta para XP y dominio.
  */
+import { useSubjectTheme } from "@/lib/subjectTheme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Difficulty, EvaluationResult, Exercise } from "@/engine/types";
 import { evaluateAnswer, type Answer } from "@/engine/evaluation/evaluate";
@@ -59,6 +60,7 @@ const DIFF_LABEL: Record<Difficulty, string> = { 1: "Muy fácil", 2: "Fácil", 3
 export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnostic, record = true, guided, continueLabel = "Continuar", onWrong, noHelp }: Props) {
   const [exercise, setExercise] = useState(initial);
   useEffect(() => setExercise(initial), [initial]);
+  useSubjectTheme(exercise.subjectId);
 
   const [choiceIdx, setChoiceIdx] = useState<number | null>(null);
   const [text, setText] = useState("");
