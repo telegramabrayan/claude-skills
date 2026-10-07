@@ -270,16 +270,18 @@ interface Job {
   lvl: 1 | 2 | 3;
 }
 const JOBS: Job[] = [
-  { name: "peón rural", lvl: 1 },
-  { name: "empleada de limpieza", lvl: 1 },
-  { name: "repartidor", lvl: 1 },
-  { name: "empleado administrativo", lvl: 2 },
-  { name: "docente", lvl: 2 },
-  { name: "técnica electricista", lvl: 2 },
-  { name: "gerente de una empresa", lvl: 3 },
-  { name: "médica con consultorio propio", lvl: 3 },
-  { name: "dueño de una empresa mediana", lvl: 3 },
+  { name: "el trabajo rural como peón", lvl: 1 },
+  { name: "la limpieza en casas particulares", lvl: 1 },
+  { name: "el reparto a domicilio", lvl: 1 },
+  { name: "un empleo administrativo", lvl: 2 },
+  { name: "la docencia", lvl: 2 },
+  { name: "trabajos técnicos de electricidad", lvl: 2 },
+  { name: "la gerencia de una empresa", lvl: 3 },
+  { name: "la medicina con consultorio propio", lvl: 3 },
+  { name: "dirigir su propia empresa mediana", lvl: 3 },
 ];
+/** «a» + ocupación, con la contracción «al». */
+const aJob = (j: string) => `a ${j}`.replace(/^a el /, "al ");
 const LVL_TXT = ["", "ingresos bajos", "ingresos medios", "ingresos altos"];
 const NAMES = ["Sofía", "Martín", "Camila", "Joaquín", "Valentina", "Tomás", "Lucía", "Mateo"];
 
@@ -302,8 +304,8 @@ const genMovilidad: Generator = {
     const ja = showLvl ? `${a.name} (${LVL_TXT[a.lvl]})` : a.name;
     const jb = showLvl ? `${b.name} (${LVL_TXT[b.lvl]})` : b.name;
     const story = inter
-      ? `${who} creció en un hogar donde el principal sostén trabajaba como ${ja}. Hoy ${who} trabaja como ${jb}.`
-      : `${who} empezó su vida laboral como ${ja}. Veinte años después trabaja como ${jb}.`;
+      ? `${who} creció en un hogar cuyo principal sostén se dedicaba ${aJob(ja)}. Hoy ${who} se dedica ${aJob(jb)}.`
+      : `${who} empezó su vida laboral dedicándose ${aJob(ja)}. Veinte años después se dedica ${aJob(jb)}.`;
     const dirName = { asc: "ascendente", desc: "descendente", hor: "horizontal" } as const;
     const genName = inter ? "intergeneracional" : "intrageneracional";
     const opts: Option[] = [];
@@ -332,7 +334,7 @@ const genMovilidad: Generator = {
         ],
         solution: [
           inter ? "Se compara con el hogar de origen → intergeneracional." : "Se compara la misma persona en dos momentos → intrageneracional.",
-          `De ${a.name} (${LVL_TXT[a.lvl]}) a ${b.name} (${LVL_TXT[b.lvl]}) → ${dirName[dir]}.`,
+          `Origen: ${a.name} (${LVL_TXT[a.lvl]}). Destino: ${b.name} (${LVL_TXT[b.lvl]}). → ${dirName[dir]}.`,
         ],
         explanation: "La movilidad social es el desplazamiento de personas o grupos entre posiciones de la estructura social. Se clasifica según el período comparado (inter o intrageneracional) y la dirección (vertical ascendente/descendente u horizontal).",
       }),
@@ -838,3 +840,623 @@ const genTiposEstadoOrden: Generator = {
     });
   },
 };
+
+// ── Formación del Estado argentino ──
+const ARG_EVENTS: Ev[] = [
+  { text: "Revolución de Mayo y Primera Junta de gobierno", year: 1810 },
+  { text: "Declaración de la Independencia en el Congreso de Tucumán", year: 1816 },
+  { text: "Caída del poder central (batalla de Cepeda); las provincias quedan autónomas", year: 1820 },
+  { text: "Rosas asume por primera vez la gobernación de Buenos Aires", year: 1829 },
+  { text: "Pacto Federal entre Buenos Aires, Santa Fe y Entre Ríos", year: 1831 },
+  { text: "Batalla de Caseros: cae el gobierno de Rosas", year: 1852 },
+  { text: "Sanción de la Constitución Nacional (sin Buenos Aires)", year: 1853 },
+  { text: "Reforma constitucional que incorpora las propuestas de Buenos Aires", year: 1860 },
+  { text: "Batalla de Pavón", year: 1861 },
+  { text: "Mitre asume la presidencia de la República unificada", year: 1862 },
+  { text: "Comienza la Guerra de la Triple Alianza (o del Paraguay)", year: 1865 },
+  { text: "Primer censo nacional de población", year: 1869 },
+  { text: "Federalización de la ciudad de Buenos Aires; Roca asume la presidencia", year: 1880 },
+];
+const genArgentinaLinea: Generator = {
+  id: "icse-argentina-linea",
+  topicId: "t-icse-estado-argentino",
+  description: "Ordenar hechos de la formación del Estado argentino (1810–1880)",
+  generate(seed, d) {
+    const r = rng(seed);
+    return orderFrom(r, {
+      gen: this.id, seed, d, topicId: this.topicId,
+      bank: d <= 2 ? ARG_EVENTS.filter((e) => [1810, 1816, 1820, 1852, 1853, 1862, 1880].includes(e.year)) : ARG_EVENTS,
+      prompt: "Ordená estos hechos de la formación del Estado argentino, del más antiguo al más reciente.",
+      hints: [
+        "Anclá tres fechas: 1810 (Revolución de Mayo), 1853 (Constitución) y 1880 (federalización de Buenos Aires).",
+        "Entre 1820 y 1852 no hubo un poder central estable: es la etapa de las autonomías provinciales y de Rosas.",
+        "Después de 1853, Buenos Aires siguió separada hasta Pavón (1861); en 1862 la República se unifica con Mitre.",
+      ],
+      explanation: "La formación del Estado argentino fue un proceso largo y conflictivo: de la ruptura con España (1810–1816) a las autonomías provinciales (1820–1852), la organización constitucional (1853–1862) y la consolidación del Estado nacional (1880).",
+    });
+  },
+};
+const genArgentinaHechos: Generator = {
+  id: "icse-argentina-hechos",
+  topicId: "t-icse-estado-argentino",
+  description: "Ubicar en el tiempo hechos clave de la formación del Estado argentino",
+  generate(seed, d) {
+    const r = rng(seed);
+    const pool = d <= 2 ? ARG_EVENTS.filter((e) => [1810, 1816, 1853, 1880].includes(e.year)) : ARG_EVENTS;
+    const ev = r.pick(pool);
+    const gap = d <= 2 ? 15 : d <= 4 ? 5 : 1;
+    const others = r.shuffle(ARG_EVENTS.filter((e) => Math.abs(e.year - ev.year) >= gap)).slice(0, d <= 2 ? 2 : 3);
+    const hints: Hints = [
+      "Anclá las fechas grandes: 1810, 1816, 1853, 1880.",
+      "Pensá qué tuvo que pasar antes: no hay Constitución nacional mientras gobierna Rosas, ni federalización sin unificación previa.",
+      "Etapas: 1810–1820 revolución e independencia; 1820–1852 autonomías provinciales; 1852–1862 organización constitucional; 1862–1880 consolidación.",
+    ];
+    if (d >= 4 && r.bool()) {
+      // Modo inverso: dado el año, el hecho.
+      return choice(
+        r,
+        base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `¿Qué ocurrió en **${ev.year}**?`, hints, solution: [`${ev.year}: ${ev.text}.`], explanation: "Ubicar los hechos en el tiempo permite reconstruir las etapas de formación del Estado." }),
+        [{ text: ev.text, correct: true }, ...others.map((o) => ({ text: o.text, error: { type: "conceptual" as ErrorType, message: `Eso ocurrió en ${o.year}.` } }))],
+      );
+    }
+    return choice(
+      r,
+      base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `¿En qué año ocurrió esto?\n\n«${ev.text}»`, hints, solution: [`${ev.year}: ${ev.text}.`], explanation: "Ubicar los hechos en el tiempo permite reconstruir las etapas de formación del Estado." }),
+      [{ text: String(ev.year), correct: true }, ...others.map((o) => ({ text: String(o.year), error: { type: "conceptual" as ErrorType, message: `En ${o.year} ocurrió otra cosa: ${o.text}.` } }))],
+    );
+  },
+};
+
+type Attr = "externalizar" | "institucionalizar" | "diferenciar" | "internalizar";
+const ATTR_LABELS: Record<Attr, { name: string; def: string }> = {
+  externalizar: { name: "Externalizar su poder", def: "ser reconocido como unidad soberana por otros Estados" },
+  institucionalizar: { name: "Institucionalizar su autoridad", def: "imponer una estructura de poder que monopolice la coerción en todo el territorio" },
+  diferenciar: { name: "Diferenciar su control", def: "contar con instituciones y funcionarios profesionales propios y extraer recursos de la sociedad de forma regular" },
+  internalizar: { name: "Internalizar una identidad colectiva", def: "crear símbolos y sentimientos de pertenencia que refuercen la integración" },
+};
+const ATTR_BANK: Item<Attr>[] = [
+  { lvl: 1, label: "externalizar", text: "Otros países firman tratados con el gobierno nacional y lo reconocen como interlocutor.", why: "el reconocimiento externo es la capacidad de externalizar su poder." },
+  { lvl: 1, label: "institucionalizar", text: "Se crea un ejército nacional y se someten las milicias provinciales y los levantamientos armados.", why: "monopolizar la coerción en el territorio es institucionalizar la autoridad." },
+  { lvl: 1, label: "diferenciar", text: "Se organiza una aduana y una administración nacional que recaudan impuestos de manera regular.", why: "burocracia propia y extracción de recursos son el control diferenciado." },
+  { lvl: 1, label: "internalizar", text: "La escuela pública enseña el himno, la bandera y una historia nacional común.", why: "construir símbolos y pertenencia es internalizar una identidad colectiva." },
+  { lvl: 2, label: "diferenciar", text: "Se crean ministerios y un cuerpo de empleados públicos con funciones especializadas.", why: "la burocracia profesional y especializada es parte del control diferenciado." },
+  { lvl: 2, label: "internalizar", text: "Se establecen fiestas patrias y se levantan monumentos a los próceres en todas las provincias.", why: "los símbolos compartidos internalizan una identidad colectiva." },
+  { lvl: 2, label: "institucionalizar", text: "La justicia federal pasa a tener jurisdicción en todo el país y sus fallos se hacen cumplir.", why: "una autoridad que se impone en todo el territorio es institucionalización de la autoridad." },
+  { lvl: 2, label: "externalizar", text: "El país envía representantes diplomáticos y es aceptado en conferencias internacionales.", why: "participar como unidad soberana en el sistema internacional es externalizar el poder." },
+];
+const genEstatidad = classifyGen({
+  id: "icse-estatidad",
+  topicId: "t-icse-estado-argentino",
+  description: "Reconocer los atributos de la «estatidad» en hechos de formación del Estado",
+  labels: ATTR_LABELS,
+  bank: ATTR_BANK,
+  ask: "¿Qué atributo de la «estatidad» se fortalece con este hecho?",
+  hints: [
+    "Preguntate hacia dónde apunta el hecho: ¿al exterior, a la fuerza, a la administración o a la identidad?",
+    "Fuerza y monopolio de la coerción → institucionalizar autoridad. Impuestos y burocracia → diferenciar control.",
+    "Reconocimiento de otros Estados → externalizar. Símbolos y escuela → internalizar identidad.",
+  ],
+  explanation: "Como referencia general, Oscar Oszlak describió la formación del Estado argentino como la adquisición progresiva de cuatro atributos de «estatidad»: externalizar su poder, institucionalizar su autoridad, diferenciar su control e internalizar una identidad colectiva.",
+});
+
+// ── Ciudadanía ──
+type Ciud = "civil" | "politica" | "social";
+const CIUD_LABELS: Record<Ciud, { name: string; def: string }> = {
+  civil: { name: "Derecho civil", def: "libertades individuales: expresión, propiedad, culto, igualdad ante la ley" },
+  politica: { name: "Derecho político", def: "participar en el ejercicio del poder: votar y ser elegido" },
+  social: { name: "Derecho social", def: "acceso a un mínimo de bienestar: educación, salud, previsión social" },
+};
+const CIUD_BANK: Item<Ciud>[] = [
+  { lvl: 1, label: "civil", text: "Libertad de expresar ideas por la prensa sin censura previa.", why: "es una libertad individual: derecho civil." },
+  { lvl: 1, label: "politica", text: "Votar en las elecciones nacionales.", why: "participar en la elección de gobernantes es un derecho político." },
+  { lvl: 1, label: "social", text: "Acceder a la educación pública y gratuita.", why: "es un derecho al bienestar garantizado por el Estado: social." },
+  { lvl: 1, label: "civil", text: "Ser juzgado según la ley y con derecho a defensa.", why: "la igualdad ante la ley y las garantías judiciales son derechos civiles." },
+  { lvl: 1, label: "politica", text: "Presentarse como candidata a diputada.", why: "ser elegido es un derecho político." },
+  { lvl: 1, label: "social", text: "Recibir una jubilación al terminar la vida laboral.", why: "la previsión social es un derecho social." },
+  { lvl: 2, label: "civil", text: "Comprar, vender y heredar bienes.", why: "el derecho de propiedad y de contratar es civil." },
+  { lvl: 2, label: "social", text: "Ser atendido gratuitamente en un hospital público.", why: "el acceso a la salud es un derecho social." },
+  { lvl: 2, label: "politica", text: "Afiliarse a un partido y participar de sus internas.", why: "intervenir en la competencia por el poder es un derecho político." },
+  { lvl: 2, label: "civil", text: "Profesar libremente cualquier religión o ninguna.", why: "la libertad de culto es un derecho civil." },
+  { lvl: 3, label: "social", text: "Recibir una asignación por cada hijo menor de edad, financiada por el Estado.", why: "es una transferencia para garantizar un nivel mínimo de bienestar: derecho social." },
+  { lvl: 3, label: "politica", text: "Que el voto sea secreto, para que nadie pueda presionar al votante.", why: "el secreto del voto protege el ejercicio del derecho político." },
+  { lvl: 3, label: "civil", text: "Asociarse libremente con otras personas con fines útiles.", why: "la libertad de asociación es una libertad individual (civil), aunque pueda usarse con fines políticos." },
+];
+const genCiudadania = classifyGen({
+  id: "icse-ciudadania-marshall",
+  topicId: "t-icse-ciudadania",
+  description: "Clasificar derechos en civiles, políticos y sociales",
+  labels: CIUD_LABELS,
+  bank: CIUD_BANK,
+  ask: "Según la clasificación clásica de la ciudadanía (civil, política y social), ¿qué tipo de derecho es este?",
+  inverseAsk: (n) => `¿Cuál de estos es un **${n.toLowerCase()}**?`,
+  hints: [
+    "Preguntate: ¿protege una libertad, permite participar del poder o garantiza bienestar?",
+    "Votar y ser elegido → político. Educación, salud, jubilación → social.",
+    "Expresión, propiedad, culto, asociación, igualdad ante la ley → civil.",
+  ],
+  explanation: "Como referencia general, T. H. Marshall describió la ciudadanía como la suma de tres componentes —civil, político y social— que en Inglaterra se fueron conquistando, a grandes rasgos, en los siglos XVIII, XIX y XX respectivamente. El orden y los tiempos variaron en cada país.",
+});
+const CIUD_EVENTS: Ev[] = [
+  { text: "Constitución Nacional: consagra derechos civiles para todos los habitantes", year: 1853 },
+  { text: "Ley Sáenz Peña: voto secreto, universal (masculino) y obligatorio", year: 1912 },
+  { text: "Primera elección presidencial con la Ley Sáenz Peña", year: 1916 },
+  { text: "Ley de voto femenino (Ley 13.010)", year: 1947 },
+  { text: "Primeras elecciones nacionales en que votan las mujeres", year: 1951 },
+  { text: "Retorno a la democracia tras la última dictadura", year: 1983 },
+  { text: "Reforma constitucional: tratados de derechos humanos con jerarquía constitucional", year: 1994 },
+  { text: "Voto optativo desde los 16 años (Ley 26.774)", year: 2012 },
+];
+const genCiudadaniaOrden: Generator = {
+  id: "icse-ciudadania-orden",
+  topicId: "t-icse-ciudadania",
+  description: "Ordenar la ampliación de la ciudadanía en la Argentina",
+  generate(seed, d) {
+    const r = rng(seed);
+    return orderFrom(r, {
+      gen: this.id, seed, d, topicId: this.topicId, bank: CIUD_EVENTS,
+      prompt: "Ordená estos hitos de la ampliación de la ciudadanía en la Argentina, del más antiguo al más reciente.",
+      hints: ["Anclá 1853 (Constitución) y 1912 (Ley Sáenz Peña).", "El voto femenino se sancionó en 1947 y se ejerció por primera vez en una elección nacional en 1951.", "1983: retorno democrático; 1994: reforma constitucional; 2012: voto desde los 16."],
+      explanation: "La ciudadanía política en la Argentina se amplió por etapas: primero el voto masculino secreto y obligatorio, luego el voto femenino y, más tarde, el voto joven. Las interrupciones democráticas del siglo XX suspendieron esos derechos en varios períodos.",
+    });
+  },
+};
+
+// ── Regímenes políticos ──
+type Reg = "democracia" | "autoritarismo" | "totalitarismo";
+const REG_LABELS: Record<Reg, { name: string; def: string }> = {
+  democracia: { name: "Democracia", def: "elecciones libres, competitivas y periódicas, pluralismo, libertades garantizadas y alternancia posible" },
+  autoritarismo: { name: "Autoritarismo", def: "pluralismo limitado, sin elecciones competitivas, sin una ideología que pretenda abarcarlo todo; se busca desmovilizar a la sociedad" },
+  totalitarismo: { name: "Totalitarismo", def: "partido único, ideología oficial que pretende controlar todos los ámbitos de la vida, movilización de masas y terror" },
+};
+const REG_BANK: Item<Reg>[] = [
+  { lvl: 1, label: "democracia", text: "Varios partidos compiten en elecciones periódicas y el que pierde puede volver a competir.", why: "competencia, periodicidad y alternancia definen a la democracia." },
+  { lvl: 1, label: "autoritarismo", text: "Un gobierno suspende las elecciones y prohíbe la actividad política, pero tolera cierta autonomía de iglesias y empresas.", why: "pluralismo limitado y desmovilización: autoritarismo." },
+  { lvl: 1, label: "totalitarismo", text: "Un partido único impone una ideología oficial en la escuela, el trabajo, el arte y la vida familiar.", why: "la pretensión de controlar todos los ámbitos es propia del totalitarismo." },
+  { lvl: 2, label: "totalitarismo", text: "El régimen organiza movilizaciones masivas permanentes y exige adhesión activa, no solo obediencia.", why: "la movilización y la adhesión activa distinguen al totalitarismo del autoritarismo, que busca desmovilizar." },
+  { lvl: 2, label: "autoritarismo", text: "El gobierno pide a la población que «no se meta en política» y se ocupe de sus asuntos privados.", why: "la desmovilización es típica del autoritarismo." },
+  { lvl: 2, label: "democracia", text: "Un tribunal independiente anula un decreto del presidente y el gobierno acata el fallo.", why: "la limitación del poder por instituciones independientes es propia de la democracia constitucional." },
+  { lvl: 3, label: "autoritarismo", text: "Hay elecciones, pero la oposición está proscripta y los medios críticos fueron cerrados.", why: "sin competencia real ni libertades, la elección no alcanza para hablar de democracia: es un régimen autoritario." },
+  { lvl: 3, label: "totalitarismo", text: "Se elimina toda organización independiente: sindicatos, clubes y asociaciones pasan a depender del partido.", why: "la eliminación total del pluralismo social es rasgo totalitario." },
+  { lvl: 3, label: "democracia", text: "Un partido gana con amplia mayoría, pero la oposición conserva sus bancas, sus medios y la posibilidad de ganar la próxima elección.", why: "la mayoría gobierna con derechos de la minoría garantizados: democracia." },
+];
+const genRegimen = classifyGen({
+  id: "icse-regimen",
+  topicId: "t-icse-regimenes",
+  description: "Distinguir regímenes democráticos, autoritarios y totalitarios",
+  labels: REG_LABELS,
+  bank: REG_BANK,
+  ask: "¿Qué tipo de régimen político describe esta situación?",
+  inverseAsk: (n) => `¿Cuál de estas situaciones es característica de un régimen del tipo **${n.toLowerCase()}**?`,
+  hints: [
+    "Mirá tres cosas: competencia electoral, pluralismo y si el régimen moviliza o desmoviliza.",
+    "Que haya elecciones no alcanza: tienen que ser libres y competitivas.",
+    "Autoritarismo: pluralismo limitado y desmovilización. Totalitarismo: ideología total, partido único, movilización.",
+  ],
+  explanation: "La ciencia política distingue regímenes según cómo se accede al poder y cómo se ejerce. La diferencia entre autoritarismo y totalitarismo está en el grado de control sobre la sociedad y en el uso de una ideología totalizante.",
+});
+
+// ── Instituciones de la democracia argentina ──
+type Org = "ejecutivo" | "diputados" | "senado" | "judicial";
+const ORG_LABELS: Record<Org, { name: string; def: string }> = {
+  ejecutivo: { name: "Poder Ejecutivo (presidencia)", def: "administra el país, promulga o veta leyes y dirige las relaciones exteriores" },
+  diputados: { name: "Cámara de Diputados", def: "representa al pueblo; inicia las leyes de impuestos y acusa en el juicio político" },
+  senado: { name: "Senado", def: "representa a las provincias y a la Ciudad de Buenos Aires; juzga en el juicio político y presta acuerdo para designar jueces" },
+  judicial: { name: "Poder Judicial", def: "resuelve conflictos aplicando la ley y controla la constitucionalidad de las normas" },
+};
+const ORG_BANK: Item<Org>[] = [
+  { lvl: 1, label: "ejecutivo", text: "Vetar una ley sancionada por el Congreso.", why: "el veto es una atribución del Poder Ejecutivo." },
+  { lvl: 1, label: "judicial", text: "Declarar que una ley es inconstitucional en un caso concreto.", why: "el control de constitucionalidad lo ejercen los jueces." },
+  { lvl: 1, label: "diputados", text: "Acusar al presidente ante el Senado en un juicio político.", why: "la acusación en el juicio político corresponde a Diputados." },
+  { lvl: 1, label: "senado", text: "Juzgar al funcionario acusado en un juicio político.", why: "el Senado actúa como tribunal en el juicio político." },
+  { lvl: 2, label: "senado", text: "Prestar acuerdo para la designación de los jueces de la Corte Suprema.", why: "el acuerdo para designar jueces de la Corte lo presta el Senado." },
+  { lvl: 2, label: "diputados", text: "Ser la cámara de origen de un proyecto de ley que crea un impuesto.", why: "la Constitución asigna a Diputados la iniciativa en materia de contribuciones." },
+  { lvl: 2, label: "ejecutivo", text: "Reglamentar una ley para que pueda aplicarse.", why: "reglamentar las leyes es atribución del Ejecutivo." },
+  { lvl: 2, label: "judicial", text: "Resolver un conflicto entre dos provincias.", why: "la Corte Suprema interviene en causas entre provincias." },
+  { lvl: 3, label: "senado", text: "Ser la cámara de origen de la ley de coparticipación federal de impuestos.", why: "la reforma de 1994 estableció que esa ley se inicia en el Senado, que representa a las provincias." },
+  { lvl: 3, label: "ejecutivo", text: "Dictar un decreto de necesidad y urgencia, que luego controla el Congreso.", why: "los DNU los dicta el Ejecutivo en circunstancias excepcionales (art. 99 inc. 3) y quedan sujetos al control del Congreso." },
+];
+const genPoderes = classifyGen({
+  id: "icse-poderes",
+  topicId: "t-icse-instituciones",
+  description: "Asignar atribuciones a los poderes del Estado nacional",
+  labels: ORG_LABELS,
+  bank: ORG_BANK,
+  ask: "Según la Constitución Nacional, ¿qué órgano tiene esta atribución?",
+  hints: [
+    "Pensá en la división de poderes: hacer leyes, ejecutarlas, juzgar.",
+    "Juicio político: Diputados acusa, el Senado juzga.",
+    "Veto, reglamentación y DNU → Ejecutivo. Control de constitucionalidad → Judicial.",
+  ],
+  explanation: "La Constitución organiza un gobierno representativo, republicano y federal, con división de poderes: Ejecutivo (presidencia), Legislativo bicameral (Diputados y Senado) y Judicial (Corte Suprema y tribunales inferiores). Cada poder controla a los otros.",
+});
+
+// ── Balotaje (arts. 97 y 98 de la Constitución Nacional) ──
+/** Resultado según la Constitución: gana en primera vuelta si supera el 45% de los votos afirmativos válidos, o si tiene al menos el 40% y más de 10 puntos de diferencia con el segundo. */
+export function primeraVuelta(p1: number, p2: number): "45" | "40-10" | "balotaje" {
+  if (p1 > 45) return "45";
+  if (p1 >= 40 && p1 - p2 > 10) return "40-10";
+  return "balotaje";
+}
+const genBalotaje: Generator = {
+  id: "icse-balotaje",
+  topicId: "t-icse-instituciones",
+  description: "Decidir si una elección presidencial va a segunda vuelta (arts. 97 y 98 CN)",
+  generate(seed, d) {
+    const r = rng(seed);
+    const caso = r.pick(["45", "40-10", "balotaje", "balotaje"] as const);
+    // Todo en décimas para evitar errores de redondeo; márgenes ≥ 0,5 puntos respecto de los umbrales.
+    let a = 0, b = 0;
+    for (let tries = 0; tries < 500; tries++) {
+      if (caso === "45") {
+        a = r.int(460, 540);
+        b = r.int(200, Math.min(a - 10, 440));
+      } else if (caso === "40-10") {
+        a = r.int(405, 445);
+        b = r.int(220, a - 105);
+      } else if (r.bool()) {
+        a = r.int(405, 445);
+        b = r.int(a - 95, a - 5);
+      } else {
+        a = r.int(300, 395);
+        b = r.int(Math.max(150, Math.ceil((1000 - a) / 3) + 5), a - 5);
+      }
+      const rest = 1000 - a - b;
+      if (b < a && rest >= 0 && rest <= 3 * (b - 1)) break;
+    }
+    const rest = 1000 - a - b;
+    // Repartir el resto en tres candidatos menores, cada uno por debajo del segundo.
+    const c = Math.min(b - 1, Math.round(rest * 0.5));
+    const dd = Math.min(b - 1, rest - c);
+    const e = rest - c - dd;
+    const shares = [a, b, c, dd, e].filter((x) => x > 0);
+    const p1 = a / 10, p2 = b / 10;
+    const res = primeraVuelta(p1, p2);
+    const cands = ["Lista A", "Lista B", "Lista C", "Lista D", "Lista E"];
+    let tabla: string;
+    let sol: string[];
+    if (d >= 5) {
+      const N = r.int(18, 26) * 1000000; // votos afirmativos válidos
+      const blancos = r.int(3, 9) * 100000;
+      const votes = shares.map((s) => Math.round((N * s) / 1000));
+      const nAf = votes.reduce((x, y) => x + y, 0);
+      tabla = shares.map((_, i) => `${cands[i]}: ${miles(votes[i])} votos`).join("\n") + `\nVotos en blanco: ${miles(blancos)}`;
+      const q1 = Math.round((votes[0] / nAf) * 1000) / 10;
+      const q2 = Math.round((votes[1] / nAf) * 1000) / 10;
+      sol = [
+        `Votos afirmativos válidos = suma de las listas = ${miles(nAf)} (los votos en blanco NO se cuentan).`,
+        `Lista A: ${miles(votes[0])} / ${miles(nAf)} ≈ ${dec(q1)}%. Lista B ≈ ${dec(q2)}%.`,
+      ];
+    } else {
+      tabla = shares.map((s, i) => `${cands[i]}: ${dec(s / 10)}%`).join("\n");
+      sol = [`Lista A: ${dec(p1)}%. Lista B: ${dec(p2)}%. Diferencia: ${dec((a - b) / 10)} puntos.`];
+    }
+    if (res === "45") sol.push(`${dec(p1)}% > 45% → la Lista A gana en primera vuelta (art. 97).`);
+    else if (res === "40-10") sol.push(`${dec(p1)}% no supera el 45%, pero es ≥ 40% y la diferencia (${dec((a - b) / 10)}) supera los 10 puntos → gana en primera vuelta (art. 98).`);
+    else sol.push(p1 >= 40 ? `${dec(p1)}% ≥ 40%, pero la diferencia (${dec((a - b) / 10)}) no supera los 10 puntos → segunda vuelta entre A y B.` : `${dec(p1)}% < 40% → segunda vuelta entre A y B.`);
+    const opts: Option[] = [
+      { text: "La Lista A gana en primera vuelta", correct: res !== "balotaje", error: res === "balotaje" ? { type: "interpretacion", message: p1 >= 40 ? "Con 40% o más hace falta además una diferencia de MÁS de 10 puntos con el segundo, y acá no la hay." : "Con menos del 40% nunca se gana en primera vuelta." } : undefined },
+      { text: "Hay segunda vuelta entre A y B", correct: res === "balotaje", error: res !== "balotaje" ? { type: "interpretacion", message: res === "45" ? "Superar el 45% de los votos afirmativos válidos alcanza para ganar en primera vuelta (art. 97)." : "Tener 40% o más con más de 10 puntos de ventaja también alcanza para ganar en primera vuelta (art. 98)." } : undefined },
+    ];
+    if (d >= 3) opts.push({ text: "Hay segunda vuelta entre los tres más votados", error: { type: "conceptual", message: "La segunda vuelta es solo entre las dos fórmulas más votadas." } });
+    if (d >= 4) opts.push({ text: "Gana quien tenga mayoría absoluta (más del 50%); si nadie la tiene, hay segunda vuelta", error: { type: "conceptual", message: "La Constitución argentina no exige el 50%: fija los umbrales del 45%, o del 40% con más de 10 puntos de ventaja." } });
+    return choice(
+      fixed(r),
+      base({
+        gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId,
+        prompt: `Resultados ficticios de una elección presidencial argentina${d >= 5 ? "" : " (porcentajes sobre votos afirmativos válidos)"}:\n${tabla}\n\nSegún la Constitución Nacional, ¿qué ocurre?`,
+        hints: [
+          d >= 5 ? "Primero calculá los porcentajes sobre los votos afirmativos válidos: los votos en blanco no cuentan." : "Mirá el porcentaje del primero y la diferencia con el segundo.",
+          "Hay dos formas de ganar en primera vuelta: más del 45%, o al menos 40% con más de 10 puntos de diferencia.",
+          "Si no se cumple ninguna, hay segunda vuelta entre las dos fórmulas más votadas.",
+        ],
+        solution: sol,
+        explanation: "La reforma de 1994 estableció la elección directa del presidente con doble vuelta. Arts. 97 y 98: gana en primera vuelta la fórmula que obtenga más del 45% de los votos afirmativos válidamente emitidos, o al menos el 40% con una diferencia mayor de 10 puntos sobre la segunda.",
+      }),
+      opts,
+    );
+  },
+};
+
+const REFORMA_VF: VF[] = [
+  { text: "La reforma de 1994 creó la figura del jefe de Gabinete de Ministros.", value: true, why: "el jefe de Gabinete fue una de las novedades de 1994, con responsabilidad política ante el Congreso." },
+  { text: "La reforma de 1994 estableció la elección directa del presidente.", value: true, why: "antes se elegía por colegio electoral; desde 1994 es elección directa con posible segunda vuelta." },
+  { text: "Desde 1994 el mandato presidencial es de 4 años, con posibilidad de una reelección inmediata.", value: true, why: "antes era de 6 años sin reelección inmediata." },
+  { text: "La reforma de 1994 incorporó un tercer senador por provincia, que corresponde a la minoría.", value: true, why: "cada distrito elige tres senadores: dos para la lista más votada y uno para la segunda." },
+  { text: "La reforma de 1994 otorgó autonomía a la Ciudad de Buenos Aires.", value: true, why: "la ciudad pasó a tener un régimen de gobierno autónomo y un jefe de gobierno elegido por sus habitantes." },
+  { text: "La reforma de 1994 dio jerarquía constitucional a un conjunto de tratados de derechos humanos.", value: true, why: "lo hace el art. 75 inc. 22." },
+  { text: "La reforma de 1994 creó el Consejo de la Magistratura.", value: true, why: "interviene en la selección de jueces y en su remoción." },
+  { text: "La reforma de 1994 estableció el voto femenino.", value: false, why: "el voto femenino se sancionó por ley en 1947 (Ley 13.010)." },
+  { text: "La reforma de 1994 creó el Senado de la Nación.", value: false, why: "el Congreso bicameral existe desde la Constitución de 1853; en 1994 se cambió su composición." },
+  { text: "La reforma de 1994 prohibió la reelección presidencial.", value: false, why: "al contrario: habilitó una reelección inmediata, que antes no estaba permitida." },
+  { text: "La reforma de 1994 extendió el mandato presidencial a 6 años.", value: false, why: "lo redujo de 6 a 4 años." },
+  { text: "La reforma de 1994 eliminó el sistema federal.", value: false, why: "lo mantuvo e incluso fortaleció aspectos como el dominio provincial de los recursos naturales." },
+];
+const genReforma94: Generator = {
+  id: "icse-reforma-1994",
+  topicId: "t-icse-instituciones",
+  description: "Verdadero/falso y elección sobre la reforma constitucional de 1994",
+  generate(seed, d) {
+    const r = rng(seed);
+    const hints: Hints = [
+      "Pensá qué cambió en la forma de elegir y en la duración de los mandatos.",
+      "Novedades de 1994: jefe de Gabinete, Consejo de la Magistratura, tercer senador, autonomía de la Ciudad, elección directa con balotaje, mandato de 4 años con una reelección.",
+      "El voto femenino (1947) y el Congreso bicameral (1853) son anteriores a la reforma.",
+    ];
+    const explanation = "La reforma constitucional de 1994 modificó la organización del poder: acortó el mandato presidencial, habilitó una reelección, creó nuevas instituciones de control y dio jerarquía constitucional a tratados de derechos humanos.";
+    if (d <= 3) return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: REFORMA_VF[(seed * 7 + d) % REFORMA_VF.length], hints, explanation });
+    // ¿Cuál NO fue una novedad de 1994? (o ¿cuál sí?)
+    const ask = r.bool();
+    const right = r.pick(REFORMA_VF.filter((v) => v.value !== ask));
+    const wrong = sample(r, REFORMA_VF.filter((v) => v.value === ask), d >= 6 ? 4 : 3);
+    const strip = (t: string) => t.replace(/^La reforma de 1994 /, "").replace(/^Desde 1994 /, "");
+    return choice(
+      r,
+      base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: ask ? "¿Cuál de estas afirmaciones sobre la reforma de 1994 es **falsa**?" : "¿Cuál de estas afirmaciones sobre la reforma de 1994 es **verdadera**?", hints, solution: [`${right.text} → ${right.value ? "verdadero" : "falso"}: ${right.why}`], explanation }),
+      [
+        { text: strip(right.text), correct: true },
+        ...wrong.map((w) => ({ text: strip(w.text), error: { type: "conceptual" as ErrorType, message: `Esa es ${w.value ? "verdadera" : "falsa"}: ${w.why}` } })),
+      ],
+    );
+  },
+};
+
+// ═══════════════════════ icse-3 · Estado y desarrollo socioeconómico ═══════════════════════
+
+type Mod = "agro" | "isi" | "apertura";
+const MOD_LABELS: Record<Mod, { name: string; def: string }> = {
+  agro: { name: "Modelo agroexportador (c. 1880–1930)", def: "exportación de carnes y cereales, importación de manufacturas, capitales extranjeros e inmigración masiva" },
+  isi: { name: "Industrialización por sustitución de importaciones (c. 1930–1976)", def: "producir localmente lo que antes se importaba, con protección del mercado interno y fuerte intervención estatal" },
+  apertura: { name: "Apertura y valorización financiera (c. 1976–2001)", def: "apertura comercial y financiera, endeudamiento externo, desregulación y, en los noventa, privatizaciones y convertibilidad" },
+};
+const MOD_BANK: Item<Mod>[] = [
+  { lvl: 1, label: "agro", text: "El país exporta trigo y carne a Gran Bretaña e importa textiles y maquinaria.", why: "insertarse en el mundo como proveedor de materias primas es el núcleo del modelo agroexportador." },
+  { lvl: 1, label: "isi", text: "Se protege a la industria local con aranceles para fabricar en el país bienes que antes se importaban.", why: "es la definición de sustitución de importaciones." },
+  { lvl: 1, label: "apertura", text: "Se reducen los aranceles, se liberan los movimientos de capitales y se privatizan empresas públicas.", why: "apertura, liberalización financiera y privatizaciones caracterizan esta etapa." },
+  { lvl: 2, label: "agro", text: "Capitales británicos construyen una red ferroviaria en abanico que converge en el puerto de Buenos Aires.", why: "los ferrocarriles orientados al puerto servían a la exportación primaria: modelo agroexportador." },
+  { lvl: 2, label: "isi", text: "El Estado crea empresas en sectores considerados estratégicos y orienta el crédito hacia la industria.", why: "el Estado empresario y promotor de la industria es típico de la ISI." },
+  { lvl: 2, label: "apertura", text: "Una ley fija la paridad de un peso igual a un dólar y limita la emisión monetaria.", why: "la Ley de Convertibilidad (1991) es un instrumento central de los años noventa." },
+  { lvl: 2, label: "agro", text: "Llegan millones de inmigrantes europeos, muchos de ellos para trabajar en el campo y en las ciudades portuarias.", why: "la inmigración masiva fue una pieza del modelo agroexportador." },
+  { lvl: 3, label: "isi", text: "Se busca atraer inversiones extranjeras para desarrollar siderurgia, petroquímica y automotrices.", why: "es la segunda etapa de la ISI, el desarrollismo de fines de los años cincuenta, centrado en industrias básicas." },
+  { lvl: 3, label: "isi", text: "La industria crece, pero cuando se expande la economía faltan divisas para importar insumos y se produce una crisis de balanza de pagos.", why: "el «estrangulamiento externo» (stop and go) es un problema característico de la ISI." },
+  { lvl: 3, label: "apertura", text: "Las ganancias financieras superan a las productivas y crece fuertemente la deuda externa.", why: "la valorización financiera y el endeudamiento externo caracterizan la etapa iniciada en 1976." },
+  { lvl: 3, label: "agro", text: "La crisis mundial hace caer los precios y la demanda de los productos primarios que el país exporta.", why: "la crisis de 1929–1930 golpeó al modelo agroexportador y aceleró el giro hacia la industria." },
+];
+const genModelo = classifyGen({
+  id: "icse-modelo-desarrollo",
+  topicId: "t-icse-modelos-desarrollo",
+  description: "Reconocer los modelos de desarrollo de la Argentina",
+  labels: MOD_LABELS,
+  bank: MOD_BANK,
+  ask: "¿Con qué modelo de desarrollo se asocia esta situación?",
+  inverseAsk: (n) => `¿Cuál de estas situaciones es característica del **${n}**?`,
+  hints: [
+    "Preguntate qué produce y qué exporta el país, y qué papel cumple el Estado.",
+    "Materias primas + capitales extranjeros + inmigración → agroexportador. Industria protegida + Estado empresario → ISI.",
+    "Apertura, deuda, privatizaciones, convertibilidad → etapa de apertura y valorización financiera.",
+  ],
+  explanation: "Un modelo de desarrollo es la combinación de una forma de inserción internacional, una estructura productiva y un papel del Estado. Las fechas son aproximadas y los límites entre etapas se debaten; cada modelo tiene defensores y críticos.",
+});
+const MOD_EVENTS: Ev[] = [
+  { text: "Consolidación del modelo agroexportador con la unificación del Estado", year: 1880 },
+  { text: "Creación de YPF, la petrolera estatal", year: 1922 },
+  { text: "Crisis mundial que golpea a las exportaciones primarias", year: 1929 },
+  { text: "Pacto Roca-Runciman con Gran Bretaña", year: 1933 },
+  { text: "Llega al gobierno el desarrollismo (Frondizi) y apuesta a industrias básicas", year: 1958 },
+  { text: "Golpe de Estado e inicio de la apertura y la valorización financiera", year: 1976 },
+  { text: "Ley de Convertibilidad: un peso igual a un dólar", year: 1991 },
+  { text: "Fin de la convertibilidad tras la crisis de 2001", year: 2002 },
+];
+const genModelosOrden: Generator = {
+  id: "icse-modelos-orden",
+  topicId: "t-icse-modelos-desarrollo",
+  description: "Ordenar hitos de los modelos de desarrollo argentinos",
+  generate(seed, d) {
+    const r = rng(seed);
+    if (d <= 2) {
+      const items = [MOD_LABELS.agro.name, MOD_LABELS.isi.name, MOD_LABELS.apertura.name].map((t) => t.replace(/ \(.*\)$/, ""));
+      let shown = r.shuffle([...items]);
+      if (shown.every((t, i) => t === items[i])) shown = [...items].reverse();
+      const ex: OrderExercise = {
+        ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Ordená los modelos de desarrollo de la Argentina, del más antiguo al más reciente.", hints: ["Empezá por el que se basaba en exportar materias primas.", "La industria crece después de la crisis de 1929–1930.", "Agroexportador (c. 1880) → ISI (c. 1930) → apertura (c. 1976)."], solution: ["c. 1880–1930: modelo agroexportador.", "c. 1930–1976: industrialización por sustitución de importaciones.", "c. 1976–2001: apertura y valorización financiera."], explanation: "Cada modelo entra en crisis y da lugar al siguiente: la crisis de 1930 al agroexportador; la de mediados de los setenta a la ISI." }),
+        kind: "order",
+        items: shown,
+        answer: items,
+      };
+      return ex;
+    }
+    return orderFrom(r, {
+      gen: this.id, seed, d, topicId: this.topicId, bank: MOD_EVENTS,
+      prompt: "Ordená estos hechos económicos de la historia argentina, del más antiguo al más reciente.",
+      hints: ["Anclá la crisis de 1929–1930, que cierra la etapa agroexportadora.", "El desarrollismo es de fines de los cincuenta; la apertura comienza en 1976.", "La convertibilidad rige de 1991 a 2002."],
+      explanation: "Los hitos permiten ver cómo cambia la relación entre Estado, mercado e inserción internacional en cada etapa.",
+    });
+  },
+};
+
+// ── Políticas públicas: ciclo y tipos ──
+const CICLO = [
+  "Identificación del problema e ingreso en la agenda pública",
+  "Formulación de alternativas",
+  "Toma de decisión (adopción de una alternativa)",
+  "Implementación",
+  "Evaluación",
+];
+const CICLO_CASOS: { tema: string; pasos: string[] }[] = [
+  { tema: "deserción en la escuela secundaria", pasos: ["Informes y reclamos instalan la deserción escolar como problema público", "El ministerio estudia becas, tutorías y cambios en el régimen de asistencia", "Se decide crear un programa de becas con tutorías", "Las escuelas asignan becas y tutores", "Se mide si bajó la deserción en las escuelas del programa"] },
+  { tema: "siniestros viales", pasos: ["Un aumento de accidentes y la presión de familiares instalan el tema", "Se analizan opciones: controles, licencia por puntos, campañas", "Se sanciona una ley que crea la licencia por puntos", "Se instalan sistemas de registro y controles en rutas", "Se compara la siniestralidad antes y después de la ley"] },
+  { tema: "inundaciones urbanas", pasos: ["Tras una gran inundación, el tema entra en la agenda del municipio", "Técnicos proponen obras hidráulicas, alertas tempranas y reordenamiento urbano", "El concejo aprueba un plan de obras y un sistema de alerta", "Se licitan y construyen las obras", "Se analiza el efecto en las lluvias siguientes"] },
+];
+const CICLO_VF: VF[] = [
+  { text: "En la práctica, las etapas del ciclo de políticas públicas se superponen y pueden repetirse.", value: true, why: "el ciclo es un modelo analítico: la evaluación puede reabrir la formulación, y la implementación redefine la política." },
+  { text: "Una vez que se toma la decisión, el contenido de la política ya no cambia.", value: false, why: "durante la implementación intervienen muchos actores que pueden modificar en los hechos lo decidido." },
+  { text: "No todo problema social se convierte en problema de agenda pública.", value: true, why: "para entrar en la agenda, una cuestión tiene que ser problematizada y movilizar a actores con capacidad de instalarla." },
+  { text: "La evaluación solo puede hacerse cuando la política terminó.", value: false, why: "también hay evaluaciones previas (ex ante) y durante la ejecución." },
+];
+const genCiclo: Generator = {
+  id: "icse-ciclo-politicas",
+  topicId: "t-icse-politicas-publicas",
+  description: "Ordenar y reconocer las etapas del ciclo de las políticas públicas",
+  generate(seed, d) {
+    const r = rng(seed);
+    const hints: Hints = [
+      "Antes de resolver un problema, alguien tiene que reconocerlo como problema público.",
+      "Después de definir el problema se piensan alternativas, se elige una, se ejecuta y se evalúa.",
+      "Ciclo: agenda → formulación → decisión → implementación → evaluación.",
+    ];
+    const explanation = "El ciclo de las políticas públicas es un modelo que divide el proceso en etapas para analizarlo. En la realidad las etapas se superponen y la evaluación puede reiniciar el ciclo.";
+    if (d >= 5 && seed % 3 === 0) return vfChoice(r, { gen: this.id, seed, d, topicId: this.topicId, st: CICLO_VF[(seed + d) % CICLO_VF.length], hints, explanation });
+    if (d <= 2) {
+      let items = r.shuffle([...CICLO]);
+      if (items.every((t, i) => t === CICLO[i])) items = [...CICLO].reverse();
+      return { ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: "Ordená las etapas del ciclo de las políticas públicas.", hints, solution: CICLO.map((c, i) => `${i + 1}. ${c}`), explanation }), kind: "order", items, answer: [...CICLO] } as OrderExercise;
+    }
+    const caso = r.pick(CICLO_CASOS);
+    if (d <= 4) {
+      let items = r.shuffle([...caso.pasos]);
+      if (items.every((t, i) => t === caso.pasos[i])) items = [...caso.pasos].reverse();
+      return { ...base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `Una política sobre **${caso.tema}**. Ordená sus momentos según el ciclo de las políticas públicas.`, hints, solution: caso.pasos.map((p, i) => `${CICLO[i]}: ${p}`), explanation }), kind: "order", items, answer: [...caso.pasos] } as OrderExercise;
+    }
+    const k = r.int(0, 4);
+    return choice(
+      fixed(r),
+      base({ gen: this.id, seed, difficulty: d, subjectId: S, topicId: this.topicId, prompt: `Política sobre ${caso.tema}: «${caso.pasos[k]}».\n\n¿A qué etapa del ciclo corresponde?`, hints, solution: [`${CICLO[k]}.`], explanation }),
+      CICLO.map((c, i) => (i === k ? { text: c, correct: true } : { text: c, error: { type: "conceptual" as ErrorType, message: `No: «${c}» sería, en este caso, «${caso.pasos[i]}».` } })),
+    );
+  },
+};
+
+type TPol = "distributiva" | "regulatoria" | "redistributiva" | "constitutiva";
+const TPOL_LABELS: Record<TPol, { name: string; def: string }> = {
+  distributiva: { name: "Distributiva", def: "asigna recursos o servicios a sectores específicos sin que se perciba claramente quién paga" },
+  regulatoria: { name: "Regulatoria", def: "fija reglas que obligan o prohíben conductas" },
+  redistributiva: { name: "Redistributiva", def: "transfiere recursos de unos grupos sociales a otros" },
+  constitutiva: { name: "Constitutiva (o institucional)", def: "cambia las reglas de juego o la organización del propio Estado" },
+};
+const TPOL_BANK: Item<TPol>[] = [
+  { lvl: 1, label: "regulatoria", text: "Se obliga a todos los autos nuevos a incluir airbags.", why: "impone una obligación de conducta: regulatoria." },
+  { lvl: 1, label: "redistributiva", text: "Un impuesto progresivo a los ingresos altos financia una transferencia a hogares de bajos ingresos.", why: "se toma de unos grupos para dar a otros: redistributiva." },
+  { lvl: 1, label: "distributiva", text: "Se construye un puente en una localidad con fondos del presupuesto general.", why: "beneficia a un sector específico y el costo se diluye en el presupuesto general: distributiva." },
+  { lvl: 1, label: "constitutiva", text: "Se crea un nuevo ministerio y se redistribuyen funciones entre los existentes.", why: "cambia la organización del propio Estado: constitutiva." },
+  { lvl: 2, label: "regulatoria", text: "Se prohíbe la publicidad de cigarrillos en la vía pública.", why: "prohíbe una conducta: regulatoria." },
+  { lvl: 2, label: "constitutiva", text: "Se modifica el sistema electoral para incorporar primarias abiertas obligatorias.", why: "cambia las reglas de juego del sistema político: constitutiva." },
+  { lvl: 2, label: "distributiva", text: "Se otorga un subsidio a los productores de una economía regional.", why: "asigna recursos a un sector puntual: distributiva." },
+  { lvl: 2, label: "redistributiva", text: "Se crea una asignación para hijos de trabajadores informales y desocupados.", why: "transfiere recursos hacia los sectores de menores ingresos: redistributiva." },
+  { lvl: 3, label: "regulatoria", text: "Se establece un etiquetado frontal obligatorio que advierta sobre exceso de azúcar o sodio.", why: "obliga a las empresas a una conducta (informar): regulatoria." },
+  { lvl: 3, label: "constitutiva", text: "Se transfieren escuelas y hospitales de la Nación a las provincias.", why: "reorganiza qué nivel del Estado se ocupa de qué: constitutiva." },
+];
+const genTipoPolitica = classifyGen({
+  id: "icse-tipo-politica",
+  topicId: "t-icse-politicas-publicas",
+  description: "Clasificar políticas públicas: distributivas, regulatorias, redistributivas y constitutivas",
+  labels: TPOL_LABELS,
+  bank: TPOL_BANK,
+  ask: "¿Qué tipo de política pública es esta?",
+  inverseAsk: (n) => `¿Cuál de estas medidas es una política **${n.toLowerCase()}**?`,
+  hints: [
+    "Preguntate qué hace la medida: ¿da recursos, impone reglas, transfiere de unos a otros o reorganiza el Estado?",
+    "Si hay un grupo que claramente pone y otro que recibe → redistributiva. Si el costo se diluye → distributiva.",
+    "Obligar o prohibir → regulatoria. Cambiar reglas de juego u organismos → constitutiva.",
+  ],
+  explanation: "Como referencia general, una tipología clásica (asociada a Theodore Lowi) clasifica las políticas por su impacto: distributivas, regulatorias, redistributivas y constitutivas. Muchas políticas reales combinan rasgos de varios tipos.",
+});
+
+// ── Políticas sectoriales ──
+type Sec = "economia" | "infraestructura" | "salud" | "cyt" | "educacion";
+const SEC_LABELS: Record<Sec, { name: string; def: string }> = {
+  economia: { name: "Política económica", def: "moneda, impuestos, gasto, comercio exterior, empleo" },
+  infraestructura: { name: "Infraestructura", def: "transporte, energía, agua, comunicaciones y obras públicas" },
+  salud: { name: "Salud", def: "prevención, atención y financiamiento del sistema de salud" },
+  cyt: { name: "Ciencia y tecnología", def: "investigación, desarrollo e innovación" },
+  educacion: { name: "Educación", def: "escolaridad, formación docente y universidad" },
+};
+const SEC_BANK: Item<Sec>[] = [
+  { lvl: 1, label: "economia", text: "El banco central sube la tasa de interés para frenar la inflación.", why: "es política monetaria: área económica." },
+  { lvl: 1, label: "infraestructura", text: "Se construye una autopista entre dos ciudades.", why: "es obra pública de transporte: infraestructura." },
+  { lvl: 1, label: "salud", text: "Se amplía el calendario obligatorio de vacunación.", why: "es una política de prevención: salud." },
+  { lvl: 1, label: "cyt", text: "Se financian becas para investigadores en un organismo científico.", why: "promueve la investigación: ciencia y tecnología." },
+  { lvl: 1, label: "educacion", text: "Se extiende la obligatoriedad escolar hasta el fin de la secundaria.", why: "es política educativa." },
+  { lvl: 2, label: "economia", text: "Se baja un arancel a la importación de insumos industriales.", why: "es política comercial: área económica." },
+  { lvl: 2, label: "infraestructura", text: "Se tiende una red de gasoductos para llevar gas a nuevas regiones.", why: "es infraestructura energética." },
+  { lvl: 2, label: "cyt", text: "Se crea un fondo que financia proyectos de innovación entre universidades y empresas.", why: "promueve la investigación aplicada y la innovación: ciencia y tecnología." },
+  { lvl: 2, label: "salud", text: "Se establece la provisión gratuita de medicamentos esenciales en centros de atención primaria.", why: "garantiza acceso a la atención: salud." },
+  { lvl: 2, label: "educacion", text: "Se crean nuevas universidades nacionales en el conurbano.", why: "amplía el acceso a la educación superior: educación." },
+  { lvl: 3, label: "cyt", text: "Se fabrica un satélite de comunicaciones con capacidades tecnológicas nacionales.", why: "el objetivo central es desarrollar capacidades tecnológicas propias (aunque también sea infraestructura de comunicaciones)." },
+  { lvl: 3, label: "infraestructura", text: "Se extiende la red de agua potable y cloacas a barrios que no la tenían.", why: "es obra pública de saneamiento: infraestructura (con fuerte impacto en la salud)." },
+];
+const genSector = classifyGen({
+  id: "icse-politica-sector",
+  topicId: "t-icse-politicas-sectoriales",
+  description: "Reconocer el área de una política pública",
+  labels: SEC_LABELS,
+  bank: SEC_BANK,
+  ask: "¿A qué área de política pública corresponde principalmente esta medida?",
+  hints: [
+    "Preguntate cuál es el objetivo principal de la medida.",
+    "Obras de transporte, energía y agua → infraestructura. Moneda, impuestos, comercio → economía.",
+    "Muchas políticas impactan en varias áreas: elegí la del objetivo principal.",
+  ],
+  explanation: "El Estado interviene en el desarrollo a través de políticas sectoriales. Clasificarlas por área ayuda a analizarlas, aunque sus efectos suelen cruzar varios sectores.",
+});
+const HITOS_SEC: [string, string][] = [
+  ["Ley 1420 de educación común, gratuita y obligatoria", "1884"],
+  ["Reforma Universitaria de Córdoba", "1918"],
+  ["Creación de YPF", "1922"],
+  ["Supresión de los aranceles universitarios (gratuidad)", "1949"],
+  ["Creación del CONICET", "1958"],
+  ["Ley de Educación Superior (Ley 24.521)", "1995"],
+  ["Ley de Educación Nacional (Ley 26.206)", "2006"],
+  ["Creación de la Asignación Universal por Hijo", "2009"],
+];
+const genHitos: Generator = {
+  id: "icse-hitos-politicas",
+  topicId: "t-icse-politicas-sectoriales",
+  description: "Relacionar hitos de políticas educativas, científicas y sociales con su año",
+  generate(seed, d) {
+    const r = rng(seed);
+    return matchFrom(r, {
+      gen: this.id, seed, d, topicId: this.topicId, bank: HITOS_SEC,
+      prompt: "Relacioná cada hito de política pública con su año.",
+      hints: ["Anclá los extremos: la Ley 1420 es del siglo XIX; la AUH, del siglo XXI.", "La Reforma Universitaria (1918) es anterior a la gratuidad universitaria (1949).", "El CONICET se creó a fines de los años cincuenta, en la etapa desarrollista."],
+      explanation: "Estos hitos muestran cómo el Estado fue asumiendo funciones en educación, ciencia, energía y protección social a lo largo del tiempo.",
+    });
+  },
+};
+
+// ───────────────────────── Exportación ─────────────────────────
+
+export const ICSE_GENERATORS: Generator[] = [
+  // icse-1
+  genConceptoSocial,
+  genConceptosMatch,
+  genEstratificacion,
+  genMovilidad,
+  genOrdenConflicto,
+  genActores,
+  genProtestaMatch,
+  genLineaPobreza,
+  genBrecha,
+  genIndicadores,
+  genTransformaciones,
+  // icse-2
+  genEstadoElementos,
+  genEstadoConceptos,
+  genDominacion,
+  genTipoEstado,
+  genTiposEstadoOrden,
+  genArgentinaLinea,
+  genArgentinaHechos,
+  genEstatidad,
+  genCiudadania,
+  genCiudadaniaOrden,
+  genRegimen,
+  genPoderes,
+  genBalotaje,
+  genReforma94,
+  // icse-3
+  genModelo,
+  genModelosOrden,
+  genCiclo,
+  genTipoPolitica,
+  genSector,
+  genHitos,
+];

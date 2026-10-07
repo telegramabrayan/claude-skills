@@ -254,12 +254,12 @@ export const IPC: Subject = {
 export const ICSE: Subject = {
   ...pendingSubject("icse", "Introducción al Conocimiento de la Sociedad y el Estado", "ICSE", "🏛️", "humanities", "Sociedad, Estado y su relación a lo largo del tiempo, con perspectivas histórica, sociológica y política."),
   units: [
-    unit("icse-1", "Sociedad", "Conceptos básicos, estratificación, orden, cooperación y conflicto, actores sociopolíticos, desigualdad, transformaciones contemporáneas."),
-    unit("icse-2", "El Estado", "Definiciones y tipos, origen y evolución, formación del Estado argentino, ciudadanía, regímenes políticos, instituciones democráticas."),
-    unit("icse-3", "Estado y desarrollo socioeconómico", "Políticas públicas en economía, infraestructura, salud, ciencia, tecnología y educación."),
+    unit("icse-1", "Sociedad", "Conceptos básicos, estratificación, orden, cooperación y conflicto, actores sociopolíticos, desigualdad, transformaciones contemporáneas.", ["l-icse-sociedad", "l-icse-estratificacion", "l-icse-orden-conflicto", "l-icse-actores", "l-icse-desigualdad", "l-icse-transformaciones"], ["t-icse-sociedad", "t-icse-estratificacion", "t-icse-orden-conflicto", "t-icse-actores", "t-icse-desigualdad", "t-icse-transformaciones"]),
+    unit("icse-2", "El Estado", "Definiciones y tipos, origen y evolución, formación del Estado argentino, ciudadanía, regímenes políticos, instituciones democráticas.", ["l-icse-estado", "l-icse-dominacion", "l-icse-tipos-estado", "l-icse-estado-argentino", "l-icse-ciudadania", "l-icse-regimenes", "l-icse-instituciones"], ["t-icse-estado", "t-icse-dominacion", "t-icse-tipos-estado", "t-icse-estado-argentino", "t-icse-ciudadania", "t-icse-regimenes", "t-icse-instituciones"]),
+    unit("icse-3", "Estado y desarrollo socioeconómico", "Políticas públicas en economía, infraestructura, salud, ciencia, tecnología y educación.", ["l-icse-modelos-desarrollo", "l-icse-politicas-publicas", "l-icse-politicas-sectoriales"], ["t-icse-modelos-desarrollo", "t-icse-politicas-publicas", "t-icse-politicas-sectoriales"]),
   ],
-  official: official("parcial", [SRC.icseProg], "Tres ejes de los contenidos mínimos del programa analítico. Los contenidos específicos, autores y períodos dependen de la cátedra."),
-  contentLevel: "draft",
+  official: official("parcial", [SRC.icseProg], "Tres ejes de los contenidos mínimos del programa analítico. Las lecciones son contenido general de ciencias sociales e historia argentina escrito por Ingenia, NO tomado de material de una cátedra: los autores se citan solo como referencia general. Los contenidos específicos, autores y períodos dependen de la cátedra; si conseguís el programa o parciales de la tuya, se ajusta."),
+  contentLevel: "partial",
 };
 export const QUIMICA = pendingSubject("quimica", "Química", "Química", "⚗️", "chem", "Estructura de la materia, reacciones y estequiometría.");
 

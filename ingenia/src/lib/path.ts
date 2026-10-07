@@ -39,6 +39,7 @@ const PATH_UNITS = [
   "pc-1", "pc-tipos", "pc-2", "pc-3", "pc-datos", "pc-io",
   // IPC
   "ipc-u1", "ipc-u2", "ipc-u3", "ipc-u4",
+  "icse-1", "icse-2", "icse-3",
 ];
 
 /** Materias que tienen camino, en orden. */

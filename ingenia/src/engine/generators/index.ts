@@ -11,6 +11,7 @@ import { PC_GENERATORS } from "./pc";
 import { AM_GENERATORS } from "./am";
 import { ALGEBRA_GENERATORS } from "./algebra-a";
 import { IPC_GENERATORS } from "./ipc";
+import { ICSE_GENERATORS } from "./icse";
 import { newSeed } from "./rng";
 
 /**
@@ -43,6 +44,7 @@ export const GENERATORS: Generator[] = [
   ...AM_GENERATORS,
   ...ALGEBRA_GENERATORS,
   ...IPC_GENERATORS,
+  ...ICSE_GENERATORS,
 ].map(safe);
 
 const BY_ID = new Map(GENERATORS.map((g) => [g.id, g]));

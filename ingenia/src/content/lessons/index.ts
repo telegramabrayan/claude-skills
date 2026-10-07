@@ -10,9 +10,10 @@ import { pcLessons } from "./pc";
 import { amLessons } from "./am";
 import { algebraALessons } from "./algebra-a";
 import { ipcLessons } from "./ipc";
+import { icseLessons } from "./icse";
 
 /** Todas las lecciones disponibles. Para agregar una, creala en su archivo y sumala acá. */
-export const LESSONS: Lesson[] = [...aritmeticaLessons, ...algebraLessons, ...funcionesLessons, ...fisicaLessons, ...codigoLessons, ...precalculoLessons, ...fisicaV3Lessons, ...pcLessons, ...amLessons, ...algebraALessons, ...ipcLessons];
+export const LESSONS: Lesson[] = [...aritmeticaLessons, ...algebraLessons, ...funcionesLessons, ...fisicaLessons, ...codigoLessons, ...precalculoLessons, ...fisicaV3Lessons, ...pcLessons, ...amLessons, ...algebraALessons, ...ipcLessons, ...icseLessons];
 
 const BY_ID = new Map(LESSONS.map((l) => [l.id, l]));
 

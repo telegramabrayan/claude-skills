@@ -4,6 +4,7 @@ import { PC_TOPICS } from "./topics-pc";
 import { AM_TOPICS } from "./topics-am";
 import { ALGEBRA_TOPICS } from "./topics-algebra";
 import { IPC_TOPICS } from "./topics-ipc";
+import { ICSE_TOPICS } from "./topics-icse";
 
 const t = (id: string, name: string, subjectId: string, skill: SkillId, generators: string[], lessonId: string, prerequisites: string[] = []): Topic => ({
   id,
@@ -47,6 +48,7 @@ export const TOPICS: Topic[] = [
   ...AM_TOPICS,
   ...ALGEBRA_TOPICS,
   ...IPC_TOPICS,
+  ...ICSE_TOPICS,
 ];
 
 const BY_ID = new Map(TOPICS.map((x) => [x.id, x]));
