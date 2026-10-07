@@ -95,3 +95,10 @@ analítico ICSE (FFyB-UBA), programa UBA XXI de Pensamiento Computacional y
 - Erratas detectadas en claves oficiales (PC T2 ej. 9 y T4 ej. 10; AM 2P T4) documentadas en la Biblioteca.
 - Ningún enunciado de examen se copió al repositorio. Los reportes de análisis quedaron fuera del repo.
 - Pendiente: ICSE (sin material), Química (sin material), verificar el programa de Álgebra A con la cátedra del estudiante.
+
+## 6. v3.1 (2026-10-07)
+
+- Pizarra con dibujos progresivos (gráficos, áreas, tangentes, vectores, matrices, código, fuerzas, figuras) en lecciones de Preparación, AM, Álgebra, Física y PC.
+- ICSE: 16 lecciones/temas, 31 generadores. Programa analítico (FFyB-UBA) no accesible desde el entorno: se usaron los contenidos mínimos; contenido general marcado como no tomado de una cátedra. Falta: "el Estado en las relaciones internacionales".
+- Química: 11 unidades, 18 lecciones, 34 generadores. Unidades 1–5 cotejadas por título con el resumen del programa; 6–11 con `needsVerification`.
+- Auditoría de secuencia pedagógica: 144/144 lecciones completas. 266 tests OK.

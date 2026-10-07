@@ -21,6 +21,13 @@ npm run build      # build de producción (todas las rutas son estáticas)
 Requiere Node 20+. El progreso se guarda en el navegador (con respaldo JSON desde
 Configuración).
 
+## Novedades de la v3.1
+
+- **Pizarra con dibujos**: además de ecuaciones, cada renglón puede traer un dibujo que evoluciona paso a paso (gráficos de funciones, áreas entre curvas, recta tangente, vectores y componentes, matrices que se completan celda por celda, código con la línea en ejecución y sus variables, diagramas de cuerpo libre en el plano inclinado, triángulos). Lo nuevo de cada paso se dibuja animado y en color; lo anterior queda tenue. Ver `src/components/board/BoardFigure.tsx`.
+- **ICSE** (16 lecciones, 31 generadores) y **Química** (11 unidades, 18 lecciones, 34 generadores) dejaron de estar vacías. Son contenido general escrito por Ingenia (no hubo material del estudiante para estas materias) y la app lo dice: en Química solo los títulos de las unidades 1–5 se cotejaron con el programa analítico; las unidades 6–11 están marcadas para verificar.
+- Auditoría automática de secuencia: las 144 lecciones tienen intro → explicación → ejemplo/pizarra → visual → ejercicio guiado → ejercicios → resumen, y el guion completo del profesor (simple, analogía, desde cero, por qué, de dónde sale).
+- Totales: 144 lecciones, 145 temas, 240 generadores de ejercicios.
+
 ## Novedades de la v3 (profesor particular + material de la cátedra)
 
 - **Contenido a partir del material del estudiante** (carpeta «Material de estudio» de Drive, analizada y
