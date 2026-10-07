@@ -469,3 +469,53 @@ body::before {
 /* ───── Reducir animaciones (opción propia, además de la del sistema) ───── */
 :root[data-motion="reduce"] *, :root[data-motion="reduce"] *::before, :root[data-motion="reduce"] *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 @media (prefers-reduced-motion: reduce) { .art-fly, .art-spin, .art-bubble, .nodo-eye, .guide-bob { animation: none !important; } }
+
+/* ───── Escenas de ejercicios ───── */
+.scene { margin: 0; border-radius: var(--radius); overflow: hidden; }
+.door-left, .door-right, .door-lock, .rocket, .crate, .car, .plank, .liquid, .scene-light { transition: transform 0.9s cubic-bezier(.3,.7,.3,1), opacity 0.6s, fill 0.6s; transform-box: view-box; }
+.scene-light { opacity: 0; }
+.scene-win .scene-light { opacity: 1; }
+.scene-win .door-left { transform: translateX(-38px) scaleX(0.15); transform-origin: 120px 0; }
+.scene-win .door-right { transform: translateX(38px) scaleX(0.15); transform-origin: 200px 0; }
+.door-left { transform-origin: 120px 0; } .door-right { transform-origin: 200px 0; }
+.scene-win .door-lock { transform: translateY(70px); opacity: 0; }
+.scene-try .door-lock, .scene-try .rocket, .scene-try .crate { animation: shake 0.4s ease; }
+.scene-win .rocket { transform: translateY(-130px); transition-duration: 1.3s; transition-timing-function: cubic-bezier(.6,0,.8,.4); }
+.flame { opacity: 0.25; transform-origin: 160px 94px; transform-box: view-box; }
+.scene-win .flame { opacity: 1; animation: flicker .12s infinite alternate; }
+@keyframes flicker { to { transform: scaleY(1.4); } }
+.gear { transform-box: view-box; }
+.scene-win .gear { animation: art-spin 1.2s linear 1; }
+.scene-win .crate { transform: translateX(170px); transition-duration: 1.2s; }
+.plank { opacity: 0.25; }
+.scene-win .plank { opacity: 1; }
+.scene-win .car { transform: translateX(240px); transition-delay: .3s; transition-duration: 1.2s; }
+.scene-win .liquid { fill: var(--success); }
+.bubble { opacity: 0; }
+.scene-win .bubble { animation: art-bubble 0.9s ease-in 2; }
+
+/* ───── Arrastrar ───── */
+.is-dragging { position: relative; z-index: 50; box-shadow: 0 12px 24px -8px rgb(0 0 0 / 0.35) !important; transition: none !important; }
+.drop-hover { outline: 3px solid var(--primary); outline-offset: 2px; background: var(--primary-soft) !important; }
+.match-line path { stroke-dasharray: 400; stroke-dashoffset: 400; animation: draw-line 0.35s ease-out forwards; }
+@keyframes draw-line { to { stroke-dashoffset: 0; } }
+
+/* ───── Tarjeta de pregunta y barra de acción ───── */
+.q-card { background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius-lg); box-shadow: 0 5px 0 var(--border); }
+.action-bar { position: sticky; bottom: calc(4rem + env(safe-area-inset-bottom)); z-index: 20; margin-inline: -0.25rem; padding: 0.75rem 0.25rem; background: linear-gradient(to top, var(--bg) 70%, transparent); }
+@media (min-width: 1024px) { .action-bar { bottom: 0; } }
+.feedback { border-radius: var(--radius-lg); border: 2px solid; padding: 1rem 1.1rem; }
+.feedback.is-ok { background: var(--success-soft); border-color: color-mix(in srgb, var(--success) 45%, transparent); }
+.feedback.is-almost { background: var(--warn-soft); border-color: color-mix(in srgb, var(--warn) 40%, transparent); }
+.help-btn { display: flex; align-items: center; gap: .5rem; min-height: 2.9rem; padding: .5rem .8rem; border-radius: var(--radius); background: var(--surface); border: 2px solid var(--border); font-weight: 800; font-size: .92rem; text-align: left; box-shadow: 0 3px 0 var(--border); transition: transform .08s, box-shadow .08s, border-color .15s; }
+.help-btn:hover { border-color: var(--primary); }
+.help-btn:active { transform: translateY(3px); box-shadow: none; }
+
+/* ───── Memoria ───── */
+.memo-card { perspective: 600px; height: 5.5rem; border-radius: var(--radius); }
+.memo-inner { position: relative; display: block; width: 100%; height: 100%; transition: transform 0.35s; transform-style: preserve-3d; }
+.memo-card.is-open .memo-inner { transform: rotateY(180deg); }
+.memo-back, .memo-front { position: absolute; inset: 0; display: grid; place-items: center; padding: 0.4rem; border-radius: var(--radius); backface-visibility: hidden; font-weight: 900; border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border); }
+.memo-back { background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, black)); color: #fff; font-size: 1.6rem; }
+.memo-front { background: var(--surface); transform: rotateY(180deg); font-size: 0.95rem; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
+.memo-card.is-found .memo-front { background: var(--success-soft); border-color: var(--success); }

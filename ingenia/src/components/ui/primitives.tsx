@@ -12,7 +12,9 @@ export function ProgressBar({ value, color = "var(--primary)", label, className 
       aria-valuemax={100}
       aria-label={label}
     >
-      <div className="h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: color }} />
+      <div className="relative h-full rounded-full transition-[width] duration-500" style={{ width: `${pct}%`, background: color }}>
+        {height >= 12 && pct > 4 && <span className="absolute inset-x-2 top-[22%] h-[22%] rounded-full bg-white/35" />}
+      </div>
     </div>
   );
 }

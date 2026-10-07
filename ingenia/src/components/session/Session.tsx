@@ -23,6 +23,8 @@ export interface SessionItem {
   label?: string;
   /** Puntaje del ítem en un simulacro con el formato de la cátedra (si falta, todos valen igual). */
   points?: number;
+  /** Generador fijo (p. ej. para practicar un formato de actividad). */
+  generator?: string;
 }
 
 /** Nota sobre 10 ponderada por los puntos de cada ítem. */
@@ -58,6 +60,10 @@ interface Log {
 }
 
 function buildExercise(item: SessionItem): Exercise {
+  if (item.generator) {
+    const lvl = store.getState().topics[item.topicId]?.level ?? 2;
+    return generate(item.generator, item.difficulty ?? (Math.max(1, Math.min(6, lvl + (item.adjust ?? 0))) as Difficulty), newSeed());
+  }
   if (item.difficulty) {
     const topic = getTopic(item.topicId);
     const seed = newSeed();
@@ -176,13 +182,11 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
               {Math.min(index + 1, items.length)}/{items.length}
             </span>
           </div>
-          <ProgressBar value={index / items.length} label="Progreso de la sesión" />
+          <ProgressBar value={index / items.length} height={16} color="var(--subj, var(--primary))" label="Progreso de la sesión" />
         </div>
         {hearts !== null && (
-          <span className="flex items-center gap-0.5 text-danger" aria-label={`${hearts} corazones`}>
-            {Array.from({ length: maxHearts }, (_, i) => (
-              <Icon key={i} name="heart" size={18} className={i < hearts ? "fill-current" : "opacity-30"} />
-            ))}
+          <span className="flex items-center gap-1 text-lg font-black text-danger" aria-label={`${hearts} de ${maxHearts} corazones`} title={`${hearts} de ${maxHearts} vidas`}>
+            <Icon name="heart" size={24} className={`fill-current ${hearts <= 1 ? "anim-shake" : ""}`} /> {hearts}
           </span>
         )}
         {remaining !== null && (
@@ -192,7 +196,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
         )}
       </div>
       {items[index]?.label && <span className="chip">{items[index].label}</span>}
-      <div className="card p-5 sm:p-6">
+      <div>
         {exercise && (
           <ExercisePlayer key={`${index}-${exercise.id}`} exercise={exercise} mode={mode} onDone={onDone} onWrong={onWrong} exam={kind === "examen"} noHelp={noHelp} guided={guided} continueLabel={index + 1 >= items.length ? "Terminar" : "Siguiente"} />
         )}

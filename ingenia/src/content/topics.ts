@@ -1,4 +1,5 @@
 import type { ErrorType, SkillId, Topic } from "@/engine/types";
+import { ACTIVITY_BY_TOPIC } from "@/engine/generators/activities";
 import { FISICA_TOPICS } from "./topics-fisica";
 import { PC_TOPICS } from "./topics-pc";
 import { AM_TOPICS } from "./topics-am";
@@ -17,7 +18,7 @@ const t = (id: string, name: string, subjectId: string, skill: SkillId, generato
   prerequisites,
 });
 
-export const TOPICS: Topic[] = [
+const BASE_TOPICS: Topic[] = [
   t("t-signos", "Números negativos y signos", "preparacion", "aritmetica", ["signos-suma", "signos-producto", "comparar-numeros"], "l-signos"),
   t("t-jerarquia", "Orden de las operaciones", "preparacion", "aritmetica", ["jerarquia"], "l-jerarquia", ["t-signos"]),
   t("t-fracciones", "Fracciones", "preparacion", "aritmetica", ["fracciones-suma", "fracciones-producto"], "l-fracciones", ["t-jerarquia"]),
@@ -52,6 +53,9 @@ export const TOPICS: Topic[] = [
   ...ICSE_TOPICS,
   ...QUIMICA_TOPICS,
 ];
+
+/** Cada tema suma los generadores de actividad (formatos interactivos) que le corresponden. */
+export const TOPICS: Topic[] = BASE_TOPICS.map((t) => (ACTIVITY_BY_TOPIC[t.id] ? { ...t, generators: [...t.generators, ...ACTIVITY_BY_TOPIC[t.id]] } : t));
 
 const BY_ID = new Map(TOPICS.map((x) => [x.id, x]));
 

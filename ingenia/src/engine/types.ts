@@ -174,7 +174,13 @@ export interface ExerciseBase {
   /** Generador que lo creó (permite pedir "algo parecido"). */
   generator?: string;
   seed?: number;
+  /** Escena ilustrada que acompaña el enunciado (se anima al acertar). Solo cuando aporta. */
+  scene?: SceneKind;
+  /** Situación en una frase ("Una fábrica produce…"): la dice Nodo o la escena. */
+  context?: string;
 }
+
+export type SceneKind = "door" | "rocket" | "factory" | "bridge" | "lab";
 
 export interface ChoiceExercise extends ExerciseBase {
   kind: "choice";
@@ -231,7 +237,53 @@ export interface TraceExercise extends ExerciseBase {
   answer: Record<string, number | string | boolean>;
 }
 
+/** Completar huecos arrastrando fichas. Cada "□" del template es un hueco. */
+export interface FillExercise extends ExerciseBase {
+  kind: "fill";
+  template: string;
+  tokens: string[];
+  answer: string[];
+}
+
+/** Construir la respuesta con bloques (fórmulas, frases, algoritmos). */
+export interface BuildExercise extends ExerciseBase {
+  kind: "build";
+  /** Bloques disponibles (incluye distractores). */
+  tokens: string[];
+  answer: string[];
+  /** Otras secuencias también correctas (p. ej. conmutar factores). */
+  alternatives?: string[][];
+  /** Lo que va antes de la respuesta, fijo ("v ="). */
+  lead?: string;
+}
+
+/** Tocar o mover un punto sobre un gráfico. */
+export interface GraphExercise extends ExerciseBase {
+  kind: "graph";
+  expr: string;
+  /** "tap": tocar el punto pedido sobre la curva; "drag": mover el punto (sobre la curva) hasta la condición. */
+  mode: "tap" | "drag";
+  target: { x: number; y: number };
+  /** Tolerancia en x. */
+  tolerance: number;
+  x: [number, number];
+  y: [number, number];
+}
+
+/** Encontrar el paso equivocado de una resolución. */
+export interface FindErrorExercise extends ExerciseBase {
+  kind: "find-error";
+  steps: string[];
+  wrong: number;
+  /** Cómo debería haber quedado ese renglón. */
+  fix: string;
+}
+
 export type Exercise =
+  | FillExercise
+  | BuildExercise
+  | GraphExercise
+  | FindErrorExercise
   | ChoiceExercise
   | NumericExercise
   | ExpressionExercise

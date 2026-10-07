@@ -12,6 +12,7 @@ export const NAV_MAIN: NavItem[] = [
   { href: "/materias", label: "Materias", icon: "book" },
   { href: "/mapa", label: "Mapa de carrera", icon: "map" },
   { href: "/practicar", label: "Practicar", icon: "target" },
+  { href: "/juegos", label: "Minijuegos", icon: "star" },
   { href: "/laboratorio", label: "Laboratorio", icon: "flask" },
   { href: "/examenes", label: "Exámenes", icon: "exam" },
   { href: "/repasar", label: "Repasar", icon: "refresh" },

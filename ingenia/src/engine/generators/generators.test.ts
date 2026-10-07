@@ -52,6 +52,25 @@ describe.each(GENERATORS.map((g) => [g.id, g] as const))("generador %s", (_id, g
             expect(evaluateAnswer(ex, { kind: "match", pairs: Object.fromEntries(ex.pairs) }).correct).toBe(true);
             expect(new Set(ex.pairs.map((p) => p[1])).size).toBe(ex.pairs.length);
             break;
+          case "fill":
+            expect(ex.template.split("□").length - 1).toBe(ex.answer.length);
+            expect(ex.answer.every((t) => ex.tokens.includes(t))).toBe(true);
+            expect(evaluateAnswer(ex, { kind: "fill", values: ex.answer }).correct).toBe(true);
+            break;
+          case "build":
+            expect(ex.answer.every((t) => ex.tokens.includes(t))).toBe(true);
+            expect(evaluateAnswer(ex, { kind: "build", tokens: ex.answer }).correct).toBe(true);
+            break;
+          case "graph":
+            expect(ex.target.x).toBeGreaterThanOrEqual(ex.x[0]);
+            expect(ex.target.x).toBeLessThanOrEqual(ex.x[1]);
+            expect(evaluateAnswer(ex, { kind: "graph", x: ex.target.x, y: ex.target.y }).correct).toBe(true);
+            expect(evaluateAnswer(ex, { kind: "graph", x: ex.target.x + ex.tolerance * 3, y: 0 }).correct).toBe(false);
+            break;
+          case "find-error":
+            expect(ex.steps[ex.wrong]).not.toBe(ex.fix);
+            expect(evaluateAnswer(ex, { kind: "find-error", index: ex.wrong }).correct).toBe(true);
+            break;
           case "trace": {
             const values = Object.fromEntries(Object.entries(ex.answer).map(([k, v]) => [k, typeof v === "boolean" ? (v ? "True" : "False") : String(v)]));
             expect(evaluateAnswer(ex, { kind: "trace", values }).correct, ex.code).toBe(true);

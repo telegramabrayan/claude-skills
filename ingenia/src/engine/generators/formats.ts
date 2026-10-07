@@ -19,7 +19,7 @@ export const ordenarPasos: Generator = {
     const ex: OrderExercise = {
       ...base({
         gen: this.id, seed, difficulty: d, subjectId: "preparacion", topicId: this.topicId,
-        prompt: "Ordená los pasos para resolver la ecuación (tocá en orden, del primero al último).",
+        prompt: "Ordená los pasos para resolver la ecuación: arrastralos (o usá ▲ ▼) del primero al último.",
         hints: ["El primer paso es la ecuación original.", "Primero se saca el número que suma o resta; después lo que multiplica.", "El último paso tiene la x sola."],
         solution: items,
         explanation: "Despejar es deshacer en orden inverso: primero sumas y restas, después multiplicaciones y divisiones.",

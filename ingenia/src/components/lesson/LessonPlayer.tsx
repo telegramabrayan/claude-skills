@@ -262,7 +262,7 @@ export function LessonPlayer({ lesson: raw }: { lesson: Lesson }) {
               {index + 1}/{lesson.cards.length}
             </span>
           </div>
-          <ProgressBar value={(index + 1) / lesson.cards.length} label="Progreso de la lección" />
+          <ProgressBar value={(index + 1) / lesson.cards.length} height={16} color="var(--subj, var(--primary))" label="Progreso de la lección" />
         </div>
         <button
           className="btn btn-ghost !px-2"

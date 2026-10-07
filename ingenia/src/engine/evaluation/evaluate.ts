@@ -3,18 +3,7 @@
  * Cada evaluación intenta explicar QUÉ salió mal y clasificar el tipo de error,
  * para que el sistema adaptativo pueda reforzar exactamente eso después.
  */
-import type {
-  ChoiceExercise,
-  EvaluationResult,
-  Exercise,
-  ExpressionExercise,
-  FrequentError,
-  MatchExercise,
-  NumericExercise,
-  OrderExercise,
-  StepsExercise,
-  TraceExercise,
-} from "../types";
+import type { ChoiceExercise, EvaluationResult, Exercise, ExpressionExercise, FrequentError, MatchExercise, NumericExercise, OrderExercise, StepsExercise, TraceExercise, FillExercise, BuildExercise, GraphExercise, FindErrorExercise } from "../types";
 import { equivalent, evalNumber, fmt, nearlyEqual, ParseError } from "../math/parser";
 import { checkLinearSteps } from "./steps";
 import { correctMessage } from "./messages";
@@ -28,7 +17,11 @@ export type Answer =
   | { kind: "steps"; steps: string[]; final: string }
   | { kind: "trace"; values: Record<string, string> }
   | { kind: "order"; order: string[] }
-  | { kind: "match"; pairs: Record<string, string> };
+  | { kind: "match"; pairs: Record<string, string> }
+  | { kind: "fill"; values: string[] }
+  | { kind: "build"; tokens: string[] }
+  | { kind: "graph"; x: number; y: number }
+  | { kind: "find-error"; index: number };
 
 export function evaluateAnswer(ex: Exercise, answer: Answer): EvaluationResult {
   switch (ex.kind) {
@@ -46,6 +39,14 @@ export function evaluateAnswer(ex: Exercise, answer: Answer): EvaluationResult {
       return answer.kind === "order" ? evalOrder(ex, answer.order) : invalid();
     case "match":
       return answer.kind === "match" ? evalMatch(ex, answer.pairs) : invalid();
+    case "fill":
+      return answer.kind === "fill" ? evalFill(ex, answer.values) : invalid();
+    case "build":
+      return answer.kind === "build" ? evalBuild(ex, answer.tokens) : invalid();
+    case "graph":
+      return answer.kind === "graph" ? evalGraph(ex, answer.x) : invalid();
+    case "find-error":
+      return answer.kind === "find-error" ? evalFindError(ex, answer.index) : invalid();
   }
 }
 
@@ -74,6 +75,55 @@ function evalMatch(ex: MatchExercise, pairs: Record<string, string>): Evaluation
   };
 }
 
+function evalFill(ex: FillExercise, values: string[]): EvaluationResult {
+  if (values.length < ex.answer.length || values.some((v) => !v)) return invalid("Completá todos los huecos antes de comprobar.");
+  const wrong = ex.answer.findIndex((a, i) => values[i] !== a);
+  if (wrong < 0) return { correct: true, message: correctMessage(ex.answer.length) };
+  const fe = ex.frequentErrors.find((f) => f.match === values.join("|"));
+  return {
+    correct: false,
+    message: ex.answer.length === 1 ? "Casi. Esa ficha no va ahí." : `Revisemos el hueco ${wrong + 1}.`,
+    errorType: fe?.type ?? "conceptual",
+    diagnosis: fe?.message ?? `En el hueco ${wrong + 1} pusiste «${values[wrong]}». ${ex.explanation}`,
+  };
+}
+
+function evalBuild(ex: BuildExercise, tokens: string[]): EvaluationResult {
+  if (!tokens.length) return invalid("Armá la respuesta con los bloques antes de comprobar.");
+  const same = (a: string[]) => a.length === tokens.length && a.every((t, i) => t === tokens[i]);
+  if (same(ex.answer) || (ex.alternatives ?? []).some(same)) return { correct: true, message: correctMessage(tokens.length) };
+  const fe = ex.frequentErrors.find((f) => f.match === tokens.join(" "));
+  const firstWrong = tokens.findIndex((t, i) => t !== ex.answer[i]);
+  return {
+    correct: false,
+    message: "Casi. Revisemos cómo armaste la respuesta.",
+    errorType: fe?.type ?? "formula",
+    diagnosis: fe?.message ?? (firstWrong >= 0 && firstWrong < ex.answer.length ? `Bien hasta el bloque ${firstWrong}. Después de eso no va «${tokens[firstWrong]}». ${ex.explanation}` : `Falta o sobra algún bloque. ${ex.explanation}`),
+  };
+}
+
+function evalGraph(ex: GraphExercise, x: number): EvaluationResult {
+  if (!Number.isFinite(x)) return invalid("Tocá o mové el punto sobre el gráfico.");
+  if (Math.abs(x - ex.target.x) <= ex.tolerance) return { correct: true, message: correctMessage(1) };
+  return {
+    correct: false,
+    message: x < ex.target.x ? "Casi. El punto está un poco más a la derecha." : "Casi. El punto está un poco más a la izquierda.",
+    errorType: "interpretacion",
+    diagnosis: `Marcaste x ≈ ${Math.round(x * 100) / 100}. ${ex.explanation}`,
+  };
+}
+
+function evalFindError(ex: FindErrorExercise, index: number): EvaluationResult {
+  if (index < 0) return invalid("Tocá el renglón donde está el error.");
+  if (index === ex.wrong) return { correct: true, message: `¡Exacto! El error está en el renglón ${index + 1}. Debería ser: ${ex.fix}` };
+  return {
+    correct: false,
+    message: index < ex.wrong ? `El renglón ${index + 1} está bien. Seguí mirando más abajo.` : `El error aparece antes del renglón ${index + 1}.`,
+    errorType: "interpretacion",
+    diagnosis: `Comprobá cada renglón contra el anterior: ¿qué operación se hizo y se hizo en los dos lados?`,
+  };
+}
+
 function invalid(msg = "No pude interpretar la respuesta."): EvaluationResult {
   return { correct: false, message: msg, invalidInput: true };
 }
@@ -81,7 +131,7 @@ function invalid(msg = "No pude interpretar la respuesta."): EvaluationResult {
 function fromFrequent(fe: FrequentError): EvaluationResult {
   return {
     correct: false,
-    message: "Casi. Este error es muy común.",
+    message: "Este error es muy común (y tiene arreglo).",
     errorType: fe.type,
     diagnosis: fe.message,
   };
