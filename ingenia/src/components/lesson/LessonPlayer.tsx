@@ -59,7 +59,10 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
     case "intro":
       return (
         <div className="space-y-5">
-          <h1 className="text-3xl font-black tracking-tight">{lesson.title}</h1>
+          <div className="flex items-end gap-3">
+            <h1 className="min-w-0 flex-1 text-3xl font-black tracking-tight">{lesson.title}</h1>
+            <Nodo mood="explain" size={84} body />
+          </div>
           <div className="rounded-2xl bg-primary-soft p-4">
             <p className="text-sm font-bold uppercase tracking-wide text-primary">¿Qué vamos a aprender?</p>
             <MathText text={card.learn} className="mt-1" />
@@ -69,7 +72,7 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
             <MathText text={card.why} className="mt-1" />
           </div>
           <p className="text-sm text-muted">⏱ Unos {lesson.estimatedMinutes} minutos · {lesson.cards.length} pantallas cortas</p>
-          <button className="btn btn-primary text-lg" onClick={() => onNext()} autoFocus>
+          <button className="btn-3d text-lg" onClick={() => onNext()} autoFocus>
             Empezar <Icon name="arrowRight" />
           </button>
         </div>
@@ -92,7 +95,7 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
             </div>
           )}
           <div className="flex flex-wrap gap-2 pt-2">
-            <button className="btn btn-primary" onClick={() => onNext()} autoFocus>
+            <button className="btn-3d" onClick={() => onNext()} autoFocus>
               Entendido <Icon name="arrowRight" />
             </button>
           </div>
@@ -120,7 +123,7 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
               <p className="anim-pop rounded-xl bg-success-soft p-3 font-semibold">
                 Resultado: <MathText text={card.result} block={false} />
               </p>
-              <button className="btn btn-primary" onClick={() => onNext()} autoFocus>
+              <button className="btn-3d" onClick={() => onNext()} autoFocus>
                 Continuar <Icon name="arrowRight" />
               </button>
             </>
@@ -136,7 +139,7 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
           <Whiteboard steps={card.steps} onDone={() => setBoardDone(true)} />
           {boardDone && card.outro && <MathText text={card.outro} className="anim-pop" />}
           <div className="flex flex-wrap gap-2">
-            <button className="btn btn-primary" onClick={() => onNext()} disabled={!boardDone} autoFocus={boardDone}>
+            <button className="btn-3d" onClick={() => onNext()} disabled={!boardDone} autoFocus={boardDone}>
               Continuar <Icon name="arrowRight" />
             </button>
             <button className="btn btn-ghost" onClick={() => setTutor(tutor ? null : "simple")}>
@@ -155,7 +158,7 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
           {basesOk ? (
             <>
               <GuideSay mood="happy">Ya dominás lo que este tema necesita ({card.topics.map((t) => getTopic(t)?.name.toLowerCase()).filter(Boolean).join(", ")}). Seguimos.</GuideSay>
-              <button className="btn btn-primary" onClick={() => onNext()} autoFocus>
+              <button className="btn-3d" onClick={() => onNext()} autoFocus>
                 Continuar <Icon name="arrowRight" />
               </button>
             </>
@@ -192,7 +195,7 @@ function CardView({ card, lesson, onNext, isLast }: { card: LessonCard; lesson: 
             ))}
           </ul>
           <p className="text-sm text-muted">Este tema va a volver a aparecer en tus repasos para que no se olvide.</p>
-          <button className="btn btn-primary text-lg" onClick={() => onNext()} autoFocus>
+          <button className="btn-3d text-lg" onClick={() => onNext()} autoFocus>
             Terminar lección <Icon name="check" />
           </button>
         </div>
@@ -333,7 +336,7 @@ function LessonComplete({ lesson, done }: { lesson: Lesson; done: Done }) {
       <div className="anim-pop relative mx-auto max-w-xl space-y-5 text-center">
         <Confetti count={40} />
         <div className="flex justify-center">
-          <Nodo mood="happy" size={96} />
+          <Nodo mood="celebrate" size={110} body />
         </div>
         <p className="text-sm font-bold uppercase tracking-wide text-primary">Unidad completada</p>
         <h1 className="text-3xl font-black">{unit.title}</h1>
@@ -355,11 +358,11 @@ function LessonComplete({ lesson, done }: { lesson: Lesson; done: Done }) {
           </div>
         )}
         <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Link href={`/desafio?unidad=${unit.id}`} className="btn btn-primary">
+          <Link href={`/desafio?unidad=${unit.id}`} className="btn-3d">
             👑 Desafío final (+{XP.challenge} XP)
           </Link>
           {nextL && (
-            <Link href={`/leccion/${nextL.id}`} className="btn btn-secondary">
+            <Link href={`/leccion/${nextL.id}`} className="btn-3d is-secondary">
               Siguiente unidad <Icon name="arrowRight" />
             </Link>
           )}
@@ -376,7 +379,7 @@ function LessonComplete({ lesson, done }: { lesson: Lesson; done: Done }) {
     <div className="anim-pop relative mx-auto max-w-xl space-y-5 text-center">
       <Confetti />
       <div className="flex justify-center">
-        <Nodo mood={"happy"} size={88} />
+        <Nodo mood={done.perfect ? "celebrate" : "happy"} size={100} body />
       </div>
       <h1 className="text-3xl font-black">{done.perfect ? "¡Lección perfecta!" : "¡Lección completada!"}</h1>
       <p className="text-lg text-muted">{lesson.title}</p>
@@ -398,16 +401,16 @@ function LessonComplete({ lesson, done }: { lesson: Lesson; done: Done }) {
       {!done.perfect && pct < 100 && <GuideSay className="justify-center text-left">Para que sea perfecta hace falta acertar todo al primer intento. Podés repetirla cuando quieras: suma +{XP.perfectLesson} XP.</GuideSay>}
       <div className="flex flex-col gap-3 sm:flex-row sm:justify-center">
         {unit ? (
-          <button className="btn btn-primary" onClick={() => setStage("unit")} autoFocus>
+          <button className="btn-3d" onClick={() => setStage("unit")} autoFocus>
             Continuar <Icon name="arrowRight" />
           </button>
         ) : nextL ? (
-          <Link href={`/leccion/${nextL.id}`} className="btn btn-primary" autoFocus>
+          <Link href={`/leccion/${nextL.id}`} className="btn-3d" autoFocus>
             Siguiente: {nextL.title} <Icon name="arrowRight" />
           </Link>
         ) : null}
         {lesson.topicIds[0] && (
-          <Link href={`/practicar?tema=${lesson.topicIds[0]}`} className="btn btn-secondary">
+          <Link href={`/practicar?tema=${lesson.topicIds[0]}`} className="btn-3d is-secondary">
             Practicar este tema
           </Link>
         )}

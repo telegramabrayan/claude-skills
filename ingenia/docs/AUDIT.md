@@ -102,3 +102,7 @@ analítico ICSE (FFyB-UBA), programa UBA XXI de Pensamiento Computacional y
 - ICSE: 16 lecciones/temas, 31 generadores. Programa analítico (FFyB-UBA) no accesible desde el entorno: se usaron los contenidos mínimos; contenido general marcado como no tomado de una cátedra. Falta: "el Estado en las relaciones internacionales".
 - Química: 11 unidades, 18 lecciones, 34 generadores. Unidades 1–5 cotejadas por título con el resumen del programa; 6–11 con `needsVerification`.
 - Auditoría de secuencia pedagógica: 144/144 lecciones completas. 266 tests OK.
+
+## 7. v4 (2026-10-08): rediseño de la experiencia
+
+Auditoría UX/UI, lectura de las referencias y sistema visual: `docs/REDISENO.md`. Se mantuvieron todas las funciones existentes. Nuevos tipos de ejercicio (`fill`, `build`, `graph`, `find-error`) con evaluación y tests; 21 generadores de actividad; minijuegos; modo estudio, tamaño de texto y reducir animaciones. 287 tests OK.

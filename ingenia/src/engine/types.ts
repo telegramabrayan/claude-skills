@@ -386,7 +386,8 @@ export type Widget =
   | { type: "tangent-sweep"; expr: string }
   | { type: "riemann"; expr: string; a: number; b: number }
   | { type: "param-function"; family: "parabola" | "lineal" | "seno" | "exponencial" }
-  | { type: "matrix"; a: number; b: number; c: number; d: number };
+  | { type: "matrix"; a: number; b: number; c: number; d: number }
+  | { type: "reaction" };
 
 export type LessonCard =
   | { kind: "intro"; title: string; learn: string; why: string }

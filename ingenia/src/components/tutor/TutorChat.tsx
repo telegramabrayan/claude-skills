@@ -102,7 +102,7 @@ export function TutorChat() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-primary py-2 pl-2 pr-4 font-bold text-on-primary shadow-lg transition hover:scale-105 lg:bottom-6"
+        className="tutor-fab fixed bottom-20 right-4 z-40 flex items-center gap-2 rounded-full bg-primary py-2 pl-2 pr-4 font-bold text-on-primary shadow-lg transition hover:scale-105 lg:bottom-6"
         aria-label="Preguntarle al profesor"
       >
         <span className="grid h-9 w-9 place-items-center rounded-full bg-surface/90">

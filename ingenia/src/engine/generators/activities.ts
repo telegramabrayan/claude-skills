@@ -345,7 +345,7 @@ export const actFabricaCostos: Generator = {
     const ex: NumericExercise = {
       ...base({
         gen: this.id, seed, difficulty: d, subjectId: PREP, topicId: this.topicId,
-        prompt: `Una planta que fabrica ${item} tiene un costo fijo de $${fmt(fijo)} por día y cada unidad cuesta $${fmt(unit)}. Si el presupuesto diario es $${fmt(total)}, ¿cuántas ${item} puede producir?`,
+        prompt: `Una planta que fabrica ${item} tiene un costo fijo de ${fmt(fijo)} pesos por día y cada unidad cuesta ${fmt(unit)} pesos. Si el presupuesto diario es de ${fmt(total)} pesos, ¿cuántas ${item} puede producir?`,
         hints: ["Armá la ecuación: costo total = fijo + costo por unidad × cantidad.", `$${fmt(fijo)} + ${fmt(unit)}·q = ${fmt(total)}$`, "Restá el costo fijo y dividí por el costo unitario."],
         solution: [`${fmt(fijo)} + ${fmt(unit)}q = ${fmt(total)}`, `${fmt(unit)}q = ${fmt(total - fijo)}`, `q = ${fmt(q)}`],
         explanation: "Es una ecuación lineal: el costo total crece en línea recta con la cantidad producida (la pendiente es el costo unitario).",

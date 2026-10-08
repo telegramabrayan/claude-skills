@@ -4,7 +4,7 @@ import { CodeStepper } from "../code/CodeStepper";
 import { FractionBarsWidget, NumberLineWidget, PercentWidget, PowerWidget, UnitsWidget } from "./Simple";
 import { BalanceWidget, KinematicsWidget, PlotWidget, VectorWidget } from "./Interactive";
 import { FunctionPointWidget, TangentWidget, TrigWidget } from "./Calculus";
-import { BuoyancyWidget, ForcesWidget, MatrixWidget, MotionWidget, ParamFunctionWidget, ProjectileWidget, RiemannWidget, TangentSweepWidget, VectorComponentsWidget } from "./Animated";
+import { BuoyancyWidget, ForcesWidget, MatrixWidget, ReactionWidget, MotionWidget, ParamFunctionWidget, ProjectileWidget, RiemannWidget, TangentSweepWidget, VectorComponentsWidget } from "./Animated";
 
 /** Despacha la especificación de un widget (dato del contenido) a su componente. */
 export function Widget({ widget }: { widget: WidgetSpec }) {
@@ -53,5 +53,7 @@ export function Widget({ widget }: { widget: WidgetSpec }) {
       return <ParamFunctionWidget family={widget.family} />;
     case "matrix":
       return <MatrixWidget a={widget.a} b={widget.b} c={widget.c} d={widget.d} />;
+    case "reaction":
+      return <ReactionWidget />;
   }
 }

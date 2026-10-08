@@ -519,3 +519,6 @@ body::before {
 .memo-back { background: linear-gradient(135deg, var(--primary), color-mix(in srgb, var(--primary) 55%, black)); color: #fff; font-size: 1.6rem; }
 .memo-front { background: var(--surface); transform: rotateY(180deg); font-size: 0.95rem; line-height: 1.15; text-align: center; overflow-wrap: anywhere; }
 .memo-card.is-found .memo-front { background: var(--success-soft); border-color: var(--success); }
+
+:root[data-mode="estudio"] .tutor-fab .mascot { display: block !important; }
+@media (max-width: 480px) { :root[data-text="lg"] .brand-word { display: none; } :root[data-text="lg"] header { font-size: 14px; } }

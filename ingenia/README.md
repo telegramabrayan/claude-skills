@@ -21,6 +21,23 @@ npm run build      # build de producción (todas las rutas son estáticas)
 Requiere Node 20+. El progreso se guarda en el navegador (con respaldo JSON desde
 Configuración).
 
+## Novedades de la v4 (rediseño completo de la experiencia)
+
+Auditoría, referencias y sistema visual en [`docs/REDISENO.md`](docs/REDISENO.md).
+
+- **Identidad propia:** tipografía Nunito, botones y fichas con relieve que se hunden al tocar, fondo de cuaderno con dibujos tenues (π, x², átomos, engranajes, código…) que cambia de color y de motivos según la materia, ilustraciones animadas por materia (`SubjectArt`).
+- **Nodo, el guía, de cuerpo entero:** expresiones (piensa, festeja, se sorprende, explica con su pizarrita, da ánimo), parpadeo y saltos cortos. Acompaña el inicio, el camino, los ejercicios y los finales.
+- **Inicio:** saludo según la hora, racha/nivel/XP, tarjeta grande «Continuar aprendiendo», materias como tarjetas ilustradas (carrusel en el celular), objetivo del día con anillo, minijuegos, desafíos, reforzar y misiones; lo secundario quedó plegado.
+- **Camino:** cada nodo muestra su título, estrellas según la precisión (1–3), una línea que se pinta al avanzar y Nodo junto a la lección actual.
+- **Ejercicios:** tarjeta de pregunta grande, opciones como fichas, escenas que reaccionan al acertar (puerta, cohete, fábrica, laboratorio, puente), botón **COMPROBAR** fijo abajo, barra de progreso gruesa con vidas, festejo corto con +XP, y al errar «**Casi. Revisemos este paso.**» con: 💡 pista · 📖 explicámelo · ▶ ver un ejemplo resuelto · 🧠 de otra manera · ✏️ intentar nuevamente.
+- **Escalera de pistas:** Pista 1 (orientación) → Pista 2 (qué concepto usar) → Pista 3 (el primer paso) → ayuda completa en la pizarra. Si fallás de nuevo, la ayuda sube sola un escalón; nunca salta directo a la solución.
+- **Nuevas mecánicas** (con dedo, mouse o teclado): arrastrar fichas a huecos (`fill`), construir la respuesta con bloques (`build`), ordenar arrastrando, unir con líneas, tocar o mover un punto sobre el gráfico (`graph`), encontrar el renglón equivocado (`find-error`).
+- **Motor de actividades** (`src/engine/generators/activities.ts`): el mismo concepto en el formato que mejor lo muestra, sumado automáticamente a los temas para que la práctica alterne formatos. Incluye problemas con contexto de Ingeniería Industrial (costos de producción, inventario).
+- **Minijuegos** (`/juegos`): Contrarreloj, Escalera, Encontrá el error, Memoria de conceptos, Verdadero o falso, y una galería para probar cada formato. Los aciertos cuentan para el dominio; los récords quedan en el navegador.
+- **Finales:** medalla y «¡UNIDAD COMPLETADA!» al superar el desafío, estadísticas (aciertos, precisión, XP, tiempo).
+- **Química:** animación de una reacción (2 H₂ + O₂ → 2 H₂O) con átomos que se separan y se reacomodan.
+- **Modo interactivo / modo estudio** (Configuración): el progreso es el mismo; el modo estudio quita personaje, confeti y doodles. También: tamaño de texto (100/112/125 %) y «Reducir animaciones».
+
 ## Novedades de la v3.1
 
 - **Pizarra con dibujos**: además de ecuaciones, cada renglón puede traer un dibujo que evoluciona paso a paso (gráficos de funciones, áreas entre curvas, recta tangente, vectores y componentes, matrices que se completan celda por celda, código con la línea en ejecución y sus variables, diagramas de cuerpo libre en el plano inclinado, triángulos). Lo nuevo de cada paso se dibuja animado y en color; lo anterior queda tenue. Ver `src/components/board/BoardFigure.tsx`.

@@ -1033,7 +1033,7 @@ export const quiBalanceoLesson: Lesson = {
     explain(
       "Una receta con piezas de encastre",
       "Una reacción reacomoda átomos como piezas de encastre: desarmás unas figuras y armás otras, pero **no aparecen ni desaparecen piezas**.\n\nBalancear es elegir **cuántas figuras** de cada tipo (coeficientes) para que sobren y falten cero piezas. Lo que **no** podés hacer es cambiar la forma de una figura (los subíndices): eso sería otra sustancia.",
-      { tag: "intuitivo" },
+      { tag: "intuitivo", widget: { type: "reaction" } },
     ),
     quiz("Para pensar", {
       id: "q-qui-bal-1",

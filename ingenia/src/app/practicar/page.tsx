@@ -258,12 +258,12 @@ function Practice() {
               const ts = s.topics[t.id];
               const m = ts?.mastery ?? 0;
               return (
-                <button key={t.id} onClick={() => setChooser(t.id)} className="card flex items-center gap-4 p-4 text-left transition hover:border-primary">
+                <button key={t.id} onClick={() => setChooser(t.id)} className="card flex min-w-0 items-center gap-4 p-4 text-left transition hover:border-primary">
                   <Ring value={m} color={m >= MASTERED ? "var(--xp)" : "var(--primary)"}>
                     {m >= MASTERED ? "⭐" : `${Math.round(m * 100)}%`}
                   </Ring>
                   <span className="min-w-0 flex-1">
-                    <span className="block font-bold">{t.name}</span>
+                    <span className="block font-bold [overflow-wrap:anywhere]">{t.name}</span>
                     <span className="text-sm text-muted">
                       {ts ? `${ts.correct}/${ts.attempts} correctos · ${LEVEL_LABEL[ts.level]}` : "Sin practicar todavía"}
                     </span>

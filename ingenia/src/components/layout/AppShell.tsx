@@ -38,6 +38,8 @@ function useCosmetics() {
     if (reduceMotion) el.dataset.motion = "reduce";
     else delete el.dataset.motion;
     el.style.fontSize = textScale && textScale !== 1 ? `${textScale * 100}%` : "";
+    if (textScale && textScale > 1) el.dataset.text = "lg";
+    else delete el.dataset.text;
   }, [mode, textScale, reduceMotion]);
   useEffect(() => {
     const el = document.documentElement;
@@ -85,7 +87,7 @@ function PlayerBadge() {
   const { level, into, needed } = levelInfo(s.xp);
   const streak = currentStreak(s);
   return (
-    <div className="flex items-center gap-2 text-sm font-semibold">
+    <div className="flex items-center gap-1.5 whitespace-nowrap text-sm font-semibold">
       <span className="flex items-center gap-1 rounded-full bg-warn-soft px-2.5 py-1 text-warn" title="Racha de días">
         <Icon name="flame" size={16} /> {streak}
       </span>
@@ -178,7 +180,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-line bg-bg/85 px-4 py-2 backdrop-blur">
           <Link href="/" className="flex items-center gap-2 lg:hidden" aria-label="Ingenia, inicio">
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary font-black text-on-primary">∫</span>
-            <span className="font-black">Ingenia</span>
+            <span className="brand-word font-black">Ingenia</span>
           </Link>
           <Link href="/buscar" className="hidden min-h-10 max-w-md flex-1 items-center gap-2 rounded-xl border border-line bg-surface px-3 text-sm text-muted hover:border-primary sm:flex lg:flex">
             <Icon name="search" size={18} /> Buscar materias, temas, fórmulas…
@@ -189,7 +191,9 @@ export function AppShell({ children }: { children: ReactNode }) {
             </Link>
             <PlayerBadge />
             <SoundToggle />
-            <ThemeToggle />
+            <span className="hidden sm:contents">
+              <ThemeToggle />
+            </span>
           </div>
         </header>
 

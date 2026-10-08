@@ -599,3 +599,61 @@ export function MatrixWidget({ a: ia, b: ib, c: ic, d: id }: { a: number; b: num
     </div>
   );
 }
+
+// ───────────────────────── Química ─────────────────────────
+
+type Atom = { el: "H" | "O"; from: [number, number]; to: [number, number] };
+/** 2 H₂ + O₂ → 2 H₂O: cada átomo se separa de su molécula y va a su lugar en el producto. */
+const ATOMS: Atom[] = [
+  { el: "H", from: [50, 40], to: [292, 30] },
+  { el: "H", from: [80, 40], to: [328, 30] },
+  { el: "H", from: [50, 120], to: [292, 110] },
+  { el: "H", from: [80, 120], to: [328, 110] },
+  { el: "O", from: [150, 66], to: [310, 52] },
+  { el: "O", from: [150, 96], to: [310, 132] },
+];
+const BONDS_FROM: [number, number][] = [[0, 1], [2, 3], [4, 5]];
+const BONDS_TO: [number, number][] = [[0, 4], [1, 4], [2, 5], [3, 5]];
+
+export function ReactionWidget() {
+  const clock = useClock(3);
+  const t = clock.t;
+  const ease = (x: number) => (x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x));
+  const pos = (a: Atom): [number, number] => {
+    // 0–0,8 s: se separan; 0,8–2,6 s: viajan; 2,6–3 s: se enlazan.
+    const sep = ease(t / 0.8);
+    const mid: [number, number] = [a.from[0] + (a.from[0] < 100 ? -10 : 18) * sep + 60 * sep, a.from[1] + (a.from[1] < 80 ? -14 : 14) * sep];
+    const go = ease((t - 0.8) / 1.8);
+    return [mid[0] + (a.to[0] - mid[0]) * go, mid[1] + (a.to[1] - mid[1]) * go];
+  };
+  const p = ATOMS.map(pos);
+  const bondsFrom = 1 - ease(t / 0.5);
+  const bondsTo = ease((t - 2.5) / 0.5);
+  return (
+    <div className="space-y-2">
+      <svg viewBox="0 0 380 165" className="w-full rounded-xl bg-surface-2" role="img" aria-label="Dos moléculas de hidrógeno y una de oxígeno se separan en átomos y se reacomodan en dos moléculas de agua">
+        <text x="20" y="160" fontSize="12" fontWeight="800" fill="var(--muted)">2 H₂ + O₂</text>
+        <text x="290" y="160" fontSize="12" fontWeight="800" fill="var(--muted)">2 H₂O</text>
+        <path d="M200 82 h40 m-8 -6 l8 6 -8 6" stroke="var(--muted)" strokeWidth="2.5" fill="none" opacity={1 - bondsTo * 0.6} />
+        {BONDS_FROM.map(([a, b]) => (
+          <line key={`f${a}`} x1={p[a][0]} y1={p[a][1]} x2={p[b][0]} y2={p[b][1]} stroke="var(--text)" strokeWidth="5" opacity={bondsFrom} />
+        ))}
+        {BONDS_TO.map(([a, b]) => (
+          <line key={`t${a}`} x1={p[a][0]} y1={p[a][1]} x2={p[b][0]} y2={p[b][1]} stroke="var(--success)" strokeWidth="5" opacity={bondsTo} />
+        ))}
+        {ATOMS.map((a, i) => (
+          <g key={i} transform={`translate(${p[i][0]} ${p[i][1]})`}>
+            <circle r={a.el === "O" ? 15 : 10} fill={a.el === "O" ? "#ef4444" : "#e2e8f0"} stroke={a.el === "O" ? "#991b1b" : "#64748b"} strokeWidth="2" />
+            <text y="4" textAnchor="middle" fontSize={a.el === "O" ? 13 : 11} fontWeight="900" fill={a.el === "O" ? "#fff" : "#0f172a"}>
+              {a.el}
+            </text>
+          </g>
+        ))}
+      </svg>
+      <p className="text-center text-sm font-bold">
+        H: 4 → 4 · O: 2 → 2 <span className="text-muted">— los átomos se reacomodan, no aparecen ni desaparecen</span>
+      </p>
+      <PlayBar clock={clock} label="Ver la reacción" />
+    </div>
+  );
+}

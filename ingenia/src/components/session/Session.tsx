@@ -1,4 +1,5 @@
 "use client";
+import { Nodo } from "../guide/Nodo";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { Difficulty, ErrorType, Exercise } from "@/engine/types";
@@ -246,24 +247,36 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
   return (
     <div className="anim-pop relative mx-auto max-w-2xl space-y-5">
       {wonChallenge && <Confetti count={40} />}
-      <div className="card p-6 text-center">
-        <p className="text-sm font-semibold uppercase tracking-wide text-muted">{title}</p>
-        {kind === "examen" ? (
+      <div className="card relative overflow-hidden p-6 text-center">
+        <div className="flex justify-center">
+          {wonChallenge ? <Medal /> : <Nodo mood={pct >= 0.9 ? "celebrate" : pct >= 0.6 ? "happy" : "encourage"} size={96} body />}
+        </div>
+        <p className="mt-2 text-sm font-black uppercase tracking-wide text-muted">{title}</p>
+        {wonChallenge ? (
+          <h2 className="mt-1 text-3xl font-black text-success">🎉 ¡UNIDAD COMPLETADA!</h2>
+        ) : kind === "examen" ? (
           <p className="mt-2 text-5xl font-black" style={{ color: pct >= 0.4 ? "var(--success)" : "var(--danger)" }}>
             {fmt(Math.round(pct * 100) / 10, 1)}
             <span className="text-2xl text-muted">/10</span>
           </p>
         ) : (
-          <p className="mt-2 text-5xl font-black">
-            {correct}/{total}
-          </p>
+          <h2 className="mt-1 text-3xl font-black">{pct >= 0.9 ? "¡Sesión impecable!" : pct >= 0.6 ? "¡Buen trabajo!" : "Sesión terminada"}</h2>
         )}
-        <p className="mt-3">{message}</p>
-        <div className="mt-4 flex justify-center gap-3 text-sm">
-          <span className="chip !bg-xp-soft !text-xp">+{xp} XP</span>
-          <span className="chip">
-            <Icon name="clock" size={14} /> {Math.floor(seconds / 60)} min {seconds % 60} s
-          </span>
+        <p className="mx-auto mt-2 max-w-md font-semibold text-muted">{message}</p>
+        <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+          {[
+            ["✅", `${correct}/${total}`, "aciertos"],
+            ["🎯", `${Math.round(pct * 100)} %`, "precisión"],
+            ["⚡", `+${xp}`, "XP"],
+            ["⏱️", `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`, "tiempo"],
+          ].map(([i, v, l], k) => (
+            <div key={l} className="tile !min-h-0 flex-col !gap-0 !py-2 anim-rise" style={{ animationDelay: `${k * 90}ms` }}>
+              <span className="text-xl font-black">
+                <span aria-hidden>{i}</span> {v}
+              </span>
+              <span className="text-xs font-bold text-muted">{l}</span>
+            </div>
+          ))}
         </div>
       </div>
       {kind === "examen" && (
@@ -314,15 +327,29 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
       )}
       <div className="flex justify-center gap-3">
         {onExit ? (
-          <button className="btn btn-primary" onClick={onExit}>
-            Volver
+          <button className="btn-3d !px-10" onClick={onExit} autoFocus>
+            CONTINUAR
           </button>
         ) : (
-          <Link className="btn btn-primary" href={exitHref}>
-            Volver
+          <Link className="btn-3d !px-10" href={exitHref} autoFocus>
+            CONTINUAR
           </Link>
         )}
       </div>
     </div>
+  );
+}
+
+/** Medalla del desafío final (SVG propio, animada al aparecer). */
+function Medal() {
+  return (
+    <svg width="110" height="130" viewBox="0 0 110 130" className="nodo-pop" role="img" aria-label="Medalla de unidad completada">
+      <path d="M30 0 h18 l10 40 h-18 z" fill="var(--c-math)" />
+      <path d="M80 0 h-18 l-10 40 h18 z" fill="var(--c-physics)" />
+      <circle cx="55" cy="82" r="40" fill="#f59e0b" stroke="#b45309" strokeWidth="5" />
+      <circle cx="55" cy="82" r="29" fill="#fcd34d" stroke="#d97706" strokeWidth="3" />
+      <path d="M55 62 l6 13 14 2 -10 10 2 14 -12 -7 -12 7 2 -14 -10 -10 14 -2 z" fill="#fff" stroke="#d97706" strokeWidth="2" strokeLinejoin="round" />
+      <circle cx="38" cy="66" r="5" fill="#fff" opacity=".5" />
+    </svg>
   );
 }
