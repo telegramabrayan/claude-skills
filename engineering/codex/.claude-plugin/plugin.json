@@ -1,0 +1,13 @@
+{
+  "name": "codex",
+  "description": "Use OpenAI Codex from Claude Code to review code or delegate tasks: /codex:review, /codex:adversarial-review, /codex:rescue, /codex:transfer, plus background-job management (/codex:status, /codex:result, /codex:cancel) and an opt-in stop-time review gate. Requires Node.js 18.18+ and the Codex CLI signed in with a ChatGPT account (free tier included) or an OpenAI API key. Vendored from openai/codex-plugin-cc (Apache-2.0). Use when the user wants a second-opinion code review from Codex, wants to hand a task to Codex, or invokes /codex:*.",
+  "version": "1.0.6",
+  "author": {
+    "name": "OpenAI",
+    "url": "https://github.com/openai/codex-plugin-cc"
+  },
+  "homepage": "https://github.com/alirezarezvani/claude-skills/tree/main/engineering/codex",
+  "repository": "https://github.com/alirezarezvani/claude-skills",
+  "license": "Apache-2.0",
+  "skills": "./skills"
+}

@@ -1,0 +1,11 @@
+{
+  "attribution": {
+    "upstream": "https://github.com/openai/codex-plugin-cc",
+    "upstream_path": "plugins/codex/ (complete plugin) + README.md (kept as UPSTREAM_README.md)",
+    "upstream_commit": "db52e28",
+    "upstream_version": "1.0.6",
+    "upstream_author": "OpenAI",
+    "upstream_license": "Apache-2.0",
+    "derivation_note": "Verbatim byte-for-byte copy of plugins/codex/ at upstream commit db52e28 (v1.0.6). The only modified file is .claude-plugin/plugin.json, which gained the homepage/repository/license/skills/author.url fields this repo's check_plugin_json.py requires; name and version are unchanged. Every other file, LICENSE and NOTICE included, is untouched. README.md (new, not upstream) lists the deviations and is the authoritative record of them. The plugin name must stay 'codex': commands/rescue.md hard-codes the subagent type 'codex:codex-rescue', and renaming the plugin would break /codex:rescue. To re-vendor, copy plugins/codex/ from a fresh clone over this folder, keep README.md and .claude-plugin/authoring-notes.json, and re-apply the plugin.json fields."
+  }
+}
