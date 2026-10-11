@@ -1,5 +1,6 @@
 import type { ErrorType, SkillId, Topic } from "@/engine/types";
 import { ACTIVITY_BY_TOPIC } from "@/engine/generators/activities";
+import { FIS_MISSION_GENERATORS } from "@/engine/generators/fisica-mision";
 import { FISICA_TOPICS } from "./topics-fisica";
 import { PC_TOPICS } from "./topics-pc";
 import { AM_TOPICS } from "./topics-am";
@@ -55,7 +56,22 @@ const BASE_TOPICS: Topic[] = [
 ];
 
 /** Cada tema suma los generadores de actividad (formatos interactivos) que le corresponden. */
-export const TOPICS: Topic[] = BASE_TOPICS.map((t) => (ACTIVITY_BY_TOPIC[t.id] ? { ...t, generators: [...t.generators, ...ACTIVITY_BY_TOPIC[t.id]] } : t));
+const EXTRA_BY_TOPIC: Record<string, string[]> = { ...ACTIVITY_BY_TOPIC };
+for (const g of FIS_MISSION_GENERATORS) if (g.topicId !== "t-fis-signos") (EXTRA_BY_TOPIC[g.topicId] ??= []).push(g.id);
+
+/** Cada tema suma los generadores de actividad y de la Misión Física que le corresponden. */
+export const TOPICS: Topic[] = [
+  ...BASE_TOPICS.map((t) => (EXTRA_BY_TOPIC[t.id] ? { ...t, generators: [...t.generators, ...EXTRA_BY_TOPIC[t.id].filter((g) => !t.generators.includes(g))] } : t)),
+  {
+    id: "t-fis-signos",
+    name: "Convenciones de signo y sistemas de referencia",
+    subjectId: "fisica",
+    skill: "fisica",
+    generators: ["fis-signos"],
+    lessonId: "l-mruv",
+    prerequisites: ["t-signos", "t-vectores", "t-mruv"],
+  },
+];
 
 const BY_ID = new Map(TOPICS.map((x) => [x.id, x]));
 

@@ -21,6 +21,16 @@ npm run build      # build de producción (todas las rutas son estáticas)
 Requiere Node 20+. El progreso se guarda en el navegador (con respaldo JSON desde
 Configuración).
 
+## Misión Física 5/11 (`/fisica`)
+
+Entrenador prioritario para aprobar los parciales de Física (fecha objetivo: 5/11/2026).
+
+- **Análisis real del material**: los 14 modelos cargados (10 exámenes distintos; 31 ejercicios) están clasificados en `src/content/fisica/parciales.ts` (tema, subtema, dificultad, fórmulas, pasos, unidades, trampas, rasgos). Frecuencias, trampas y pesos se **calculan** de ahí; nada está inventado. Detalle en [docs/FISICA-MISION.md](docs/FISICA-MISION.md).
+- **Preparación** por tema, por parcial y global a partir de dominio, ejercicios tipo parcial, simulacros, ayudas usadas y olvido. Niveles 🔴🟡🟢⭐ con qué falta para subir. **No es una probabilidad de aprobar.**
+- **Plan adaptativo** día por día hasta el parcial (prerrequisitos, importancia, debilidad; se recalcula solo si faltás un día) + fases recta final / repaso final / pre-parcial.
+- **Entrenamiento de hoy** según el tiempo disponible (10–90 min), diagnóstico inicial, simulador (aprendizaje/realista/examen) con plan de recuperación, parcial sorpresa, análisis de modelos, formulario dinámico (44 fichas), «¿Qué usarías?», «Resolver conmigo» (datos → pide → modelo → fórmula → resolver → verificar, con andamiaje que se retira), signos, unidades, gráficos, practicar mis errores, 5 minutos, checklist de examen.
+- Temas cuya ubicación en 1.er/2.º parcial no es segura quedan marcados `needsVerification` (*).
+
 ## Novedades de la v4 (rediseño completo de la experiencia)
 
 Auditoría, referencias y sistema visual en [`docs/REDISENO.md`](docs/REDISENO.md).

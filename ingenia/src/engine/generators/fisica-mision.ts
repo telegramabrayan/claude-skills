@@ -1286,11 +1286,10 @@ export const fisKmh: Generator = {
     const x = r.pick(c.values);
     const ans = c.f(x);
     const small = Math.abs(ans) < 0.01;
-    const big = d >= 4 && r.bool();
     const ctx = c.from === "km/h" || c.from === "m/s" || c.from === "cm/s" ? "una rapidez" : c.from.includes("/cm³") || c.from.includes("/m³") ? "una densidad" : c.from === "L/min" ? "un caudal" : "el dato";
     return num({
       gen: this.id, seed, d, topicId: this.topicId, unit: c.to, answer: ans,
-      prompt: `${big ? "Antes de usar una fórmula hay que pasar todo al SI. " : ""}Convertí ${ctx}: **${n(x)} ${c.from}** = ¿? ${c.to}.${small ? " Podés escribirlo como 2,5·10^-4." : ""}`,
+      prompt: `Convertí ${ctx}: **${n(x)} ${c.from}** = ¿? ${c.to}.${small ? " Podés escribirlo como 2,5·10^-4." : ""}`,
       hints: [
         "Preguntate: ¿la unidad nueva es más grande o más chica? Si es más grande, el número se achica.",
         c.how,
@@ -1500,7 +1499,7 @@ export const fisGraficoVtLectura: Generator = {
     const k = r.pick([1, 2, 3, 4]);
     const tc = r.pick([2, 3, 4, 5]);
     const v0 = k * tc;
-    const T = tc + r.pick([1, 2, 3]);
+    const T = tc + r.pick([1, 2, 3].filter((x) => x !== tc));
     const vT = v0 - k * T;
     const pts: [number, number][] = [[0, v0], [tc, 0], [T, vT]];
     const visual = plotVisual(pts, lineExpr(v0, -k));
@@ -1601,7 +1600,7 @@ export const fisMruvVariantes: Generator = {
   description: "MRUV pensando qué falta: t, a, Δx o v₀; con km/h y datos que sobran",
   generate(seed, d) {
     const r = rng(seed);
-    const sobra = d >= 3 ? r.pick([` El vehículo tiene una masa de ${r.pick([850, 1200, 1500])} kg.`, " Es un día de lluvia y la ruta tiene dos carriles.", ` El conductor tiene ${r.pick([22, 35, 48])} años.`]) : "";
+    const sobra = d >= 3 ? r.pick([` La masa del vehículo es de ${r.pick([850, 1200, 1500])} kg.`, " Es un día nublado y hace 18 °C.", ` El conductor tiene ${r.pick([22, 35, 48])} años.`]) : "";
     const explanation = "En MRUV hay cuatro relaciones (v = v₀ + a·t; Δx = v₀·t + ½·a·t²; v² = v₀² + 2·a·Δx; Δx = (v₀ + v)/2·t). Cada una deja afuera una magnitud: elegí la que NO tiene la magnitud que no te dieron.";
     const mode = byD(d, [["t0"], ["t", "a2"], ["dx", "a2"], ["v0", "kmh"], ["kmh", "v0t"], ["tkmh", "v0t"]]);
     const m = r.pick(mode);
@@ -1992,3 +1991,467 @@ export const FIS_MISSION_GENERATORS: Generator[] = [
   fisDosEtapas,
   fisDcl,
 ];
+
+// ═════════════════════════════ Escenarios «RESOLVER CONMIGO» ═════════════════════════════
+
+export interface FisScenario {
+  kind: string;
+  topicId: string;
+  /** Enunciado (MathText). */
+  enunciado: string;
+  /** Datos del enunciado; los que no se usan tienen relevante = false. */
+  datos: { label: string; sym: string; value: string; relevante: boolean }[];
+  pide: { options: string[]; answer: number };
+  modelo: { options: string[]; answer: number; why: string };
+  formula: { options: string[]; answer: number; why: string };
+  /** Conversión de unidades necesaria, si la hay ("90 km/h = 25,0 m/s"). */
+  conversion?: string;
+  /** Resolución renglón por renglón. */
+  pasos: string[];
+  respuesta: number;
+  unidad: string;
+  tolerance: number;
+  /** Chequeo de sentido físico y de unidades. */
+  verificacion: string;
+}
+
+export const SCENARIO_KINDS: { kind: string; topicId: string; title: string }[] = [
+  { kind: "mruv-v", topicId: "t-mruv", title: "MRUV: rapidez final" },
+  { kind: "mruv-t", topicId: "t-mruv", title: "MRUV: ¿cuánto tarda?" },
+  { kind: "mruv-a", topicId: "t-mruv", title: "MRUV: aceleración" },
+  { kind: "frenado", topicId: "t-frenado", title: "Distancia de frenado" },
+  { kind: "encuentro", topicId: "t-encuentro", title: "Encuentro en MRU" },
+  { kind: "caida", topicId: "t-caida-libre", title: "Caída libre" },
+  { kind: "tiro-hmax", topicId: "t-tiro-oblicuo", title: "Tiro oblicuo: altura máxima" },
+  { kind: "plano-a", topicId: "t-plano-inclinado", title: "Plano inclinado con rozamiento" },
+  { kind: "energia-v", topicId: "t-energia", title: "Energía: rapidez abajo de la colina" },
+  { kind: "presion", topicId: "t-presion", title: "Presión hidrostática" },
+  { kind: "empuje", topicId: "t-arquimedes", title: "Empuje y flotación" },
+  { kind: "newton-F", topicId: "t-newton", title: "2.ª ley: fuerza necesaria" },
+  { kind: "vinculados", topicId: "t-vinculados", title: "Cuerpos vinculados" },
+];
+
+const MODELOS = ["MRU", "MRUV", "Caída libre / tiro vertical", "Tiro oblicuo", "Estática", "Dinámica (2.ª ley)", "Energía", "Hidrostática"];
+
+type Dato = FisScenario["datos"][number];
+const dato = (label: string, sym: string, value: string, relevante = true): Dato => ({ label, sym, value, relevante });
+
+/** Mezcla una opción correcta con distractores y devuelve el índice correcto. */
+function mix(r: Rng, correct: string, wrongs: string[]): { options: string[]; answer: number } {
+  const options = r.shuffle([correct, ...wrongs.filter((w) => w !== correct)]);
+  return { options, answer: options.indexOf(correct) };
+}
+
+function modelos(r: Rng, correct: string, why: string, plausible: string[] = []) {
+  const others = r.shuffle(MODELOS.filter((m) => m !== correct && !plausible.includes(m)));
+  const wrongs = [...plausible.filter((p) => p !== correct), ...others].slice(0, 3);
+  return { ...mix(r, correct, wrongs), why };
+}
+
+interface Draft {
+  enunciado: string;
+  datos: Dato[];
+  pide: [string, string[]];
+  modelo: [string, string, string[]?];
+  formula: [string, string, string[]];
+  conversion?: string;
+  pasos: string[];
+  valor: number;
+  unidad: string;
+  verificacion: string;
+}
+
+function finish(r: Rng, kind: string, topicId: string, d: Difficulty, x: Draft): FisScenario {
+  const respuesta = sig3(x.valor);
+  const datos = d >= 3 ? r.shuffle(x.datos) : x.datos;
+  return {
+    kind,
+    topicId,
+    enunciado: x.enunciado,
+    datos,
+    pide: mix(r, x.pide[0], x.pide[1]),
+    modelo: modelos(r, x.modelo[0], x.modelo[1], x.modelo[2]),
+    formula: { ...mix(r, x.formula[0], x.formula[2]), why: x.formula[1] },
+    ...(x.conversion ? { conversion: x.conversion } : {}),
+    pasos: x.pasos,
+    respuesta,
+    unidad: x.unidad,
+    tolerance: Math.max(Math.abs(respuesta) * 0.005, 1e-9),
+    verificacion: x.verificacion,
+  };
+}
+
+const PIDE_KIN = ["la rapidez final $v$", "el tiempo $t$", "la aceleración $a$", "la distancia recorrida $Δx$"];
+const others = (all: string[], ok: string) => all.filter((x) => x !== ok).slice(0, 3);
+
+type Builder = (r: Rng, d: Difficulty) => Draft;
+
+const BUILDERS: Record<string, Builder> = {
+  "mruv-v": (r, d) => {
+    const kmh = d >= 4;
+    const V0 = kmh ? r.pick([18, 36, 54]) : 0;
+    const v0 = kmh ? V0 / 3.6 : d >= 2 ? r.pick([2, 4, 6]) : 0;
+    const a = r.pick([1.5, 2, 2.5, 3]);
+    const t = r.pick([4, 5, 6, 8]);
+    const v = v0 + a * t;
+    const datos = [
+      dato("Rapidez inicial", "v_0", kmh ? `${V0} km/h` : `${n(v0)} m/s`),
+      dato("Aceleración", "a", `${n(a)} m/s²`),
+      dato("Tiempo", "t", `${t} s`),
+    ];
+    if (d >= 3) datos.push(dato("Masa del auto", "m", `${r.pick([900, 1100, 1300])} kg`, false));
+    if (d >= 5) datos.push(dato("Distancia hasta la próxima esquina", "D", `${r.pick([150, 200, 300])} m`, false));
+    return {
+      enunciado: `Un auto ${v0 === 0 ? "parte del reposo" : `que va a ${kmh ? `${V0} km/h` : `${n(v0)} m/s`}`} y acelera uniformemente a ${n(a)} m/s² durante ${t} s.${d >= 3 ? ` El auto tiene una masa de ${datos[3].value}.` : ""}${d >= 5 ? ` La próxima esquina está a ${datos[4].value}.` : ""} ¿Qué rapidez alcanza, en m/s?`,
+      datos,
+      pide: ["la rapidez final $v$", others(PIDE_KIN, "la rapidez final $v$")],
+      modelo: ["MRUV", "La aceleración es constante y distinta de cero: movimiento rectilíneo uniformemente variado.", ["MRU", "Caída libre / tiro vertical"]],
+      formula: ["$v = v_0 + a·t$", "Tenés v₀, a y t: es la relación que vincula exactamente esas magnitudes con v.", ["$v^2 = v_0^2 + 2·a·Δx$", "$x = x_0 + v·t$", "$Δx = v_0·t + ½·a·t^2$"]],
+      ...(kmh ? { conversion: `${V0} km/h = ${s3(v0)} m/s` } : {}),
+      pasos: [...(kmh ? [`v₀ = ${V0} km/h ÷ 3,6 = ${s3(v0)} m/s`] : []), "v = v₀ + a·t", `v = ${s3(v0)} + ${n(a)}·${t}`, `v = ${s3(v)} m/s`],
+      valor: v,
+      unidad: "m/s",
+      verificacion: `a > 0, así que v tiene que salir mayor que v₀ ✔. Unidades: m/s + (m/s²)·s = m/s ✔. ${s3(v)} m/s = ${s3(v * 3.6)} km/h: razonable para un auto.`,
+    };
+  },
+  "mruv-t": (r, d) => {
+    const frena = d >= 5;
+    const a = r.pick([1.5, 2, 2.5, 4]);
+    const lo = r.pick([2, 4, 6]);
+    const t = r.pick([3, 4, 5, 6]);
+    const hi = lo + a * t;
+    const [v0, v] = frena ? [hi, lo] : [d === 1 ? 0 : lo, d === 1 ? a * t : hi];
+    const datos = [dato("Rapidez inicial", "v_0", `${n(v0)} m/s`), dato("Rapidez final", "v", `${n(v)} m/s`), dato(frena ? "Desaceleración (módulo)" : "Aceleración", "a", `${n(a)} m/s²`)];
+    if (d >= 3) datos.push(dato("Masa", "m", `${r.pick([200, 250])} kg`, false));
+    if (d >= 4) datos.push(dato("Largo del tramo recto", "L", "500 m", false));
+    return {
+      enunciado: `Una moto ${frena ? "frena" : "acelera"} uniformemente de ${n(v0)} m/s a ${n(v)} m/s con una ${frena ? "desaceleración" : "aceleración"} de ${n(a)} m/s².${d >= 3 ? ` La moto con su conductor tiene ${datos[3].value}.` : ""}${d >= 4 ? " El tramo recto de la ruta mide 500 m." : ""} ¿Cuánto tarda?`,
+      datos,
+      pide: ["el tiempo $t$", others(PIDE_KIN, "el tiempo $t$")],
+      modelo: ["MRUV", "La velocidad cambia de manera uniforme: aceleración constante.", ["MRU", "Dinámica (2.ª ley)"]],
+      formula: ["$v = v_0 + a·t$", "Tenés v₀, v y a: despejando t de esta relación sale directo.", ["$v^2 = v_0^2 + 2·a·Δx$", "$Δx = v_0·t + ½·a·t^2$", "$t = Δx/v$"]],
+      pasos: ["v = v₀ + a·t → t = (v − v₀)/a", frena ? `t = (${n(v)} − ${n(v0)}) / (−${n(a)})` : `t = (${n(v)} − ${n(v0)}) / ${n(a)}`, `t = ${s3(t)} s`],
+      valor: t,
+      unidad: "s",
+      verificacion: `${frena ? "Frena: a es negativa y v − v₀ también, así que t sale positivo ✔." : "t positivo ✔."} Unidades: (m/s)/(m/s²) = s ✔.`,
+    };
+  },
+  "mruv-a": (r, d) => {
+    const t = r.pick([4, 5, 8, 10]);
+    const v0 = d >= 4 ? r.pick([2, 3, 5]) : 0;
+    const a = r.pick([0.5, 1, 1.5, 2]);
+    const dx = v0 * t + (a * t * t) / 2;
+    const datos = [...(v0 ? [dato("Rapidez inicial", "v_0", `${n(v0)} m/s`)] : []), dato("Distancia", "Δx", `${n(dx)} m`), dato("Tiempo", "t", `${t} s`)];
+    if (d >= 3) datos.push(dato("Masa de la bicicleta", "m", "12 kg", false));
+    if (d >= 5) datos.push(dato("Velocidad máxima permitida", "v_{máx}", "40 km/h", false));
+    return {
+      enunciado: `Un ciclista ${v0 ? `que va a ${n(v0)} m/s` : "que parte del reposo"} recorre ${n(dx)} m en ${t} s con aceleración constante.${d >= 3 ? " La bicicleta tiene una masa de 12 kg." : ""}${d >= 5 ? " En esa calle la velocidad máxima es 40 km/h." : ""} ¿Cuál es su aceleración?`,
+      datos,
+      pide: ["la aceleración $a$", others(PIDE_KIN, "la aceleración $a$")],
+      modelo: ["MRUV", "Aceleración constante.", ["MRU", "Dinámica (2.ª ley)"]],
+      formula: ["$Δx = v_0·t + ½·a·t^2$", "Tenés Δx, t y v₀: la ecuación horaria tiene una sola incógnita, a.", ["$v = v_0 + a·t$", "$v^2 = v_0^2 + 2·a·Δx$", "$a = Δx/t^2$"]],
+      pasos: ["Δx = v₀·t + ½·a·t²", `${n(dx)} = ${n(v0)}·${t} + ½·a·${t}²`, `a = 2·(${n(dx)} − ${n(v0 * t)}) / ${t * t}`, `a = ${s3(a)} m/s²`],
+      valor: a,
+      unidad: "m/s²",
+      verificacion: `Comprobación: ${n(v0)}·${t} + ½·${s3(a)}·${t}² = ${s3(dx)} m ✔. Unidades: m/s² ✔.`,
+    };
+  },
+  frenado: (r, d) => {
+    const kmh = d >= 2;
+    const V = r.pick([54, 72, 90, 108]);
+    const v0 = kmh ? V / 3.6 : r.pick([10, 15, 20]);
+    const a = r.pick([4, 5, 6, 8]);
+    const reac = d >= 5;
+    const tr = reac ? r.pick([0.5, 0.75, 1]) : 0;
+    const df = (v0 * v0) / (2 * a);
+    const total = v0 * tr + df;
+    const datos = [dato("Rapidez inicial", "v_0", kmh ? `${V} km/h` : `${n(v0)} m/s`), dato("Desaceleración (módulo)", "a", `${a} m/s²`)];
+    if (reac) datos.push(dato("Tiempo de reacción", "t_r", `${n(tr)} s`));
+    if (d >= 3) datos.push(dato("Masa del auto", "m", `${r.pick([1000, 1200, 1400])} kg`, false));
+    if (d >= 4) datos.push(dato("Coeficiente de rozamiento estático", "μ_e", "0,7", false));
+    return {
+      enunciado: `Un auto va a ${datos[0].value}${reac ? ` y el conductor tarda ${n(tr)} s en reaccionar (en ese lapso sigue a la misma velocidad); después frena` : " y frena"} con desaceleración constante de ${a} m/s² hasta detenerse.${d >= 3 ? ` La masa del auto es ${datos.find((x) => x.sym === "m")!.value}.` : ""}${d >= 4 ? " El coeficiente de rozamiento estático entre neumáticos y asfalto es 0,7." : ""} ¿Qué distancia recorre ${reac ? "desde que ve el obstáculo" : "mientras frena"}?`,
+      datos,
+      pide: ["la distancia recorrida $Δx$", others(PIDE_KIN, "la distancia recorrida $Δx$")],
+      modelo: reac
+        ? ["MRU y después MRUV", "Durante la reacción la velocidad es constante (MRU); después frena con aceleración constante (MRUV).", ["MRU", "MRUV"]]
+        : ["MRUV", "Frena con aceleración constante.", ["MRU", "Dinámica (2.ª ley)"]],
+      formula: [reac ? "$Δx = v_0·t_r + \\frac{v_0^2}{2·a}$" : "$v^2 = v_0^2 + 2·a·Δx$ con $v = 0$", reac ? "Distancia de reacción (MRU) + distancia de frenado (v² = v₀² − 2aΔx con v = 0)." : "«Hasta detenerse» da v = 0, y no tenés el tiempo: la relación de v² es la directa.", reac ? ["$Δx = \\frac{v_0^2}{2·a}$", "$Δx = v_0·t_r$", "$Δx = ½·a·t_r^2$"] : ["$Δx = v_0·t$", "$v = v_0 + a·t$", "$Δx = ½·a·t^2$"]],
+      ...(kmh ? { conversion: `${V} km/h = ${s3(v0)} m/s` } : {}),
+      pasos: [
+        ...(kmh ? [`v₀ = ${V} ÷ 3,6 = ${s3(v0)} m/s`] : []),
+        ...(reac ? [`Reacción: d_r = v₀·t_r = ${s3(v0)}·${n(tr)} = ${s3(v0 * tr)} m`] : []),
+        "Frenado: 0 = v₀² − 2·a·d_f → d_f = v₀²/(2a)",
+        `d_f = ${s3(v0)}² / (2·${a}) = ${s3(df)} m`,
+        ...(reac ? [`Total: ${s3(v0 * tr)} + ${s3(df)} = ${s3(total)} m`] : []),
+      ],
+      valor: total,
+      unidad: "m",
+      verificacion: `Si duplicás la rapidez, la distancia de frenado se cuadruplica (va con v₀²). Unidades: (m/s)²/(m/s²) = m ✔.`,
+    };
+  },
+  encuentro: (r, d) => {
+    const vA = r.pick([80, 90, 100, 120]);
+    const vB = r.pick([40, 50, 60]);
+    const d0 = r.pick([30, 40, 60, 80]);
+    const t = d0 / (vA - vB);
+    const askX = d >= 4;
+    const datos = [dato("Rapidez del auto A", "v_A", `${vA} km/h`), dato("Rapidez del camión B", "v_B", `${vB} km/h`), dato("Distancia inicial entre ambos", "d_0", `${d0} km`)];
+    if (d >= 3) datos.push(dato("Carga del camión", "m", "18 t", false));
+    if (d >= 5) datos.push(dato("Largo del camión", "L", "16 m", false));
+    return {
+      enunciado: `Por una ruta recta, un auto A pasa por el km 0 a ${vA} km/h. En ese mismo instante, un camión B pasa por el km ${d0} a ${vB} km/h en el MISMO sentido. Ambos mantienen su velocidad.${d >= 3 ? " El camión lleva 18 t de carga." : ""}${d >= 5 ? " El camión mide 16 m de largo." : ""} ${askX ? "¿En qué kilómetro lo alcanza?" : "¿Cuánto tarda A en alcanzar a B, en horas?"}`,
+      datos,
+      pide: askX ? ["la posición del encuentro $x_E$", ["el tiempo de encuentro $t_E$", "la rapidez relativa", "la distancia inicial"]] : ["el tiempo de encuentro $t_E$", ["la posición del encuentro $x_E$", "la rapidez relativa", "la aceleración de A"]],
+      modelo: ["MRU", "Los dos van a velocidad constante.", ["MRUV", "Dinámica (2.ª ley)"]],
+      formula: ["$x_A(t) = x_B(t)$, con $x = x_0 + v·t$", "Encontrarse es estar en el mismo lugar en el mismo instante: se igualan las ecuaciones horarias.", ["$t = \\frac{d_0}{v_A + v_B}$", "$t = \\frac{d_0}{v_A}$", "$v^2 = v_0^2 + 2·a·Δx$"]],
+      pasos: [`x_A = ${vA}·t ; x_B = ${d0} + ${vB}·t`, `${vA}·t = ${d0} + ${vB}·t → t = ${d0}/(${vA} − ${vB})`, `t = ${s3(t)} h`, ...(askX ? [`x_E = ${vA}·${s3(t)} = ${s3(vA * t)} km`] : [])],
+      valor: askX ? vA * t : t,
+      unidad: askX ? "km" : "h",
+      verificacion: `Comprobá con B: ${d0} + ${vB}·${s3(t)} = ${s3(d0 + vB * t)} km, igual que A ✔. ${Number.isInteger(t) ? "" : `Para pasarlo a minutos, la parte decimal se multiplica por 60: ${s3(t)} h = ${Math.floor(t)} h ${Math.round((t - Math.floor(t)) * 60)} min.`}`,
+    };
+  },
+  caida: (r, d) => {
+    const h = r.pick([5, 10, 20, 30, 45]);
+    const v0 = d >= 4 ? r.pick([3, 5, 8]) : 0;
+    const askT = d <= 2 || d >= 5;
+    const v = Math.sqrt(v0 * v0 + 2 * G * h);
+    const t = (-v0 + v) / G;
+    const datos = [dato("Altura", "h", `${h} m`), ...(v0 ? [dato("Rapidez inicial (hacia abajo)", "v_0", `${v0} m/s`)] : [])];
+    if (d >= 3) datos.push(dato("Masa de la piedra", "m", `${r.pick([150, 200, 500])} g`, false));
+    if (d >= 6) datos.push(dato("Diámetro de la piedra", "D", "4 cm", false));
+    return {
+      enunciado: `Desde lo alto de un edificio, a ${h} m del piso, ${v0 ? `se lanza una piedra verticalmente hacia abajo con rapidez de ${v0} m/s` : "se deja caer una piedra"}. Despreciá el rozamiento con el aire.${d >= 3 ? ` La piedra tiene una masa de ${datos.find((x) => x.sym === "m")!.value}.` : ""}${d >= 6 ? " Su diámetro es de 4 cm." : ""} ${askT ? "¿Cuánto tarda en llegar al piso?" : "¿Con qué rapidez llega al piso?"}`,
+      datos,
+      pide: askT ? ["el tiempo de caída $t$", ["la rapidez final $v$", "la altura máxima", "la aceleración"]] : ["la rapidez final $v$", ["el tiempo de caída $t$", "la altura máxima", "la aceleración"]],
+      modelo: ["Caída libre / tiro vertical", "Solo actúa el peso: aceleración constante g = 9,80 m/s² hacia abajo.", ["MRU", "Tiro oblicuo"]],
+      formula: askT
+        ? (v0 ? ["$Δy = v_0·t + ½·g·t^2$ (eje hacia abajo)", "Tenés Δy, v₀ y g: la ecuación horaria da t (es cuadrática: usá la resolvente).", ["$Δy = ½·g·t^2$", "$t = Δy/v_0$", "$v = g·t$"]] : ["$Δy = ½·g·t^2$", "Parte del reposo: con la altura y g sale t directamente.", ["$v = g·t$", "$t = Δy/g$", "$Δy = v·t$"]])
+        : ["$v^2 = v_0^2 + 2·g·Δy$", "No pide el tiempo: la relación de v² vincula v, v₀, g y la altura.", ["$v^2 = 2·g·Δy$ (aunque tenga $v_0$)", "$v = Δy/t$", "$v = g·t$"]],
+      pasos: askT
+        ? (v0
+          ? [`Eje hacia abajo: ${h} = ${v0}·t + 4,9·t²`, `4,9·t² + ${v0}·t − ${h} = 0`, `t = (−${v0} + √(${v0}² + 4·4,9·${h})) / (2·4,9)`, `t = ${s3(t)} s (la otra raíz es negativa: se descarta)`]
+          : [`${h} = ½·9,80·t²`, `t = √(2·${h}/9,80)`, `t = ${s3(t)} s`])
+        : [`v² = ${v0}² + 2·9,80·${h}`, `v² = ${s3(v * v)} m²/s²`, `v = ${s3(v)} m/s`],
+      valor: askT ? t : v,
+      unidad: askT ? "s" : "m/s",
+      verificacion: askT ? `Con ese tiempo, la rapidez al llegar sería ${s3(v)} m/s. La masa no interviene: en caída libre todos los cuerpos caen igual. Unidades: s ✔.` : `La masa no interviene. Si se soltara desde el reposo daría √(2·g·h) = ${s3(Math.sqrt(2 * G * h))} m/s${v0 ? ", un poco menos ✔" : " ✔"}.`,
+    };
+  },
+  "tiro-hmax": (r, d) => {
+    const kmh = d >= 4;
+    const V = r.pick([54, 72, 90, 108]);
+    const v0 = kmh ? V / 3.6 : r.pick([15, 20, 25, 30]);
+    const th = r.pick([30, 37, 45, 53, 60]);
+    const vy = v0 * sinD(th);
+    const hmax = (vy * vy) / (2 * G);
+    const datos = [dato("Rapidez inicial", "v_0", kmh ? `${V} km/h` : `${n(v0)} m/s`), dato("Ángulo con la horizontal", "θ", `${th}°`)];
+    if (d >= 3) datos.push(dato("Masa de la pelota", "m", "0,43 kg", false));
+    if (d >= 5) datos.push(dato("Distancia al arco", "D", "30 m", false));
+    return {
+      enunciado: `Se patea una pelota desde el suelo con una rapidez de ${datos[0].value}, formando ${th}° con la horizontal. Despreciá el rozamiento con el aire.${d >= 3 ? " La pelota tiene 0,43 kg." : ""}${d >= 5 ? " El arco está a 30 m." : ""} ¿Qué altura máxima alcanza?`,
+      datos,
+      pide: ["la altura máxima $h_{máx}$", ["el alcance horizontal", "el tiempo de vuelo", "la rapidez en la altura máxima"]],
+      modelo: ["Tiro oblicuo", "Horizontal: MRU. Vertical: tiro vertical con a = −g. La altura máxima solo depende de la componente vertical.", ["Caída libre / tiro vertical", "MRUV"]],
+      formula: ["$h_{máx} = \\frac{(v_0·sen θ)^2}{2·g}$", "En la altura máxima v_y = 0: de v_y² = v₀y² − 2·g·h sale h = v₀y²/(2g).", ["$h_{máx} = \\frac{(v_0·cos θ)^2}{2·g}$", "$h_{máx} = \\frac{v_0^2}{2·g}$", "$h_{máx} = v_{0y}·t$"]],
+      ...(kmh ? { conversion: `${V} km/h = ${s3(v0)} m/s` } : {}),
+      pasos: [...(kmh ? [`v₀ = ${V} ÷ 3,6 = ${s3(v0)} m/s`] : []), `v₀y = v₀·sen ${th}° = ${s3(vy)} m/s`, "0 = v₀y² − 2·g·h_máx", `h_máx = ${s3(vy)}² / (2·9,80) = ${s3(hmax)} m`],
+      valor: hmax,
+      unidad: "m",
+      verificacion: `Tiene que ser menor que v₀²/(2g) = ${s3((v0 * v0) / (2 * G))} m (lo que subiría lanzada vertical) ✔. La masa no interviene.`,
+    };
+  },
+  "plano-a": (r, d) => {
+    const th = r.pick([30, 37, 40, 45]);
+    const mu = r.pick([0.1, 0.2, 0.25, 0.3]);
+    const sube = d >= 5;
+    const a = sube ? G * (sinD(th) + mu * cosD(th)) : G * (sinD(th) - mu * cosD(th));
+    const datos = [dato("Inclinación", "θ", `${th}°`), dato("Coeficiente de rozamiento dinámico", "μ_d", n(mu))];
+    if (d >= 3) datos.push(dato("Masa del bloque", "m", `${r.pick([2, 5, 8])} kg`, false));
+    if (d >= 4) datos.push(dato("Largo del plano", "L", `${r.pick([3, 4, 5])} m`, false));
+    return {
+      enunciado: `Un bloque ${sube ? "es lanzado hacia ARRIBA por" : "baja deslizando por"} un plano inclinado ${th}° con coeficiente de rozamiento dinámico ${n(mu)}.${d >= 3 ? ` El bloque tiene ${datos[2].value}.` : ""}${d >= 4 ? ` El plano mide ${datos[3].value}.` : ""} ¿Cuál es el módulo de su aceleración${sube ? " mientras sube" : ""}?`,
+      datos,
+      pide: ["la aceleración $a$", ["la fuerza normal $N$", "la fuerza de rozamiento", "la rapidez final"]],
+      modelo: ["Dinámica (2.ª ley)", "Hay fuerzas no equilibradas a lo largo del plano: ΣF = m·a.", ["Estática", "Energía"]],
+      formula: [sube ? "$a = g·(sen θ + μ_d·cos θ)$" : "$a = g·(sen θ − μ_d·cos θ)$", sube ? "Subiendo, P·sen θ y el rozamiento apuntan los dos hacia abajo del plano: se suman. N = m·g·cos θ." : "P·sen θ hacia abajo del plano y el rozamiento μd·N hacia arriba, con N = m·g·cos θ. La masa se simplifica.", [sube ? "$a = g·(sen θ − μ_d·cos θ)$" : "$a = g·(sen θ + μ_d·cos θ)$", sube ? "$a = g·(sen θ + μ_d)$" : "$a = g·(sen θ − μ_d)$", "$a = g·cos θ$"]],
+      pasos: [
+        `N = m·g·cos ${th}°`,
+        sube ? `m·a = m·g·sen ${th}° + μ_d·m·g·cos ${th}°` : `m·a = m·g·sen ${th}° − μ_d·m·g·cos ${th}°`,
+        `a = 9,80·(sen ${th}° ${sube ? "+" : "−"} ${n(mu)}·cos ${th}°)`,
+        `a = ${s3(a)} m/s²`,
+      ],
+      valor: a,
+      unidad: "m/s²",
+      verificacion: sube ? `Tiene que ser mayor que g·sen θ = ${s3(G * sinD(th))} m/s² (el rozamiento suma al frenar la subida) ✔. La masa se simplifica.` : `Tiene que ser menor que g·sen θ = ${s3(G * sinD(th))} m/s² (sin rozamiento) y positiva (μd < tg θ) ✔. La masa se simplifica: no se usa.`,
+    };
+  },
+  "energia-v": (r, d) => {
+    const hA = r.pick([10, 15, 20, 25]);
+    const conVel = d >= 3;
+    const vA = conVel ? r.pick([2, 3, 4, 5]) : 0;
+    const hB = conVel ? r.pick([0, 2, 4, 5]) : 0;
+    const v = Math.sqrt(vA * vA + 2 * G * (hA - hB));
+    const datos = [dato("Altura inicial", "h_A", `${hA} m`), ...(conVel ? [dato("Rapidez inicial", "v_A", `${vA} m/s`), dato("Altura final", "h_B", `${hB} m`)] : [])];
+    if (d >= 3) datos.push(dato("Masa del carrito", "m", `${r.pick([150, 300, 450])} kg`, false));
+    if (d >= 5) datos.push(dato("Longitud del recorrido", "L", "60 m", false));
+    return {
+      enunciado: conVel
+        ? `Un carrito de montaña rusa pasa por un punto A, a ${hA} m del suelo, con una rapidez de ${vA} m/s, y baja por la vía (sin rozamiento) hasta un punto B a ${hB} m.${` El carrito tiene ${datos[3].value}.`}${d >= 5 ? " El recorrido entre A y B mide 60 m." : ""} ¿Qué rapidez tiene en B?`
+        : `Un trineo parte del reposo desde lo alto de una colina de ${hA} m y baja por la ladera curva sin rozamiento. ¿Con qué rapidez llega abajo?`,
+      datos,
+      pide: ["la rapidez final $v$", ["la energía potencial inicial", "el tiempo de bajada", "la aceleración"]],
+      modelo: ["Energía", "Sin rozamiento la energía mecánica se conserva, y la forma de la vía no importa (la aceleración no es constante: MRUV no sirve).", ["MRUV", "Dinámica (2.ª ley)"]],
+      formula: ["$½·m·v_A^2 + m·g·h_A = ½·m·v_B^2 + m·g·h_B$", "Conservación de la energía mecánica: la masa se simplifica y solo importa el desnivel.", ["$v = v_0 + a·t$", "$m·g·h_A = ½·m·v_B^2$ (aunque haya $v_A$ y $h_B$)", "$F = m·a$ con $a = g·sen θ$"]],
+      pasos: [`½·v_B² = ½·${vA}² + 9,80·(${hA} − ${hB})`, `v_B² = ${vA * vA} + 2·9,80·${hA - hB} = ${s3(v * v)}`, `v_B = ${s3(v)} m/s`],
+      valor: v,
+      unidad: "m/s",
+      verificacion: `La masa no aparece en el resultado (se simplificó) ✔. Como baja, v_B > v_A ✔. Unidades: √(m²/s²) = m/s ✔.`,
+    };
+  },
+  presion: (r, d) => {
+    const conv = d >= 3;
+    const dif = d >= 5;
+    const dens = conv ? r.pick([0.8, 1, 1.03, 1.26, 13.6]) : r.pick([1000, 800, 1030]);
+    const dSI = conv ? dens * 1000 : dens;
+    const h1 = conv ? r.pick([20, 35, 50]) : 0;
+    const h = conv ? h1 + r.pick([40, 60, 80, 120]) : r.pick([2, 5, 8, 12]);
+    const hSI = conv ? (dif ? (h - h1) / 100 : h / 100) : h;
+    const p = dSI * G * hSI;
+    const datos = [dato("Densidad del líquido", "δ", conv ? `${n(dens)} g/cm³` : `${dens} kg/m³`), dato(dif ? "Profundidad del punto más hondo" : "Profundidad", "h", conv ? `${h} cm` : `${h} m`)];
+    if (dif) datos.push(dato("Profundidad del punto menos hondo", "h_1", `${h1} cm`));
+    if (d >= 3) datos.push(dato("Presión atmosférica", "p_atm", "101,3 kPa", false));
+    if (d >= 4) datos.push(dato("Área del fondo del recipiente", "S", "0,5 m²", false));
+    return {
+      enunciado: dif
+        ? `En un recipiente con un líquido de densidad ${n(dens)} g/cm³ hay dos puntos a ${h1} cm y a ${h} cm de profundidad. La presión atmosférica es 101,3 kPa y el fondo tiene 0,5 m² de área. ¿Cuál es la diferencia de presión entre esos dos puntos, en Pa?`
+        : `Un recipiente abierto contiene un líquido de densidad ${datos[0].value}. ¿Cuál es la presión manométrica (la que agrega el líquido) a ${datos[1].value} de profundidad, en Pa?${d >= 3 ? " La presión atmosférica es 101,3 kPa." : ""}${d >= 4 ? " El fondo del recipiente tiene 0,5 m² de área." : ""}`,
+      datos,
+      pide: [dif ? "la diferencia de presión $Δp$" : "la presión $p$", ["el empuje $E$", "la fuerza sobre el fondo", "la densidad $δ$"]],
+      modelo: ["Hidrostática", "Líquido en reposo: la presión aumenta con la profundidad (teorema fundamental).", ["Estática", "Energía"]],
+      formula: [dif ? "$Δp = δ·g·Δh$" : "$p = δ·g·h$", dif ? "Solo importa el desnivel entre los puntos; la atmosférica actúa en los dos y se cancela." : "La presión que agrega el líquido es densidad × g × profundidad (sin la atmosférica porque piden la manométrica).", [dif ? "$Δp = p_{atm} + δ·g·Δh$" : "$p = p_{atm} + δ·g·h$", "$p = F/S$", "$E = V·δ·g$"]],
+      ...(conv ? { conversion: `${n(dens)} g/cm³ = ${n(dSI)} kg/m³; ${dif ? `${h} cm − ${h1} cm = ${h - h1} cm` : `${h} cm`} = ${n(hSI)} m` } : {}),
+      pasos: [...(conv ? [`δ = ${n(dens)} g/cm³ = ${n(dSI)} kg/m³`, `${dif ? "Δh" : "h"} = ${n(hSI)} m`] : []), `${dif ? "Δp" : "p"} = ${n(dSI)}·9,80·${n(hSI)}`, `${dif ? "Δp" : "p"} = ${s3(p)} Pa`],
+      valor: p,
+      unidad: "Pa",
+      verificacion: `Referencia: 10 m de agua agregan ≈ 98 000 Pa (casi una atmósfera). Unidades: (kg/m³)·(m/s²)·m = N/m² = Pa ✔.`,
+    };
+  },
+  empuje: (r, d) => {
+    if (d >= 6) {
+      const dc = r.pick([0.5, 0.6, 0.75, 0.9]);
+      const dl = r.pick([1, 1.03]);
+      const frac = (dc / dl) * 100;
+      return {
+        enunciado: `Un bloque de madera de densidad ${n(dc)} g/cm³ y 2 L de volumen flota en un líquido de densidad ${n(dl)} g/cm³, en un recipiente de 1,5 m de profundidad. ¿Qué porcentaje de su volumen queda SUMERGIDO?`,
+        datos: r.shuffle([dato("Densidad del bloque", "δ_c", `${n(dc)} g/cm³`), dato("Densidad del líquido", "δ_L", `${n(dl)} g/cm³`), dato("Volumen del bloque", "V", "2 L", false), dato("Profundidad del recipiente", "H", "1,5 m", false)]),
+        pide: ["el porcentaje sumergido", ["el porcentaje que asoma", "el empuje", "el peso del bloque"]],
+        modelo: ["Hidrostática", "Flota en equilibrio: empuje = peso (Arquímedes).", ["Estática", "Dinámica (2.ª ley)"]],
+        formula: ["$\\frac{V_{sum}}{V} = \\frac{δ_c}{δ_L}$", "De E = P: V_sum·δL·g = V·δc·g. El volumen total se simplifica.", ["$\\frac{V_{emerg}}{V} = \\frac{δ_c}{δ_L}$", "$E = V·δ_L·g$ con todo el volumen", "$p = δ·g·h$"]],
+        pasos: ["E = P → V_sum·δ_L·g = V·δ_c·g", `V_sum/V = ${n(dc)}/${n(dl)}`, `Sumergido: ${s3(frac)} %`],
+        valor: frac,
+        unidad: "%",
+        verificacion: `Es menor que 100 % porque el bloque es menos denso que el líquido ✔. Asoma el ${s3(100 - frac)} %.`,
+      };
+    }
+    const fondo = d >= 4;
+    const VL = fondo ? r.pick([2, 3, 4, 5]) : d === 3 ? r.pick([250, 400, 600]) : r.pick([2, 5, 8]);
+    const VSI = d === 3 ? VL / 1e6 : VL / 1000;
+    const dl = d === 3 ? r.pick([1, 0.8, 1.2]) : r.pick([1000, 800]);
+    const dlSI = d === 3 ? dl * 1000 : dl;
+    const E = VSI * dlSI * G;
+    const m = fondo ? r.pick([8, 10, 12, 15]) : 0;
+    const N = m * G - E;
+    const datos = [dato("Volumen del cuerpo", "V", d === 3 ? `${VL} cm³` : `${VL} L`), dato("Densidad del líquido", "δ_L", d === 3 ? `${n(dl)} g/cm³` : `${dl} kg/m³`), ...(fondo ? [dato("Masa del cuerpo", "m", `${m} kg`)] : [])];
+    if (d >= 3) datos.push(dato("Profundidad a la que está", "h", `${r.pick([1, 2, 3])} m`, false));
+    if (d >= 5) datos.push(dato("Presión atmosférica", "p_atm", "101,3 kPa", false));
+    return {
+      enunciado: fondo
+        ? `Un bloque macizo de ${m} kg y ${VL} L está apoyado en el fondo de un tanque con un líquido de densidad ${dl} kg/m³, a ${datos[3].value} de profundidad.${d >= 5 ? " La presión atmosférica es 101,3 kPa." : ""} ¿Qué fuerza le hace el fondo (la normal)?`
+        : `Un cuerpo de ${datos[0].value} está totalmente sumergido en un líquido de densidad ${datos[1].value}, colgado de un hilo${d >= 3 ? `, a ${datos[2].value} de profundidad` : ""}. ¿Qué empuje recibe?`,
+      datos,
+      pide: [fondo ? "la normal del fondo $N$" : "el empuje $E$", fondo ? ["el empuje $E$", "el peso $P$", "la presión en el fondo"] : ["el peso del cuerpo", "la tensión del hilo", "la presión a esa profundidad"]],
+      modelo: ["Hidrostática", fondo ? "Equilibrio de un cuerpo sumergido: peso, empuje (Arquímedes) y normal." : "Principio de Arquímedes: el empuje es el peso del líquido desalojado.", ["Estática", "Dinámica (2.ª ley)"]],
+      formula: fondo
+        ? ["$N = m·g − V·δ_L·g$", "En equilibrio: N + E = P. El empuje usa el volumen sumergido y la densidad del LÍQUIDO.", ["$N = m·g$", "$N = m·g + V·δ_L·g$", "$N = V·δ_L·g$"]]
+        : ["$E = V·δ_L·g$", "Totalmente sumergido: V_sumergido = V. La profundidad no influye.", ["$E = δ_L·g·h$", "$E = m·g$", "$E = V·δ_L$"]],
+      conversion: `${d === 3 ? `${VL} cm³ = ${n(VSI, 6)} m³; ${n(dl)} g/cm³ = ${n(dlSI)} kg/m³` : `${VL} L = ${n(VSI)} m³`}`,
+      pasos: [`V = ${n(VSI, 6)} m³`, `E = ${n(VSI, 6)}·${n(dlSI)}·9,80 = ${s3(E)} N`, ...(fondo ? [`P = ${m}·9,80 = ${s3(m * G)} N`, `N = P − E = ${s3(m * G)} − ${s3(E)} = ${s3(N)} N`] : [])],
+      valor: fondo ? N : E,
+      unidad: "N",
+      verificacion: fondo ? `N < P porque el líquido sostiene parte del peso ✔ (y N > 0: el bloque es más denso que el líquido). La profundidad no cambia el empuje.` : `La profundidad es un dato que sobra: totalmente sumergido, el empuje no depende de ella ✔. Unidades: m³·(kg/m³)·(m/s²) = N ✔.`,
+    };
+  },
+  "newton-F": (r, d) => {
+    const m = r.pick([5, 10, 20, 50]);
+    const a = r.pick([1, 1.5, 2, 2.5]);
+    const tipo = d <= 2 ? "liso" : d <= 4 ? "cable" : "roz";
+    const mu = r.pick([0.2, 0.25, 0.3]);
+    const F = tipo === "liso" ? m * a : tipo === "cable" ? m * (G + a) : m * a + mu * m * G;
+    const datos = [dato("Masa", "m", `${m} kg`), dato("Aceleración", "a", `${n(a)} m/s²`), ...(tipo === "roz" ? [dato("Coeficiente de rozamiento dinámico", "μ_d", n(mu))] : [])];
+    if (d >= 3) datos.push(dato(tipo === "cable" ? "Largo del cable" : "Tiempo que dura el empuje", tipo === "cable" ? "L" : "t", tipo === "cable" ? "15 m" : "4 s", false));
+    if (d >= 6) datos.push(dato("Coeficiente de rozamiento estático", "μ_e", n(mu + 0.15), false));
+    return {
+      enunciado: tipo === "liso"
+        ? `¿Qué fuerza horizontal hay que aplicarle a un carro de ${m} kg, sobre un piso horizontal sin rozamiento, para que acelere a ${n(a)} m/s²?`
+        : tipo === "cable"
+          ? `Una grúa levanta una carga de ${m} kg con un cable de 15 m, con aceleración de ${n(a)} m/s² hacia arriba. ¿Cuál es la tensión del cable?`
+          : `Se arrastra un cajón de ${m} kg sobre un piso horizontal con rozamiento dinámico ${n(mu)}${d >= 6 ? ` (el estático es ${n(mu + 0.15)})` : ""}, con una fuerza horizontal que dura 4 s. ¿Qué fuerza hay que hacer para que acelere a ${n(a)} m/s²?`,
+      datos,
+      pide: [tipo === "cable" ? "la tensión $T$" : "la fuerza aplicada $F$", ["la aceleración $a$", "el peso $P$", "la fuerza de rozamiento"]],
+      modelo: ["Dinámica (2.ª ley)", "Se pide una fuerza a partir de una aceleración: ΣF = m·a.", ["Estática", "MRUV"]],
+      formula: tipo === "liso"
+        ? ["$F = m·a$", "Es la única fuerza horizontal.", ["$F = m·g$", "$F = m·(g + a)$", "$F = μ·m·g$"]]
+        : tipo === "cable"
+          ? ["$T − m·g = m·a$", "Sobre la carga actúan T (arriba) y P (abajo); la neta produce la aceleración hacia arriba.", ["$T = m·a$", "$T = m·g$", "$T − m·g = −m·a$"]]
+          : ["$F − μ_d·m·g = m·a$", "A lo largo del piso: F hacia adelante y el rozamiento μd·N (con N = m·g) hacia atrás.", ["$F = m·a$", "$F = μ_d·m·g$", "$F − μ_e·m·g = m·a$"]],
+      pasos: tipo === "liso"
+        ? [`F = ${m}·${n(a)}`, `F = ${s3(F)} N`]
+        : tipo === "cable"
+          ? ["T − P = m·a → T = m·(g + a)", `T = ${m}·(9,80 + ${n(a)})`, `T = ${s3(F)} N`]
+          : [`F_roz = μ_d·m·g = ${n(mu)}·${m}·9,80 = ${s3(mu * m * G)} N`, `F = m·a + F_roz = ${m}·${n(a)} + ${s3(mu * m * G)}`, `F = ${s3(F)} N`],
+      valor: F,
+      unidad: "N",
+      verificacion: tipo === "cable" ? `T > P = ${s3(m * G)} N, como corresponde si acelera hacia arriba ✔.` : tipo === "roz" ? `F es mayor que el rozamiento (${s3(mu * m * G)} N): si no, no aceleraría ✔.` : "Unidades: kg·m/s² = N ✔.",
+    };
+  },
+  vinculados: (r, d) => {
+    const mA = r.pick([8, 10, 12]);
+    const mB = r.pick([3, 4, 5, 6]);
+    const th = r.pick([30, 37, 45]);
+    const mu = r.pick([0.1, 0.2, 0.25]);
+    const a = (mA * G * sinD(th) - mu * mB * G) / (mA + mB);
+    const askT = d >= 5;
+    const T = mB * (a + mu * G);
+    const datos = [dato("Masa de A (en el plano)", "m_A", `${mA} kg`), dato("Masa de B (en la mesa)", "m_B", `${mB} kg`), dato("Inclinación del plano", "θ", `${th}°`), dato("Rozamiento dinámico entre B y la mesa", "μ_d", n(mu))];
+    if (d >= 3) datos.push(dato("Rozamiento estático entre B y la mesa", "μ_e", n(mu + 0.1), false));
+    if (d >= 4) datos.push(dato("Largo de la cuerda", "L", "2 m", false));
+    return {
+      enunciado: `Un bloque A de ${mA} kg está sobre un plano inclinado ${th}° SIN rozamiento. Una cuerda ideal, que pasa por una polea en lo alto del plano, lo une a un bloque B de ${mB} kg apoyado sobre una mesa horizontal con rozamiento dinámico ${n(mu)}${d >= 3 ? ` (estático ${n(mu + 0.1)})` : ""}${d >= 4 ? "; la cuerda mide 2 m" : ""}. A baja por el plano arrastrando a B. ¿Cuál es ${askT ? "la tensión de la cuerda" : "la aceleración del sistema"}?`,
+      datos,
+      pide: [askT ? "la tensión $T$" : "la aceleración $a$", askT ? ["la aceleración $a$", "la normal sobre A", "el rozamiento sobre B"] : ["la tensión $T$", "la normal sobre A", "el rozamiento sobre B"]],
+      modelo: ["Dinámica (2.ª ley)", "Dos cuerpos unidos por una cuerda con fuerzas no equilibradas: 2.ª ley para cada uno (misma |a|).", ["Estática", "Energía"]],
+      formula: askT
+        ? ["$T − μ_d·m_B·g = m_B·a$ (con $a$ del sistema)", "Primero a con el sistema; después la 2.ª ley sobre B da T.", ["$T = m_A·g·sen θ$", "$T = μ_d·m_B·g$", "$T = m_B·g$"]]
+        : ["$a = \\frac{m_A·g·sen θ − μ_d·m_B·g}{m_A + m_B}$", "Sumando las ecuaciones de A y B la tensión se cancela: la fuerza que tira es P_A·sen θ y la que frena es el rozamiento sobre B.", ["$a = \\frac{m_A·g·sen θ}{m_A}$", "$a = \\frac{m_A·g·sen θ − μ_d·m_B·g}{m_B}$", "$a = \\frac{m_A·g·cos θ − μ_d·m_B·g}{m_A + m_B}$"]],
+      pasos: [
+        `A: m_A·g·sen ${th}° − T = m_A·a`,
+        `B: T − μ_d·m_B·g = m_B·a`,
+        `Sumando: a = (${mA}·9,80·sen ${th}° − ${n(mu)}·${mB}·9,80) / ${mA + mB}`,
+        `a = ${s3(a)} m/s²`,
+        ...(askT ? [`T = m_B·(a + μ_d·g) = ${mB}·(${s3(a)} + ${n(mu)}·9,80) = ${s3(T)} N`] : []),
+      ],
+      valor: askT ? T : a,
+      unidad: askT ? "N" : "m/s²",
+      verificacion: askT ? `T tiene que estar entre el rozamiento sobre B (${s3(mu * mB * G)} N) y P_A·sen θ (${s3(mA * G * sinD(th))} N) ✔.` : `a es menor que g·sen θ = ${s3(G * sinD(th))} m/s² (A arrastra a B y hay rozamiento) y positiva ✔. El μ estático no se usa: el sistema ya se mueve.`,
+    };
+  },
+};
+
+export function makeScenario(kind: string, seed: number, difficulty: Difficulty): FisScenario {
+  const meta = SCENARIO_KINDS.find((k) => k.kind === kind);
+  const build = BUILDERS[kind];
+  if (!meta || !build) throw new Error(`Escenario desconocido: ${kind}`);
+  const r = rng(seed);
+  return finish(r, kind, meta.topicId, difficulty, build(r, difficulty));
+}

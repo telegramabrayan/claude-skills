@@ -14,6 +14,7 @@ import { IPC_GENERATORS } from "./ipc";
 import { ICSE_GENERATORS } from "./icse";
 import { QUIMICA_GENERATORS } from "./quimica";
 import { ACTIVITY_GENERATORS } from "./activities";
+import { FIS_MISSION_GENERATORS } from "./fisica-mision";
 import { newSeed } from "./rng";
 
 /**
@@ -49,6 +50,7 @@ export const GENERATORS: Generator[] = [
   ...ICSE_GENERATORS,
   ...QUIMICA_GENERATORS,
   ...ACTIVITY_GENERATORS,
+  ...FIS_MISSION_GENERATORS,
 ].map(safe);
 
 const BY_ID = new Map(GENERATORS.map((g) => [g.id, g]));

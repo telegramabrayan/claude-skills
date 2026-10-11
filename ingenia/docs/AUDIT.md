@@ -106,3 +106,9 @@ analítico ICSE (FFyB-UBA), programa UBA XXI de Pensamiento Computacional y
 ## 7. v4 (2026-10-08): rediseño de la experiencia
 
 Auditoría UX/UI, lectura de las referencias y sistema visual: `docs/REDISENO.md`. Se mantuvieron todas las funciones existentes. Nuevos tipos de ejercicio (`fill`, `build`, `graph`, `find-error`) con evaluación y tests; 21 generadores de actividad; minijuegos; modo estudio, tamaño de texto y reducir animaciones. 287 tests OK.
+
+## 8. Misión Física 5/11 (2026-10-11)
+
+- Se clasificaron los 14 modelos de parcial cargados (10 exámenes distintos; las versiones gemelas no se cuentan dos veces). Ver `docs/FISICA-MISION.md`.
+- Se agregó el tema `t-fis-signos` y 10 generadores nuevos (sin copiar enunciados: escenarios propios con datos que sobran y dos etapas).
+- Pendiente de verificar con la cátedra 2026: qué temas entran en cada parcial (MRUV, caída libre, tiro y dinámica marcados con *). El material es de 2023.

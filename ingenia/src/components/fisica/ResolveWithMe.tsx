@@ -15,11 +15,11 @@ import { Whiteboard } from "../board/Whiteboard";
 import { GuideSay } from "../guide/Nodo";
 import { subjectStyle } from "../ui/SubjectArt";
 import { BackToMission } from "./ui";
-import { SOLVE_METHOD } from "@/content/fisica/formulas";
 
 type Step = "datos" | "pide" | "modelo" | "formula" | "resolver" | "verificar";
 const STEPS: Step[] = ["datos", "pide", "modelo", "formula", "resolver", "verificar"];
 const FIS = subjectStyle("fisica");
+const STEP_LABEL: Record<Step, string> = { datos: "Datos (y cuáles sobran)", pide: "¿Qué me piden?", modelo: "¿Qué modelo físico es?", formula: "Elegir la relación", resolver: "Resolver", verificar: "Verificar" };
 
 function parseNum(s: string): number {
   return Number(s.replace(/\s/g, "").replace(",", ".").replace("−", "-"));
@@ -110,7 +110,7 @@ export function ResolveWithMe({ kind: k0 }: { kind?: string }) {
 
       <div className="card space-y-3 p-4">
         <p className="text-xs font-black uppercase text-muted">
-          Paso {idx + 1} · {SOLVE_METHOD[Math.min(idx + 1, SOLVE_METHOD.length - 1)]?.step}
+          Paso {idx + 1} de {STEPS.length} · {STEP_LABEL[step]}
         </p>
         {step === "datos" && (
           <>
