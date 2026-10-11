@@ -58,7 +58,11 @@ function useStudyTimer() {
     events.forEach((e) => window.addEventListener(e, mark, { passive: true }));
     const TICK = 15;
     const id = setInterval(() => {
-      if (document.visibilityState === "visible" && Date.now() - last < 90_000 && store.getState().profile.onboarded) actions.addStudyTime(TICK);
+      if (document.visibilityState === "visible" && Date.now() - last < 90_000 && store.getState().profile.onboarded) {
+        actions.addStudyTime(TICK);
+        // Tiempo de Física para la misión: páginas con identidad de Física (misión, lecciones y ejercicios de Física).
+        if (document.documentElement.dataset.subject === "physics") actions.addFisicaTime(TICK);
+      }
     }, TICK * 1000);
     return () => {
       clearInterval(id);

@@ -137,6 +137,24 @@ export interface ProgressState {
   cards: Record<string, { box: number; due: string }>;
   plan: StudyPlan | null;
   lastActivity: { topicId: string; exerciseId: string; errorType?: ErrorType; correct: boolean; ts: number } | null;
+  /** Misión Física: preparación para el parcial. */
+  fisica: FisicaMissionState;
+}
+
+export interface FisicaMissionState {
+  /** Qué parcial es el del 5/11 ("ambos" mientras no se sepa). */
+  parcial: "1P" | "2P" | "ambos";
+  /** Inicio del diagnóstico (los intentos posteriores a esta marca son el diagnóstico). */
+  diagStartedAt: number | null;
+  diagDoneAt: number | null;
+  /** Segundos estudiados de Física por día. */
+  seconds: Record<string, number>;
+  /** Preparación global (0..1) registrada cada día que se abre la misión. */
+  snapshots: Record<string, number>;
+  /** Pasos del entrenamiento del día completados. */
+  done: Record<string, string[]>;
+  /** Veces que se usó «Resolver conmigo» (para ir quitando ayuda). */
+  guided: number;
 }
 
 export const MAX_ATTEMPTS = 3000;
@@ -170,6 +188,7 @@ export function initialState(): ProgressState {
     cards: {},
     plan: null,
     lastActivity: null,
+    fisica: { parcial: "ambos", diagStartedAt: null, diagDoneAt: null, seconds: {}, snapshots: {}, done: {}, guided: 0 },
   };
 }
 
@@ -188,6 +207,7 @@ export function hydrate(raw: unknown): ProgressState {
     profile: { ...base.profile, ...(r.profile ?? {}) },
     settings: { ...base.settings, ...(r.settings ?? {}) },
     streak: { ...base.streak, ...(r.streak ?? {}) },
+    fisica: { ...base.fisica, ...(r.fisica ?? {}) },
     version: 1,
   };
 }

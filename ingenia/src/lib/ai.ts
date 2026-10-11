@@ -4,6 +4,7 @@
  * cuenta). Fuera de claude.ai no hay IA: la app usa el tutor local con el
  * contenido curado. Nunca se llama a la IA sin una acción explícita.
  */
+import { daysLeft, globalReadiness, parcialReadiness, recentErrors } from "./fisicaMission";
 import type { ProgressState } from "@/engine/progress/state";
 import { recurringErrors } from "@/engine/progress/rules";
 import { ERROR_LABELS, getTopic } from "@/content/topics";
@@ -109,6 +110,16 @@ export function describeContext(s: ProgressState, c: StudyContext): string {
     .filter(([, t]) => t.attempts >= 2 && t.mastery < 0.45)
     .map(([id]) => getTopic(id)?.name)
     .filter(Boolean);
+  // Misión Física: el estudiante prepara el parcial del 5/11.
+  if (subject?.id === "fisica" || (typeof document !== "undefined" && document.documentElement.dataset.subject === "physics")) {
+    const left = daysLeft();
+    const errs = recentErrors(s).slice(0, 4);
+    lines.push(
+      `MISIÓN FÍSICA: prepara el parcial de Física del 5/11/2026 (faltan ${left} días; parcial: ${s.fisica.parcial === "ambos" ? "no sabe si es el 1.º o el 2.º" : s.fisica.parcial}). Cátedra Torti (UBA XXI): g = 9,80 m/s², 3 cifras significativas, unidades SI. Preparación actual ${Math.round(globalReadiness(s) * 100)} % (1.er parcial ${Math.round(parcialReadiness(s, "1P").value * 100)} %, 2.º ${Math.round(parcialReadiness(s, "2P").value * 100)} %).` +
+        (errs.length ? ` Errores recientes: ${errs.map((e) => `${getTopic(e.topicId)?.name ?? e.topicId}${e.errorType ? ` (${ERROR_LABELS[e.errorType as keyof typeof ERROR_LABELS] ?? e.errorType})` : ""} ×${e.count}`).join("; ")}.` : "") +
+        " Enseñá con el método de 6 pasos (leer, datos, dibujo, qué piden, relaciones, resolver y verificar unidades), explicá el porqué de los signos y ayudalo a reconocer qué fórmula usar. No inventes probabilidades de aprobar.",
+    );
+  }
   if (strong.length) lines.push(`Domina: ${strong.slice(0, 8).join(", ")}`);
   if (weak.length) lines.push(`Le cuesta: ${weak.slice(0, 8).join(", ")}`);
   const rec = recurringErrors(s).slice(0, 3);

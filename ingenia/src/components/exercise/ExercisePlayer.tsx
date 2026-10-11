@@ -6,6 +6,7 @@
  * Las pistas se revelan de a una (3 niveles) y recién después la solución,
  * también de a un paso. Solo el primer intento cuenta para XP y dominio.
  */
+import { FIS_FORMULAS } from "@/content/fisica/formulas";
 import { useSubjectTheme } from "@/lib/subjectTheme";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Difficulty, EvaluationResult, Exercise } from "@/engine/types";
@@ -82,6 +83,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
   const [graphX, setGraphX] = useState<number | null>(null);
   const [errIdx, setErrIdx] = useState<number | null>(null);
   const [example, setExample] = useState<Exercise | null>(null);
+  const [formulas, setFormulas] = useState(false);
   const [match, setMatch] = useState<Record<string, string>>({});
   const [reviewTopic, setReviewTopic] = useState<string | null>(null);
   const [levelChange, setLevelChange] = useState(0);
@@ -111,6 +113,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
     setGraphX(null);
     setErrIdx(null);
     setExample(null);
+    setFormulas(false);
     setMatch({});
     setReviewTopic(null);
     setLevelChange(0);
@@ -300,7 +303,7 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
   };
 
   const locked = finished;
-  const gap = result && !result.correct && !helpless ? prerequisiteGap(store.getState(), exercise, result.errorType) : null;
+  const gap = result && !result.correct && !helpless ? physicsGap(exercise, result.errorType) ?? prerequisiteGap(store.getState(), exercise, result.errorType) : null;
   const onKey = (e: React.KeyboardEvent) => {
     if (e.key === "Enter" && canSubmit && !finished) {
       e.preventDefault();
@@ -727,6 +730,16 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
                 <button className="help-btn" onClick={() => openTutor("No entendí este ejercicio. Explicámelo de otra manera, con un ejemplo cotidiano y sin darme la respuesta.")}>
                   🧠 De otra manera
                 </button>
+                {exercise.subjectId === "fisica" && (
+                  <>
+                    <button className="help-btn" onClick={() => setFormulas((v) => !v)} aria-expanded={formulas}>
+                      📐 ¿Qué fórmula necesito?
+                    </button>
+                    <button className="help-btn" onClick={() => openTutor("Resolvamos este ejercicio juntos con el método de 6 pasos. Preguntame de a una cosa: primero qué datos encuentro, después qué piden, qué modelo físico es y qué fórmula usaría. No me des la respuesta.")}>
+                      🪜 Resolver conmigo
+                    </button>
+                  </>
+                )}
                 {exercise.generator && (
                   <button className="help-btn" onClick={similar}>
                     🔁 Uno parecido
@@ -743,6 +756,26 @@ export function ExercisePlayer({ exercise: initial, mode, onDone, exam, diagnost
               </button>
             </div>
           )}
+        </div>
+      )}
+
+      {/* ───── Física: ¿qué fórmula necesito? ───── */}
+      {!helpless && formulas && (
+        <div className="anim-pop grid gap-3 md:grid-cols-2">
+          {FIS_FORMULAS.filter((f) => f.topicIds.includes(exercise.topicId)).slice(0, 4).map((f) => (
+            <div key={f.id} className="rounded-2xl border-2 border-line bg-surface p-3 text-sm">
+              <p className="text-xs font-black uppercase text-muted">{f.name}</p>
+              <div className="my-1 text-lg">
+                <MathText text={f.expr} />
+              </div>
+              <p>
+                <b>Cuándo:</b> <MathText text={f.when} block={false} />
+              </p>
+              <p>
+                <b>Cómo reconocerla:</b> <MathText text={f.howToRecognize} block={false} />
+              </p>
+            </div>
+          ))}
         </div>
       )}
 
@@ -842,4 +875,12 @@ function TraceReplay({ code }: { code: string }) {
       Ver la ejecución paso a paso
     </button>
   );
+}
+
+/** En Física, un error de unidades, signos, vectores, trigonometría o despeje se repasa en su tema, aunque no sea prerrequisito formal. */
+const PHYSICS_GAP: Partial<Record<string, string>> = { unidades: "t-unidades", signos: "t-fis-signos", vectores: "t-vec-componentes", trigonometria: "t-trigonometria", despeje: "t-despeje" };
+function physicsGap(exercise: Exercise, errorType?: string): string | null {
+  if (exercise.subjectId !== "fisica" || !errorType) return null;
+  const t = PHYSICS_GAP[errorType];
+  return t && t !== exercise.topicId && getTopic(t) ? t : null;
 }

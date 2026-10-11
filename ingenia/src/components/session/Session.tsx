@@ -52,6 +52,10 @@ interface Props {
   onWin?: () => void;
   /** Práctica guiada: cada ejercicio arranca con la primera pista a la vista. */
   guided?: boolean;
+  /** Guarda el resultado como simulacro aunque no sea modo examen (p. ej. simulacro en modo aprendizaje). */
+  saveRecord?: boolean;
+  /** Botón de refuerzo al terminar (plan de recuperación). */
+  recovery?: { href: string; label: string };
 }
 
 interface Log {
@@ -74,7 +78,7 @@ function buildExercise(item: SessionItem): Exercise {
   return exerciseFor(store.getState(), item.topicId, item.adjust ?? 0);
 }
 
-export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin, guided }: Props) {
+export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin, guided, saveRecord, recovery }: Props) {
   const maxHearts = lives ?? 5;
   const hearts0 = lives ?? (kind === "desafio" && store.getState().settings.hearts ? 5 : null);
   const [index, setIndex] = useState(0);
@@ -136,7 +140,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
       const won = hearts === null ? correct >= Math.ceil(items.length * 0.7) : hearts > 0 && log.length === items.length;
       if (won) (onWin ?? actions.winChallenge)();
     }
-    if (kind === "examen") {
+    if (kind === "examen" || saveRecord) {
       const byTopic: ExamRecord["byTopic"] = {};
       const errors: ExamRecord["errors"] = {};
       items.forEach((it, i) => {
@@ -161,7 +165,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
   }, [done, kind, correct, hearts, items, log, title, onWin]);
 
   if (done) {
-    return <Summary title={title} log={log} items={items} kind={kind} hearts={hearts} xp={store.getState().xp - xpStart.current} seconds={Math.round((Date.now() - started.current) / 1000)} onExit={onExit} exitHref={exitHref} />;
+    return <Summary title={title} log={log} items={items} kind={kind} hearts={hearts} xp={store.getState().xp - xpStart.current} seconds={Math.round((Date.now() - started.current) / 1000)} onExit={onExit} exitHref={exitHref}  detailed={kind === "examen" || !!saveRecord} recovery={recovery}/>;
   }
 
   return (
@@ -210,7 +214,7 @@ export function Session({ title, items, mode, kind = "practica", minutes, onExit
   );
 }
 
-function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHref }: { title: string; log: Log[]; items: SessionItem[]; kind: string; hearts: number | null; xp: number; seconds: number; onExit?: () => void; exitHref: string }) {
+function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHref, detailed, recovery }: { title: string; log: Log[]; items: SessionItem[]; kind: string; hearts: number | null; xp: number; seconds: number; onExit?: () => void; exitHref: string; detailed?: boolean; recovery?: { href: string; label: string } }) {
   const correct = log.filter((l) => l.correct).length;
   const total = kind === "examen" ? items.length : log.length;
   const pct = kind === "examen" ? weightedScore(items, log) / 10 : total ? correct / total : 0;
@@ -279,6 +283,24 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
           ))}
         </div>
       </div>
+      {detailed && byTopic.length > 0 && (
+        <div className="card p-4">
+          <p className="mb-3 font-bold">Por tema</p>
+          <div className="space-y-2">
+            {byTopic.map(([t, v]) => (
+              <div key={t}>
+                <div className="mb-0.5 flex justify-between text-sm">
+                  <span>{getTopic(t)?.name ?? t}</span>
+                  <span className="font-bold">{Math.round((v.c / v.t) * 100)} %</span>
+                </div>
+                <div className="pbar !h-2.5">
+                  <span style={{ width: `${Math.max(3, (v.c / v.t) * 100)}%`, ["--bar" as string]: v.c / v.t >= 0.8 ? "var(--success)" : v.c / v.t >= 0.6 ? "var(--warn)" : "var(--danger)" }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {kind === "examen" && (
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="card p-4">
@@ -305,7 +327,7 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
       )}
       {(weak.length > 0 || remediation.length > 0) && (
         <div className="card p-4">
-          <p className="mb-2 font-bold">Plan recomendado</p>
+          <p className="mb-2 font-bold">{detailed ? "Plan de recuperación: antes del próximo simulacro trabajá" : "Plan recomendado"}</p>
           <ol className="list-decimal space-y-1 pl-5 text-sm">
             {[...weak, ...remediation].slice(0, 4).map((t) => (
               <li key={t}>
@@ -325,7 +347,12 @@ function Summary({ title, log, items, kind, hearts, xp, seconds, onExit, exitHre
           </ol>
         </div>
       )}
-      <div className="flex justify-center gap-3">
+      <div className="flex flex-wrap justify-center gap-3">
+        {recovery && (weak.length > 0 || errorCounts.length > 0) && (
+          <Link className="btn-3d is-warn !px-6" href={recovery.href}>
+            {recovery.label}
+          </Link>
+        )}
         {onExit ? (
           <button className="btn-3d !px-10" onClick={onExit} autoFocus>
             CONTINUAR

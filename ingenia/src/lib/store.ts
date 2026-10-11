@@ -253,6 +253,24 @@ export const actions = {
     scheduleSave();
   },
 
+  updateFisica(patch: Partial<ProgressState["fisica"]>) {
+    commit({ ...state, fisica: { ...state.fisica, ...patch } });
+  },
+  addFisicaTime(seconds: number) {
+    const d = dayKey();
+    commit({ ...state, fisica: { ...state.fisica, seconds: { ...state.fisica.seconds, [d]: (state.fisica.seconds[d] ?? 0) + seconds } } });
+  },
+  markFisicaStep(step: string) {
+    const d = dayKey();
+    const done = state.fisica.done[d] ?? [];
+    if (done.includes(step)) return;
+    commit({ ...state, fisica: { ...state.fisica, done: { ...state.fisica.done, [d]: [...done, step] } } });
+  },
+  snapshotFisica(value: number) {
+    const d = dayKey();
+    if (state.fisica.snapshots[d] !== undefined && Math.abs(state.fisica.snapshots[d] - value) < 0.005) return;
+    commit({ ...state, fisica: { ...state.fisica, snapshots: { ...state.fisica.snapshots, [d]: value } } });
+  },
   updateSettings(patch: Partial<ProgressState["settings"]>) {
     if (patch.sound !== undefined) setSoundEnabled(patch.sound);
     commit({ ...state, settings: { ...state.settings, ...patch } });
