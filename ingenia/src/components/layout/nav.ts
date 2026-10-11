@@ -8,7 +8,7 @@ export interface NavItem {
 
 export const NAV_MAIN: NavItem[] = [
   { href: "/", label: "Inicio", icon: "home" },
-  { href: "/fisica", label: "Misión Física 5/11", icon: "flame" },
+  { href: "/fisica", label: "Misión Física 5 y 6/11", icon: "flame" },
   { href: "/camino", label: "Camino", icon: "path" },
   { href: "/materias", label: "Materias", icon: "book" },
   { href: "/mapa", label: "Mapa de carrera", icon: "map" },

@@ -23,8 +23,8 @@ export function MissionCard() {
             <p id="mision-fisica" className="hero-muted text-sm font-black uppercase tracking-wider text-white/85">
               ⚡ Misión: aprobar Física
             </p>
-            <p className="mt-1 text-lg font-black">📅 Parcial: 5 de noviembre de 2026</p>
-            <p className="hero-muted text-sm text-white/85">🎯 Objetivo: aprobar los dos parciales</p>
+            <p className="mt-1 text-lg font-black">📅 2.º parcial: 5/11 · 1.er parcial: 6/11</p>
+            <p className="hero-muted text-sm text-white/85">🎯 Objetivo: aprobar los dos parciales · Cátedra Torti</p>
           </div>
           <div className="text-right">
             <p className="hero-muted text-xs font-bold uppercase text-white/85">Faltan</p>

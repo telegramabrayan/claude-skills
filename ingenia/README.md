@@ -21,9 +21,13 @@ npm run build      # build de producción (todas las rutas son estáticas)
 Requiere Node 20+. El progreso se guarda en el navegador (con respaldo JSON desde
 Configuración).
 
-## Misión Física 5/11 (`/fisica`)
+## Progreso guardado en la nube
 
-Entrenador prioritario para aprobar los parciales de Física (fecha objetivo: 5/11/2026).
+Abierta desde claude.ai, la app guarda el progreso en la base privada de cada persona (`data/users/<id>/ingenia`, capacidades `db` + `user` del Artifact; nadie más lo ve, ni el dueño). Gana la copia más reciente: en otro navegador o en el celular se sigue donde se dejó. Se sube comprimido (gzip) unos segundos después de cada cambio y al salir de la pestaña; el navegador sigue siendo la copia local y la app funciona igual sin nube (`src/lib/cloud.ts`). Estado visible en Configuración → Tus datos.
+
+## Misión Física 5 y 6/11 (`/fisica`)
+
+Entrenador prioritario para aprobar los parciales de Física, cátedra Torti: **2.º parcial el 5/11/2026 y 1.er parcial el 6/11/2026**. El plan deja los dos listos antes del 5/11; la noche del 5/11 es un repaso corto del 1.º.
 
 - **Análisis real del material**: los 14 modelos cargados (10 exámenes distintos; 31 ejercicios) están clasificados en `src/content/fisica/parciales.ts` (tema, subtema, dificultad, fórmulas, pasos, unidades, trampas, rasgos). Frecuencias, trampas y pesos se **calculan** de ahí; nada está inventado. Detalle en [docs/FISICA-MISION.md](docs/FISICA-MISION.md).
 - **Preparación** por tema, por parcial y global a partir de dominio, ejercicios tipo parcial, simulacros, ayudas usadas y olvido. Niveles 🔴🟡🟢⭐ con qué falta para subir. **No es una probabilidad de aprobar.**

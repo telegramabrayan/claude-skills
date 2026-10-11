@@ -14,7 +14,8 @@ import { SHOP } from "@/content/shop";
 import { play, setSoundEnabled } from "./sound";
 import { ACHIEVEMENTS, newlyUnlocked } from "@/content/achievements";
 import { routeFromDiagnostic, unitsWithLessons, fullRoute } from "./learning";
-import { repository } from "./storage";
+import { localSavedAt, repository, setLocalSavedAt } from "./storage";
+import { connectCloud, fetchRemote, flushCloud, queueCloudSave } from "./cloud";
 
 type UiEventBody =
   | { type: "xp"; amount: number; label?: string }
@@ -52,13 +53,49 @@ function scheduleSave() {
   savePending = true;
   queueMicrotask(() => {
     savePending = false;
-    void repository.save(state);
+    persist();
   });
+}
+
+/** Guarda en el navegador y deja programada la copia en la nube. */
+function persist() {
+  const at = new Date().toISOString();
+  void repository.save(state);
+  setLocalSavedAt(at);
+  queueCloudSave(state, at);
+}
+
+/** Adopta la copia de la nube (sin volver a subirla). */
+function adoptRemote(remote: { state: ProgressState; savedAt: string }) {
+  state = remote.state;
+  void repository.save(state);
+  setLocalSavedAt(remote.savedAt);
+  setSoundEnabled(state.settings.sound);
+  emitChange();
+}
+
+/** Compara la copia local con la de la nube: gana la más reciente. */
+function reconcile(remote: { state: ProgressState; savedAt: string } | null) {
+  const local = localSavedAt();
+  // Un perfil local sin empezar nunca pisa progreso real de la nube.
+  if (remote && (!state.profile.onboarded || remote.savedAt > local)) adoptRemote(remote);
+  else if (state.profile.onboarded && (!remote || local > remote.savedAt)) queueCloudSave(state, local || new Date().toISOString());
 }
 
 if (typeof window !== "undefined") {
   window.addEventListener("pagehide", () => {
-    if (hydrated) void repository.save(state);
+    if (hydrated) {
+      void repository.save(state);
+      void flushCloud();
+    }
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!hydrated) return;
+    if (document.visibilityState === "hidden") void flushCloud();
+    else
+      void fetchRemote()
+        .then((r) => r && r.savedAt > localSavedAt() && adoptRemote(r))
+        .catch(() => {});
   });
 }
 
@@ -101,9 +138,20 @@ export const store = {
     if (hydrated) return;
     const loaded = await repository.load();
     if (loaded) state = loaded;
+    const cloudReady = connectCloud();
+    if (!loaded) {
+      // Dispositivo nuevo: esperamos un poco a la nube antes de mostrar la bienvenida.
+      const remote = await Promise.race([cloudReady, new Promise<null>((r) => setTimeout(() => r(null), 6000))]);
+      if (remote) {
+        state = remote.state;
+        void repository.save(state);
+        setLocalSavedAt(remote.savedAt);
+      }
+    }
     setSoundEnabled(state.settings.sound);
     hydrated = true;
     emitChange();
+    void cloudReady.then(reconcile).catch(() => {});
   },
 };
 
@@ -276,6 +324,12 @@ export const actions = {
     commit({ ...state, settings: { ...state.settings, ...patch } });
   },
 
+  /** Sube ya el progreso a la nube (botón «Guardar ahora»). */
+  async saveNow() {
+    persist();
+    await flushCloud();
+  },
+
   replaceState(next: ProgressState) {
     commit(next);
   },
@@ -284,6 +338,7 @@ export const actions = {
     await repository.clear();
     state = initialState();
     emitChange();
+    persist(); // la nube también vuelve a cero
   },
 };
 

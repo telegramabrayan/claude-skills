@@ -1,6 +1,7 @@
 /**
  * Persistencia del progreso detrás de una interfaz: hoy localStorage,
  * mañana un repositorio remoto (Supabase/PostgreSQL) que implemente lo mismo.
+ * La copia en la nube de claude.ai vive en `cloud.ts` y se sincroniza desde el store.
  */
 import { hydrate, type ProgressState } from "@/engine/progress/state";
 
@@ -11,6 +12,24 @@ export interface ProgressRepository {
 }
 
 const KEY = "ingenia:progress:v1";
+const SAVED_AT_KEY = "ingenia:progress:savedAt";
+
+/** Cuándo se guardó la copia local (para comparar con la de la nube). "" si no se sabe. */
+export function localSavedAt(): string {
+  try {
+    return window.localStorage.getItem(SAVED_AT_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
+export function setLocalSavedAt(iso: string) {
+  try {
+    window.localStorage.setItem(SAVED_AT_KEY, iso);
+  } catch {
+    /* ignorar */
+  }
+}
 export const THEME_KEY = "ingenia:theme";
 
 export class LocalStorageRepository implements ProgressRepository {
@@ -35,6 +54,7 @@ export class LocalStorageRepository implements ProgressRepository {
   async clear(): Promise<void> {
     try {
       window.localStorage.removeItem(KEY);
+      window.localStorage.removeItem(SAVED_AT_KEY);
     } catch {
       /* ignorar */
     }

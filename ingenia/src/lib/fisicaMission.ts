@@ -23,10 +23,11 @@ export function daysLeft(today = dayKey()): number {
   return daysBetween(today, EXAM_DATE);
 }
 
-export type Phase = "construccion" | "recta-final" | "repaso-final" | "pre-parcial" | "dia-parcial" | "despues";
+export type Phase = "construccion" | "recta-final" | "repaso-final" | "pre-parcial" | "dia-parcial" | "dia-1p" | "despues";
 
 export function phaseFor(days: number): Phase {
-  if (days < 0) return "despues";
+  if (days < -1) return "despues";
+  if (days === -1) return "dia-1p";
   if (days === 0) return "dia-parcial";
   if (days === 1) return "pre-parcial";
   if (days === 2) return "repaso-final";
@@ -38,9 +39,10 @@ export const PHASE_INFO: Record<Phase, { title: string; text: string; icon: stri
   construccion: { title: "Construcción", text: "Fundamentos primero, después los temas que más toman y los que más te cuestan.", icon: "🧱" },
   "recta-final": { title: "Recta final", text: "Menos teoría nueva: simulacros, tus errores, temas débiles y velocidad.", icon: "🔥" },
   "repaso-final": { title: "Repaso final (48 h)", text: "Conceptos clave, tus errores y ejercicios que ya deberías poder resolver. Nada de saturarte.", icon: "🧠" },
-  "pre-parcial": { title: "Repaso pre-parcial", text: "Sesión corta: fórmulas, errores frecuentes, 3–5 ejercicios, mini test y checklist. Después, a descansar.", icon: "🌙" },
-  "dia-parcial": { title: "¡Hoy es el parcial!", text: "Leé el checklist, respirá y aplicá el método de 6 pasos. Ya hiciste el trabajo.", icon: "🍀" },
-  despues: { title: "Parcial rendido", text: "Podés seguir practicando para el otro parcial o el final.", icon: "🎓" },
+  "pre-parcial": { title: "Repaso pre-parcial", text: "Sesión corta del 2.º parcial (y un vistazo al 1.º): fórmulas, errores frecuentes, ejercicios, mini test y checklist. Después, a descansar.", icon: "🌙" },
+  "dia-parcial": { title: "¡Hoy es el 2.º parcial!", text: "Leé el checklist, respirá y aplicá el método de 6 pasos. A la noche, repaso corto del 1.º y a dormir temprano.", icon: "🍀" },
+  "dia-1p": { title: "¡Hoy es el 1.er parcial!", text: "El último esfuerzo: checklist, método de 6 pasos y cuidado con las unidades. Ya hiciste el trabajo.", icon: "🍀" },
+  despues: { title: "Parciales rendidos", text: "Podés seguir practicando para el recuperatorio o el final.", icon: "🎓" },
 };
 
 // ───────────── Preparación por tema (datos reales) ─────────────
@@ -181,23 +183,32 @@ export function buildPlan(s: ProgressState, today = dayKey()): PlanDay[] {
   const projected = new Map(areas.map((a) => [a.id, areaReadiness(s, a) ?? 0.15]));
   const out: PlanDay[] = [];
   const total = Math.max(1, left);
-  let simTurn: "1P" | "2P" = s.fisica.parcial === "2P" ? "2P" : "1P";
+  let simTurn: "1P" | "2P" = s.fisica.parcial === "1P" ? "1P" : "2P";
   const nextSim = () => {
     const v = simTurn;
     if (s.fisica.parcial === "ambos") simTurn = simTurn === "1P" ? "2P" : "1P";
     return v;
   };
   const scheduled = new Set<string>();
-  for (let i = 0; i < Math.max(0, left); i++) {
+  for (let i = 0; i <= left + 1; i++) {
     const date = addDays(today, i);
     const d = left - i;
     const phase = phaseFor(d);
     const done = (s.fisica.done[date]?.length ?? 0) > 0;
     const base = { date, phase, done, isToday: i === 0, past: false };
-    if (phase === "pre-parcial") {
-      out.push({ ...base, title: "Repaso pre-parcial", areas: [], tasks: ["Fórmulas importantes", "Tus errores frecuentes", "3–5 ejercicios seleccionados", "Mini test", "Checklist del examen"] });
+    if (phase === "dia-1p") {
+      out.push({ ...base, title: "1.er parcial", areas: [], tasks: ["Checklist del examen", "Leer todo antes de empezar", "Método de 6 pasos en cada ejercicio"] });
       continue;
     }
+    if (phase === "dia-parcial") {
+      out.push({ ...base, title: "2.º parcial + repaso del 1.º a la noche", areas: [], tasks: ["Rendir el 2.º parcial", "A la noche (30–40 min): fórmulas y errores del 1.º", "Checklist y a dormir temprano"] });
+      continue;
+    }
+    if (phase === "pre-parcial") {
+      out.push({ ...base, title: "Repaso pre-parcial (2.º)", areas: [], tasks: ["Fórmulas del 2.º parcial", "Tus errores frecuentes", "3–5 ejercicios seleccionados", "Vistazo rápido al 1.º", "Checklist del examen"] });
+      continue;
+    }
+    if (phase === "despues") continue;
     if (phase === "repaso-final") {
       const weak = [...areas].sort((a, b) => (projected.get(a.id) ?? 0) - (projected.get(b.id) ?? 0)).slice(0, 2);
       out.push({ ...base, title: "Repaso final", areas: weak, tasks: ["Conceptos clave y fórmulas", "Practicar mis errores", `Ejercicios ya conocidos de ${weak.map((w) => w.name.split(" ")[0].toLowerCase()).join(" y ")}`] });
@@ -323,8 +334,8 @@ export function errorItems(s: ProgressState, n = 8): SessionItem[] {
 }
 
 /** Lo que más toman: las áreas más pesadas en los modelos, a nivel parcial. */
-export function importantItems(s: ProgressState, n = 8): SessionItem[] {
-  const top = relevantAreas(s)
+export function importantItems(s: ProgressState, n = 8, parcial?: "1P" | "2P"): SessionItem[] {
+  const top = (parcial ? areasFor(parcial) : relevantAreas(s))
     .filter((a) => a.id !== "fundamentos" && a.id !== "trig")
     .sort((a, b) => Math.max(...b.parciales.map((p) => areaExamWeight(b, p))) - Math.max(...a.parciales.map((p) => areaExamWeight(a, p))))
     .slice(0, 4);
@@ -344,9 +355,18 @@ export function todayTraining(s: ProgressState, minutes: number): TrainingBlock[
 
   if (phase === "pre-parcial") {
     return [
-      { id: "formulas", title: "Fórmulas importantes", icon: "📄", minutes: 8, detail: "Las del parcial, con cuándo usar cada una." },
-      { id: "errores", title: "Tus errores frecuentes", icon: "❌", minutes: 7, detail: "Lo que más te costó, en ejercicios cortos.", items: errorItems(s, 3).length ? errorItems(s, 3) : importantItems(s, 3) },
-      { id: "parcial", title: "Ejercicios seleccionados + mini test", icon: "🎯", minutes: 15, detail: "5 ejercicios de lo que más toman.", items: importantItems(s, 5) },
+      { id: "formulas", title: "Fórmulas importantes", icon: "📄", minutes: 8, detail: "Las del 2.º parcial, con cuándo usar cada una." },
+      { id: "errores", title: "Tus errores frecuentes", icon: "❌", minutes: 7, detail: "Lo que más te costó, en ejercicios cortos.", items: errorItems(s, 3).length ? errorItems(s, 3) : importantItems(s, 3, "2P") },
+      { id: "parcial", title: "Ejercicios del 2.º + mini test", icon: "🎯", minutes: 15, detail: "5 ejercicios de lo que más toman en el 2.º parcial.", items: importantItems(s, 5, "2P") },
+      { id: "parcial", title: "Vistazo al 1.º", icon: "🌊", minutes: 6, detail: "3 ejercicios de lo que más toman en el 1.º (es al día siguiente).", items: importantItems(s, 3, "1P") },
+      { id: "checklist", title: "Checklist del examen", icon: "✅", minutes: 3, detail: "La rutina antes de entregar." },
+    ];
+  }
+  if (phase === "dia-parcial" || phase === "dia-1p") {
+    // El día del 2.º: repaso nocturno del 1.º. El día del 1.º: solo lo justo.
+    return [
+      { id: "formulas", title: "Fórmulas del 1.er parcial", icon: "📄", minutes: 8, detail: "Vectores, cinemática, estática, momentos e hidrostática." },
+      { id: "parcial", title: phase === "dia-parcial" ? "Repaso nocturno del 1.º" : "Calentamiento", icon: "🌙", minutes: phase === "dia-parcial" ? 20 : 8, detail: "Ejercicios cortos de lo que más toman en el 1.er parcial.", items: importantItems(s, phase === "dia-parcial" ? 5 : 2, "1P") },
       { id: "checklist", title: "Checklist del examen", icon: "✅", minutes: 3, detail: "La rutina antes de entregar." },
     ];
   }

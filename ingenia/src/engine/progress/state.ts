@@ -142,7 +142,7 @@ export interface ProgressState {
 }
 
 export interface FisicaMissionState {
-  /** Qué parcial es el del 5/11 ("ambos" mientras no se sepa). */
+  /** Qué parcial priorizar. Con el 2.º el 5/11 y el 1.º el 6/11 se preparan "ambos". */
   parcial: "1P" | "2P" | "ambos";
   /** Inicio del diagnóstico (los intentos posteriores a esta marca son el diagnóstico). */
   diagStartedAt: number | null;
@@ -207,7 +207,7 @@ export function hydrate(raw: unknown): ProgressState {
     profile: { ...base.profile, ...(r.profile ?? {}) },
     settings: { ...base.settings, ...(r.settings ?? {}) },
     streak: { ...base.streak, ...(r.streak ?? {}) },
-    fisica: { ...base.fisica, ...(r.fisica ?? {}) },
+    fisica: { ...base.fisica, ...(r.fisica ?? {}), parcial: "ambos" },
     version: 1,
   };
 }

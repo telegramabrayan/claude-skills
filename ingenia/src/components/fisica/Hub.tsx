@@ -71,9 +71,9 @@ export function FisicaHub() {
       <section className="card-hero" style={subjectStyle("fisica")}>
         <div className="grid gap-4 p-5 sm:grid-cols-[1fr_auto] sm:p-7">
           <div>
-            <p className="hero-muted text-sm font-black uppercase tracking-wider text-white/85">⚡ Física — Objetivo parcial 5/11</p>
+            <p className="hero-muted text-sm font-black uppercase tracking-wider text-white/85">⚡ Física — 2.º parcial 5/11 · 1.er parcial 6/11</p>
             <h1 className="mt-1 text-3xl font-black leading-tight sm:text-4xl">Misión: aprobar Física</h1>
-            <p className="hero-muted mt-1 max-w-prose text-white/85">Prepararte desde tu nivel actual para que llegues al 5/11 con los conocimientos y la práctica necesarios. Primero entender, después practicar como en el parcial.</p>
+            <p className="hero-muted mt-1 max-w-prose text-white/85">Prepararte desde tu nivel actual para llegar al 5/11 (2.º parcial) y al 6/11 (1.er parcial) con los conocimientos y la práctica necesarios. Cátedra Torti. Primero entender, después practicar como en el parcial.</p>
             <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-bold">
               <span className="rounded-full bg-white/15 px-3 py-1">🔥 {currentStreak(s)} días seguidos</span>
               <span className="rounded-full bg-white/15 px-3 py-1">⏱ {hoursStudied(s).toFixed(1).replace(".", ",")} h de Física</span>
@@ -91,7 +91,7 @@ export function FisicaHub() {
         </div>
       </section>
 
-      <ParcialPicker />
+      <ExamDates />
 
       {missed > 0 && (
         <p className="flex items-center gap-2 rounded-2xl border-2 border-line bg-surface p-3 text-sm font-semibold">
@@ -127,7 +127,7 @@ export function FisicaHub() {
         </div>
         <ol className="space-y-2">
           {blocks.map((b) => (
-            <li key={b.id} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
+            <li key={`${b.id}-${b.title}`} className="flex items-center gap-3 rounded-xl bg-surface-2 p-3">
               <span className="text-2xl" aria-hidden>{b.icon}</span>
               <span className="min-w-0 flex-1">
                 <span className="block font-black">{b.title}</span>
@@ -261,23 +261,24 @@ const MODES = [
   { href: "/fisica?vista=checklist", icon: "✅", title: "Checklist del examen", text: "Antes de entregar" },
 ];
 
-function ParcialPicker() {
-  const s = useProgress();
-  const opts: [typeof s.fisica.parcial, string][] = [
-    ["1P", "1.er parcial"],
-    ["2P", "2.º parcial"],
-    ["ambos", "No sé / los dos"],
-  ];
+function ExamDates() {
   return (
-    <div className="flex flex-wrap items-center gap-2 text-sm">
-      <span className="font-bold">El parcial del 5/11 es:</span>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Qué parcial es el del 5/11">
-        {opts.map(([k, l]) => (
-          <button key={k} role="radio" aria-checked={s.fisica.parcial === k} onClick={() => actions.updateFisica({ parcial: k })} className="tile !min-h-9 !px-3 !py-1 text-sm">
-            {l}
-          </button>
-        ))}
-      </div>
+    <div className="grid gap-2 sm:grid-cols-2">
+      {[
+        ["📅 Jueves 5/11", "2.º parcial", "Dinámica, energía, tiro y caída libre*"],
+        ["📅 Viernes 6/11", "1.er parcial", "Vectores, cinemática, estática, momentos e hidrostática"],
+      ].map(([d, p, t]) => (
+        <div key={p} className="card flex items-center gap-3 p-3">
+          <div className="min-w-0">
+            <p className="text-xs font-black uppercase text-muted">{d}</p>
+            <p className="font-black">{p}</p>
+            <p className="text-xs text-muted">{t}</p>
+          </div>
+        </div>
+      ))}
+      <p className="text-xs text-muted sm:col-span-2">
+        Como el 1.º es al día siguiente, el plan deja los dos listos antes del 5/11 y la noche del 5/11 es un repaso corto del 1.º. * Temas a confirmar con la cátedra Torti 2026.
+      </p>
     </div>
   );
 }

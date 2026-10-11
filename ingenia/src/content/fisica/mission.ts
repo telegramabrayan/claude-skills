@@ -7,7 +7,12 @@
  */
 import { topicStats, featureStats, type Parcial } from "./parciales";
 
-export const EXAM_DATE = "2026-11-05";
+/** Fechas elegidas por el estudiante: primero el 2.º parcial y al día siguiente el 1.º. */
+export const EXAM_2P = "2026-11-05";
+export const EXAM_1P = "2026-11-06";
+/** Primera fecha de examen (la cuenta regresiva apunta acá). */
+export const EXAM_DATE = EXAM_2P;
+export const CATEDRA = "Cátedra Torti (UBA XXI)";
 
 export interface MissionArea {
   id: string;

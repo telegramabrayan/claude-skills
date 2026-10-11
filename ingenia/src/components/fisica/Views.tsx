@@ -382,7 +382,7 @@ export function TodayView({ minutes }: { minutes: number }) {
         </Link>
         <div className="flex flex-1 gap-1" aria-label={`Paso ${i + 1} de ${blocks.length}`}>
           {blocks.map((x, k) => (
-            <span key={x.id} className="h-2.5 flex-1 rounded-full" style={{ background: k < i ? "var(--c-physics)" : k === i ? "color-mix(in srgb, var(--c-physics) 50%, transparent)" : "var(--surface-2)" }} />
+            <span key={`${x.id}-${k}`} className="h-2.5 flex-1 rounded-full" style={{ background: k < i ? "var(--c-physics)" : k === i ? "color-mix(in srgb, var(--c-physics) 50%, transparent)" : "var(--surface-2)" }} />
           ))}
         </div>
       </div>
@@ -441,7 +441,7 @@ type SimMode = "aprendizaje" | "realista" | "examen";
 
 export function SimulatorView({ parcial: p0 }: { parcial?: string }) {
   const s = useProgress();
-  const [parcial, setParcial] = useState<"1P" | "2P" | "sorpresa">(p0 === "2P" ? "2P" : p0 === "sorpresa" ? "sorpresa" : "1P");
+  const [parcial, setParcial] = useState<"1P" | "2P" | "sorpresa">(p0 === "1P" ? "1P" : p0 === "sorpresa" ? "sorpresa" : "2P");
   const [mode, setMode] = useState<SimMode>("realista");
   const [run, setRun] = useState<{ items: SessionItem[]; title: string; minutes: number } | null>(null);
   const mat = materialFor("fisica");

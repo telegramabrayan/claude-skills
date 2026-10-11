@@ -115,7 +115,7 @@ export function describeContext(s: ProgressState, c: StudyContext): string {
     const left = daysLeft();
     const errs = recentErrors(s).slice(0, 4);
     lines.push(
-      `MISIÓN FÍSICA: prepara el parcial de Física del 5/11/2026 (faltan ${left} días; parcial: ${s.fisica.parcial === "ambos" ? "no sabe si es el 1.º o el 2.º" : s.fisica.parcial}). Cátedra Torti (UBA XXI): g = 9,80 m/s², 3 cifras significativas, unidades SI. Preparación actual ${Math.round(globalReadiness(s) * 100)} % (1.er parcial ${Math.round(parcialReadiness(s, "1P").value * 100)} %, 2.º ${Math.round(parcialReadiness(s, "2P").value * 100)} %).` +
+      `MISIÓN FÍSICA: rinde el 2.º parcial de Física el 5/11/2026 y el 1.er parcial al día siguiente, el 6/11 (faltan ${left} días para el primero de los dos). Cátedra Torti (UBA XXI): g = 9,80 m/s², 3 cifras significativas, unidades SI. Preparación actual ${Math.round(globalReadiness(s) * 100)} % (1.er parcial ${Math.round(parcialReadiness(s, "1P").value * 100)} %, 2.º ${Math.round(parcialReadiness(s, "2P").value * 100)} %).` +
         (errs.length ? ` Errores recientes: ${errs.map((e) => `${getTopic(e.topicId)?.name ?? e.topicId}${e.errorType ? ` (${ERROR_LABELS[e.errorType as keyof typeof ERROR_LABELS] ?? e.errorType})` : ""} ×${e.count}`).join("; ")}.` : "") +
         " Enseñá con el método de 6 pasos (leer, datos, dibujo, qué piden, relaciones, resolver y verificar unidades), explicá el porqué de los signos y ayudalo a reconocer qué fórmula usar. No inventes probabilidades de aprobar.",
     );

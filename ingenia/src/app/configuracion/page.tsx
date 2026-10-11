@@ -1,11 +1,44 @@
 "use client";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { actions, store, useProgress } from "@/lib/store";
 import { exportJson, importJson } from "@/lib/storage";
+import { cloud, type CloudStatus } from "@/lib/cloud";
 import { Gate } from "@/components/layout/Gate";
 import { PageHeader, SectionTitle } from "@/components/ui/primitives";
+
+const CLOUD_TEXT: Record<CloudStatus, [string, string]> = {
+  off: ["💻", "Tu progreso se guarda en este navegador. Abrí Ingenia desde claude.ai (con tu cuenta) para guardarlo también en la nube y seguir desde cualquier dispositivo."],
+  connecting: ["⏳", "Conectando con tu cuenta…"],
+  synced: ["☁️", "Tu progreso se guarda en tu cuenta de Claude. Podés entrar desde otro navegador o desde el celular y seguir donde dejaste."],
+  saving: ["☁️", "Guardando en tu cuenta…"],
+  error: ["⚠️", "No se pudo guardar en la nube recién. Se vuelve a intentar con el próximo cambio; mientras tanto queda guardado en este navegador."],
+  full: ["⚠️", "El progreso no entra en la nube. Sigue guardado en este navegador: hacé un respaldo abajo."],
+};
+
+function CloudCard() {
+  const st = useSyncExternalStore(cloud.subscribe, cloud.status, () => "off" as CloudStatus);
+  const at = cloud.lastSavedAt();
+  const [icon, text] = CLOUD_TEXT[st];
+  return (
+    <div className="card mb-3 flex items-start gap-3 p-4" role="status">
+      <span className="text-2xl" aria-hidden>
+        {icon}
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="font-semibold">Guardado en la nube</p>
+        <p className="text-sm text-muted">{text}</p>
+        {at && (st === "synced" || st === "saving") && <p className="mt-1 text-xs text-muted">Último guardado: {new Date(at).toLocaleString("es-AR", { dateStyle: "short", timeStyle: "short" })}</p>}
+        {(st === "synced" || st === "error") && (
+          <button className="btn btn-secondary mt-2 !min-h-9 text-sm" onClick={() => void actions.saveNow()}>
+            Guardar ahora
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function Settings() {
   const s = useProgress();
@@ -153,6 +186,7 @@ function Settings() {
       </div>
 
       <SectionTitle>Tus datos</SectionTitle>
+      <CloudCard />
       <div className="card space-y-3 p-4">
         <p className="text-sm text-muted">Tu progreso se guarda en este navegador. Descargá un respaldo para no perderlo o para pasarlo a otro dispositivo.</p>
         <div className="flex flex-wrap gap-2">
