@@ -8,6 +8,7 @@ export interface NavItem {
 
 export const NAV_MAIN: NavItem[] = [
   { href: "/", label: "Inicio", icon: "home" },
+  { href: "/ipc", label: "Modo examen IPC", icon: "bolt" },
   { href: "/fisica", label: "Misión Física 5 y 6/11", icon: "flame" },
   { href: "/camino", label: "Camino", icon: "path" },
   { href: "/materias", label: "Materias", icon: "book" },

@@ -6,6 +6,7 @@ import { Icon, type IconName } from "@/components/ui/Icon";
 import { ProgressBar, SectionTitle } from "@/components/ui/primitives";
 import { SubjectArt, subjectStyle } from "@/components/ui/SubjectArt";
 import { MissionCard } from "@/components/fisica/MissionCard";
+import { IpcExamCard } from "@/components/ipc/IpcMission";
 import { currentStreak, levelInfo, levelTitle, MASTERED } from "@/engine/progress/rules";
 import type { ProgressState } from "@/engine/progress/state";
 import type { Subject } from "@/engine/types";
@@ -128,6 +129,7 @@ function Dashboard() {
       </section>
 
       {/* Misión prioritaria */}
+      <IpcExamCard />
       <MissionCard />
 
       {/* Continuar aprendiendo */}

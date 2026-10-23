@@ -139,6 +139,19 @@ export interface ProgressState {
   lastActivity: { topicId: string; exerciseId: string; errorType?: ErrorType; correct: boolean; ts: number } | null;
   /** Misión Física: preparación para el parcial. */
   fisica: FisicaMissionState;
+  /** Modo examen de IPC (clase intensiva para un examen cercano). */
+  ipc: IpcMissionState;
+}
+
+export interface IpcMissionState {
+  parcial: "1P" | "2P";
+  /** Fecha y hora del examen (ms). */
+  examAt: number | null;
+  /** Minutos que vas a estudiar antes del examen. */
+  studyMin: number;
+  /** Bloques del plan terminados (se reinicia al cambiar el examen). */
+  done: string[];
+  diagDoneAt: number | null;
 }
 
 export interface FisicaMissionState {
@@ -189,6 +202,7 @@ export function initialState(): ProgressState {
     plan: null,
     lastActivity: null,
     fisica: { parcial: "ambos", diagStartedAt: null, diagDoneAt: null, seconds: {}, snapshots: {}, done: {}, guided: 0 },
+    ipc: { parcial: "1P", examAt: null, studyMin: 180, done: [], diagDoneAt: null },
   };
 }
 
@@ -208,6 +222,7 @@ export function hydrate(raw: unknown): ProgressState {
     settings: { ...base.settings, ...(r.settings ?? {}) },
     streak: { ...base.streak, ...(r.streak ?? {}) },
     fisica: { ...base.fisica, ...(r.fisica ?? {}), parcial: "ambos" },
+    ipc: { ...base.ipc, ...(r.ipc ?? {}) },
     version: 1,
   };
 }

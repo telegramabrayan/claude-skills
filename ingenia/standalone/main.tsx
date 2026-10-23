@@ -14,6 +14,7 @@ import Entrenamiento from "@/app/entrenamiento/page";
 import Laboratorio from "@/app/laboratorio/page";
 import Juegos from "@/app/juegos/page";
 import Fisica from "@/app/fisica/page";
+import Ipc from "@/app/ipc/page";
 import Examenes from "@/app/examenes/page";
 import Profesor from "@/app/profesor/page";
 import Estadisticas from "@/app/estadisticas/page";
@@ -49,6 +50,7 @@ const ROUTES: Record<string, ComponentType> = {
   "/laboratorio": Laboratorio,
   "/juegos": Juegos,
   "/fisica": Fisica,
+  "/ipc": Ipc,
   "/examenes": Examenes,
   "/profesor": Profesor,
   "/estadisticas": Estadisticas,

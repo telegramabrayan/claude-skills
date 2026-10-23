@@ -301,6 +301,12 @@ export const actions = {
     scheduleSave();
   },
 
+  updateIpc(patch: Partial<ProgressState["ipc"]>) {
+    commit({ ...state, ipc: { ...state.ipc, ...patch } });
+  },
+  markIpcBlock(key: string) {
+    if (!state.ipc.done.includes(key)) commit({ ...state, ipc: { ...state.ipc, done: [...state.ipc.done, key] } });
+  },
   updateFisica(patch: Partial<ProgressState["fisica"]>) {
     commit({ ...state, fisica: { ...state.fisica, ...patch } });
   },
