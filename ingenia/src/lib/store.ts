@@ -304,6 +304,9 @@ export const actions = {
   updateIpc(patch: Partial<ProgressState["ipc"]>) {
     commit({ ...state, ipc: { ...state.ipc, ...patch } });
   },
+  logIpcQuick(e: { id: string; topicId: string; ok: boolean; kind: string }) {
+    commit({ ...state, ipc: { ...state.ipc, qlog: [...(state.ipc.qlog ?? []), { ...e, ts: Date.now() }].slice(-400) } });
+  },
   markIpcBlock(key: string) {
     if (!state.ipc.done.includes(key)) commit({ ...state, ipc: { ...state.ipc, done: [...state.ipc.done, key] } });
   },

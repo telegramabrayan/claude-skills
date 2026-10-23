@@ -4,7 +4,8 @@
  * cuenta). Fuera de claude.ai no hay IA: la app usa el tutor local con el
  * contenido curado. Nunca se llama a la IA sin una acción explícita.
  */
-import { daysLeft, globalReadiness, parcialReadiness, recentErrors } from "./fisicaMission";
+import { examTopics } from "./ipcMission";
+import { daysLeft, globalReadiness, parcialReadiness, recentErrors, topicReadiness } from "./fisicaMission";
 import type { ProgressState } from "@/engine/progress/state";
 import { recurringErrors } from "@/engine/progress/rules";
 import { ERROR_LABELS, getTopic } from "@/content/topics";
@@ -174,6 +175,19 @@ export function describeContext(s: ProgressState, c: StudyContext): string {
     .map(([id]) => getTopic(id)?.name)
     .filter(Boolean);
   // Misión Física: el estudiante prepara el parcial del 5/11.
+  if (subject?.id === "ipc" || (typeof location !== "undefined" && /[#/]ipc/.test(location.href))) {
+    const left = s.ipc.examAt ? Math.round((s.ipc.examAt - Date.now()) / 60000) : null;
+    const weak = examTopics(s.ipc.parcial)
+      .map((t) => ({ t, v: topicReadiness(s, t.topicId).value }))
+      .filter((x) => x.v === null || x.v < 0.5)
+      .map((x) => x.t.short)
+      .slice(0, 5);
+    const qerr = (s.ipc.qlog ?? []).filter((x) => !x.ok).slice(-5).map((x) => x.id);
+    lines.push(
+      `MODO EMERGENCIA IPC: rinde el ${s.ipc.parcial === "1P" ? "1.er" : "2.º"} parcial de IPC (040, UBA XXI, Cátedra A, programa 2026; bibliografía «Desenredando la ciencia»)${left !== null ? ` en ${left} minutos` : ""}. Formato del 1.er parcial según las claves cargadas: 10 preguntas de opción múltiple, 1 punto cada una, sin puntaje parcial. Temas flojos o sin datos: ${weak.join(", ") || "ninguno"}.${qerr.length ? ` Preguntas que falló hace poco: ${qerr.join(", ")}.` : ""}` +
+        " Respondé MUY corto (es el día del examen): primero la idea en una frase, después un ejemplo cotidiano si hace falta, y cómo aparecería en una pregunta de opción múltiple. Si pregunta por qué una opción está mal, explicá esa opción concreta (está en «Lo que está leyendo»). Usá solo autores y conceptos del programa (Darwin, Lamarck, Lyell, Cuvier, Malthus; positivismo lógico, Popper, Hempel, Kuhn, epistemología feminista, ética y políticas científicas). No inventes preguntas «reales» de examen ni probabilidades de aprobar.",
+    );
+  }
   if (subject?.id === "fisica" || (typeof document !== "undefined" && document.documentElement.dataset.subject === "physics")) {
     const left = daysLeft();
     const errs = recentErrors(s).slice(0, 4);

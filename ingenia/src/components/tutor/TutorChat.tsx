@@ -23,6 +23,11 @@ interface Turn {
 }
 
 const QUICK = ["No entendí", "¿Por qué se hace esto?", "Dame una pista", "Explicámelo desde cero", "Dame otro ejemplo", "¿Qué necesito saber antes?"];
+const QUICK_IPC = ["Más fácil", "En una frase", "Ejemplo", "Comparalo", "¿Por qué está mal?", "¿Cómo me lo podrían preguntar?", "Hazme otra pregunta", "No lo recuerdo"];
+
+function ctxIpc() {
+  return typeof document !== "undefined" && document.documentElement.dataset.subject === "ipc";
+}
 
 export function TutorChat() {
   const [open, setOpen] = useState(false);
@@ -174,7 +179,7 @@ export function TutorChat() {
             </div>
             <div className="border-t border-line p-3">
               <div className="mb-2 flex gap-1.5 overflow-x-auto pb-1">
-                {QUICK.map((q) => (
+                {(ctxIpc() ? QUICK_IPC : QUICK).map((q) => (
                   <button key={q} className="chip shrink-0 !py-1.5 hover:!bg-primary-soft" onClick={() => ask(q)} disabled={streaming !== null}>
                     {q}
                   </button>

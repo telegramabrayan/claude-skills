@@ -152,6 +152,8 @@ export interface IpcMissionState {
   /** Bloques del plan terminados (se reinicia al cambiar el examen). */
   done: string[];
   diagDoneAt: number | null;
+  /** Respuestas del modo emergencia (preguntas rápidas y tarjetas). */
+  qlog?: { id: string; topicId: string; ok: boolean; kind: string; ts: number }[];
 }
 
 export interface FisicaMissionState {

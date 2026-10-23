@@ -164,7 +164,7 @@ export function IpcHub() {
                 {next.detail} · {next.minutes} min
               </p>
             </div>
-            <Link href={`/ipc?vista=bloque&k=${encodeURIComponent(next.key)}`} className="btn-3d is-subject !px-6" style={IPC}>
+            <Link href={`/ipc?vista=clasico-bloque&k=${encodeURIComponent(next.key)}`} className="btn-3d is-subject !px-6" style={IPC}>
               {s.ipc.done.length ? "CONTINUAR" : "EMPEZAR"}
             </Link>
           </div>
@@ -193,7 +193,7 @@ export function IpcHub() {
               return (
                 <li key={b.key}>
                   <Link
-                    href={b.kind === "pausa" ? "#" : `/ipc?vista=bloque&k=${encodeURIComponent(b.key)}`}
+                    href={b.kind === "pausa" ? "#" : `/ipc?vista=clasico-bloque&k=${encodeURIComponent(b.key)}`}
                     onClick={(e) => {
                       if (b.kind === "pausa") {
                         e.preventDefault();
