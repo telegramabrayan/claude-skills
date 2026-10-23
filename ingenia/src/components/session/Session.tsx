@@ -78,7 +78,10 @@ function buildExercise(item: SessionItem): Exercise {
   return exerciseFor(store.getState(), item.topicId, item.adjust ?? 0);
 }
 
-export function Session({ title, items, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin, guided, saveRecord, recovery }: Props) {
+export function Session({ title, items: itemsProp, mode, kind = "practica", minutes, onExit, exitHref = "/", lives, noHelp, onWin, guided, saveRecord, recovery }: Props) {
+  // La lista se fija al empezar: si el padre la recalcula (cada vez que cambia el
+  // progreso, p. ej. el contador de tiempo), los ejercicios no deben cambiar solos.
+  const [items] = useState(() => itemsProp);
   const maxHearts = lives ?? 5;
   const hearts0 = lives ?? (kind === "desafio" && store.getState().settings.hearts ? 5 : null);
   const [index, setIndex] = useState(0);

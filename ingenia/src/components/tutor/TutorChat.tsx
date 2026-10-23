@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { store } from "@/lib/store";
 import { aiErrorMessage, describeContext, getSample, TUTOR_RULES, type AiError } from "@/lib/ai";
+import { AiStatus } from "./AiStatus";
 import { getStudyContext, onOpenTutor, subscribeStudyContext } from "@/lib/studyContext";
 import { localTutor, type TutorAnswer } from "@/lib/tutor";
 import { getTopic } from "@/content/topics";
@@ -143,11 +144,7 @@ export function TutorChat() {
                   <p>
                     Preguntame sobre lo que estás viendo, sin repetir el enunciado: ya sé {ctxLabel ? <b>{ctxLabel.toLowerCase()}</b> : "qué estás estudiando"} y cómo te viene yendo.
                   </p>
-                  {ai === "no" && (
-                    <p className="rounded-xl bg-surface-2 p-3 text-muted">
-                      En esta vista el profesor responde con el contenido de la plataforma. Abriendo Ingenia dentro de claude.ai, responde con IA y conversa con vos.
-                    </p>
-                  )}
+                  {ai === "no" && <AiStatus onReady={() => getSample().then((x) => setAi(x ? "yes" : "no"))} />}
                 </div>
               )}
               {turns.map((t, i) => (
@@ -160,6 +157,7 @@ export function TutorChat() {
                   {streaming ? <MathText text={streaming} /> : <p className="animate-pulse text-sm text-muted">Pensando…</p>}
                 </div>
               )}
+              {local && turns.length > 0 && ai === "no" && turns.length === 1 && <AiStatus onReady={() => getSample().then((x) => setAi(x ? "yes" : "no"))} />}
               {local && (
                 <div className="mr-4 space-y-2 rounded-2xl border border-line p-3 text-sm">
                   <p>{local.intro}</p>

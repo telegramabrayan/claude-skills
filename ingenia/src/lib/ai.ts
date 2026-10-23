@@ -31,7 +31,70 @@ export function getSample(): Promise<SampleFn | null> {
       return null;
     }
   })();
-  return samplePromise;
+  // Si no se pudo, se vuelve a intentar la próxima vez (permiso recién dado, conexión lenta).
+  const p = samplePromise;
+  void p.then((s) => {
+    if (!s && samplePromise === p) samplePromise = null;
+  });
+  return p;
+}
+
+/** Link del Artifact: desde ahí el profesor con IA y el guardado en la nube funcionan. */
+export const ARTIFACT_URL = "https://claude.ai/artifact/CmCweve6PC39qtQaeDAZGu";
+
+export type AiAvailability = "outside" | "prompt" | "denied" | "unavailable" | "granted";
+
+type Perms = { state(n: string): Promise<string>; request(n?: readonly string[]): Promise<Record<string, string>>; manage(): Promise<void> };
+
+async function perms(): Promise<Perms | null> {
+  const c = (globalThis as unknown as { claude?: { use?: (n: string) => Promise<unknown> } }).claude;
+  if (!c?.use) return null;
+  try {
+    return (await c.use("permissions")) as Perms | null;
+  } catch {
+    return null;
+  }
+}
+
+/** Por qué el profesor con IA no responde (o si se puede activar). */
+export async function aiAvailability(): Promise<AiAvailability> {
+  const c = (globalThis as unknown as { claude?: { use?: unknown } }).claude;
+  let framed = false;
+  try {
+    framed = window.self !== window.top;
+  } catch {
+    framed = true;
+  }
+  if (!c?.use || !framed) return "outside";
+  const p = await perms();
+  if (!p) return "unavailable";
+  try {
+    const st = await p.state("sample");
+    return st === "granted" || st === "prompt" || st === "denied" ? st : "unavailable";
+  } catch {
+    return "unavailable";
+  }
+}
+
+/** Pide el permiso del profesor (un solo diálogo). */
+export async function requestAi(): Promise<AiAvailability> {
+  const p = await perms();
+  if (!p) return "unavailable";
+  const r = await p.request(["sample"]).catch(() => ({}) as Record<string, string>);
+  const st = r.sample;
+  return st === "granted" || st === "prompt" || st === "denied" ? st : "unavailable";
+}
+
+/** Abre el panel de permisos de claude.ai. false si no se pudo abrir. */
+export async function managePermissions(): Promise<boolean> {
+  const p = await perms();
+  if (!p) return false;
+  try {
+    await p.manage();
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 export type AiError = { code: string; message?: string; text?: string };
