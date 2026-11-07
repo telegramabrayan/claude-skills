@@ -2181,6 +2181,20 @@ function programarSync(){
   clearTimeout(syncTimer);
   syncTimer = setTimeout(sincronizar, 700);
 }
+function achicar(src, lado){
+  return new Promise(ok=>{
+    const im = new Image();
+    im.onload = ()=>{
+      const s = Math.min(1, lado/Math.max(im.naturalWidth, im.naturalHeight));
+      const cv = document.createElement('canvas');
+      cv.width = Math.round(im.naturalWidth*s); cv.height = Math.round(im.naturalHeight*s);
+      cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+      ok(cv.toDataURL('image/jpeg', 0.7));
+    };
+    im.onerror = ()=> ok(null);
+    im.src = src;
+  });
+}
 async function subirDataUrl(src){
   const blob = await (await fetch(src)).blob();
   const tipo = blob.type || 'image/jpeg';
@@ -2206,7 +2220,11 @@ async function sincronizar(){
     for(let i=0; i<PRODUCTS.length; i++){
       const p = PRODUCTS[i], k = String(p.id);
       vivos.add(k);
-      if(SNAP.prods.get(k) !== JSON.stringify(p)) await subirFotos(p);
+      if(SNAP.prods.get(k) !== JSON.stringify(p)){
+        if(typeof p.img === 'string' && p.img.startsWith('data:')) p.mini = await achicar(p.img, 400);
+        await subirFotos(p);
+        if(p.mini && p.mini.startsWith('http')) p.miniDe = p.img;
+      }
       if(SNAP.prods.get(k) !== JSON.stringify(p) || SNAP.orden.get(k) !== i) cambiados.push({ id:p.id, datos:p, orden:i });
     }
     for(let i=0; i<cambiados.length; i+=300){
@@ -2370,14 +2388,27 @@ const pawSVG = `<svg viewBox="0 0 100 100" width="46%" fill="none"><path d="M50 
 
 // Si la foto de un producto no carga (link roto, archivo borrado), muestra la huellita en su lugar.
 function mediaImgError(img){
+  // Si falla la versión liviana, probamos con la foto original antes de rendirnos.
+  if(img.dataset.full){ const f = img.dataset.full; delete img.dataset.full; img.src = f; return; }
   const box = img.closest('.card-media, #detailMedia');
   if(box) box.style.background = img.dataset.fallbackColor || '';
   img.outerHTML = pawSVG;
 }
 
+/* Foto liviana para el catálogo y el carrito (400 px). La grande se usa en la ficha.
+   - fotos/x.jpg  -> fotos/mini/x.jpg
+   - foto subida desde el panel -> p.mini (se genera al guardar) */
+function miniDe(p){
+  if(!p.img) return '';
+  if(p.mini && p.miniDe === p.img) return p.mini;
+  const m = /^fotos\/([^/]+)$/.exec(p.img);
+  return m ? 'fotos/mini/' + m[1] : p.img;
+}
+
 function mediaHTML(p){
   if(p.img){
-    return `<img src="${p.img}" alt="${escaparHtml(p.name)}" loading="lazy" decoding="async" data-fallback-color="${p.color}" style="width:100%;height:100%;object-fit:cover;" onerror="mediaImgError(this)">`;
+    const chica = miniDe(p);
+    return `<img src="${chica}" ${chica !== p.img ? `data-full="${p.img}"` : ''} alt="${escaparHtml(p.name)}" loading="lazy" decoding="async" data-fallback-color="${p.color}" style="width:100%;height:100%;object-fit:cover;" onerror="mediaImgError(this)">`;
   }
   return `<div style="width:100%;height:100%;background:${p.color};display:flex;align-items:center;justify-content:center;">${pawSVG}</div>`;
 }
@@ -2561,7 +2592,7 @@ function renderInicio(grid){
   const tiles = CATEGORIES.filter(c=>c.id!=='todos').map(c=>{
     const prods = base.filter(p=>catsOf(p).includes(c.id));
     const conFoto = prods.find(p=>p.img || (p.imgs && p.imgs.length));
-    return {c, n: prods.length, foto: conFoto ? (conFoto.img || conFoto.imgs[0]) : null};
+    return {c, n: prods.length, foto: conFoto ? (conFoto.img ? miniDe(conFoto) : conFoto.imgs[0]) : null};
   }).filter(x=>x.n>0);
   document.getElementById('catalogCount').textContent = tiles.length + ' categorías';
   grid.classList.add('grid-cats');
@@ -3676,7 +3707,7 @@ function renderAdmProducts(){
   box.innerHTML = PRODUCTS.map(p=>`
     <div class="adm-item">
       <div class="adm-thumb" style="background:${p.img?'transparent':p.color}">
-        ${p.img?`<img src="${p.img}" alt="">`:''}
+        ${p.img?`<img src="${miniDe(p)}" alt="" loading="lazy" decoding="async" onerror="if(this.src.indexOf('/mini/')>0)this.src='${p.img}'">`:''}
       </div>
       <div class="adm-info">
         <div class="adm-name">${escaparHtml(p.name)}</div>
