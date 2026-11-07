@@ -20,6 +20,12 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="description" content="Todo lo que tu mascota necesita. Armá tu pedido y lo recibís por WhatsApp en un momento.">
 <meta name="theme-color" content="#FACFFF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tirokisha">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%237B3FF2'/%3E%3Cpath d='M12 14.5c-3.2 0-6 2.1-6 4.8 0 1 .8 1.7 1.9 1.5 1.2-.2 2.6-.6 4.1-.6s2.9.4 4.1.6c1.1.2 1.9-.5 1.9-1.5 0-2.7-2.8-4.8-6-4.8z' fill='white'/%3E%3Ccircle cx='6.5' cy='9.5' r='2.2' fill='white'/%3E%3Ccircle cx='17.5' cy='9.5' r='2.2' fill='white'/%3E%3Ccircle cx='9.5' cy='6' r='2' fill='white'/%3E%3Ccircle cx='14.5' cy='6' r='2' fill='white'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1510,6 +1516,13 @@
   .btn-pdf{ background:none; border:0; padding:8px 4px; cursor:pointer; color:var(--forest); font:800 15px 'Nunito', sans-serif;
     text-decoration:underline; text-underline-offset:4px; align-self:center; }
   .hero-eyebrow{ border:0 !important; background:none !important; }
+  #installApp[hidden]{ display:none !important; }
+  .hero-links{ display:flex; flex-wrap:wrap; align-items:center; column-gap:18px; row-gap:0; flex-basis:100%; }
+  .hero-links .btn-pdf{ flex-basis:auto !important; }
+  .install-pasos ol{ margin:6px 0 14px; padding-left:22px; color:#1A1A1A; font:600 15px/1.5 'Nunito', sans-serif; }
+  .install-pasos li{ margin-bottom:8px; }
+  .install-pasos .ico{ display:inline-flex; vertical-align:-4px; width:22px; height:22px; }
+  .install-pasos p{ color:#5A5A5A; font-size:13.5px; margin:0 0 8px; }
 
   @media (max-width:600px){
     /* Portada compacta: los productos aparecen antes */
@@ -1569,7 +1582,10 @@
     <div class="hero-actions">
       <button class="btn-primary" id="goProductos">Ver productos</button>
       <button class="btn-ghost" id="goCats">Explorar categorías</button>
-      <button class="btn-pdf" id="goCatalog">Descargar catálogo (PDF)</button>
+      <div class="hero-links">
+        <button class="btn-pdf" id="goCatalog">Descargar catálogo (PDF)</button>
+        <button class="btn-pdf" id="installApp" type="button" hidden>📲 Instalar la app</button>
+      </div>
     </div>
   </div>
   <div class="hero-art">
@@ -1981,6 +1997,16 @@
     <div class="modal-actions">
       <button class="btn-cancel" data-close-modal>Cancelar</button>
       <button class="btn-save" id="prodSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="installModal">
+  <div class="modal">
+    <h3>Instalá Tirokisha en tu celu</h3>
+    <div id="installPasos" class="install-pasos"></div>
+    <div class="modal-actions">
+      <button class="btn-save" data-close-modal style="flex:1;">Entendido</button>
     </div>
   </div>
 </div>
@@ -4703,6 +4729,63 @@ document.getElementById('cerrarSesionBtn').addEventListener('click', async ()=>{
     });
     body.appendChild(b);
   }
+})();
+
+/* ========== App instalable (acceso directo en el celu) ========== */
+(function(){
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  }
+  const btn = document.getElementById('installApp');
+  if (!btn) return;
+  const yaInstalada = window.matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+  const ua = navigator.userAgent;
+  const esIOS = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  let aviso = null;
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); aviso = e; btn.hidden = false; });
+  window.addEventListener('appinstalled', () => { btn.hidden = true; aviso = null; });
+  if (!yaInstalada) btn.hidden = false;
+
+  const compartir = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#007AFF" stroke-width="2"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>';
+  function pasos(){
+    if (esIOS) {
+      const enSafari = !/CriOS|FxiOS|EdgiOS/i.test(ua);
+      return (enSafari ? '' : '<p>En iPhone se instala desde <b>Safari</b>: abrí esta página ahí primero.</p>') + `<ol>
+        <li>Tocá el botón Compartir ${compartir} (abajo, o arriba a la derecha).</li>
+        <li>Bajá y tocá <b>“Agregar a inicio”</b>.</li>
+        <li>Tocá <b>“Agregar”</b>. Listo: queda el ícono de Tirokisha en tu pantalla.</li></ol>`;
+    }
+    return `<ol>
+      <li>Tocá los tres puntitos <b>⋮</b> arriba a la derecha.</li>
+      <li>Elegí <b>“Instalar app”</b> o <b>“Agregar a la pantalla principal”</b>.</li>
+      <li>Confirmá. Listo: queda el ícono de Tirokisha en tu pantalla.</li></ol>`;
+  }
+  btn.addEventListener('click', async () => {
+    if (aviso) {
+      aviso.prompt();
+      const r = await aviso.userChoice.catch(()=>null);
+      if (r && r.outcome === 'accepted') btn.hidden = true;
+      aviso = null;
+      return;
+    }
+    document.getElementById('installPasos').innerHTML = pasos();
+    openModal('installModal');
+  });
+
+  /* Dentro de la app instalada no hay link #admin: 5 toques seguidos al logo abren el panel. */
+  const logo = document.querySelector('header .logo');
+  let toques = 0, t0 = 0;
+  if (logo) logo.addEventListener('click', () => {
+    const ahora = Date.now();
+    if (ahora - t0 > 2500) toques = 0;
+    t0 = ahora; toques++;
+    if (toques >= 5) {
+      toques = 0;
+      try { localStorage.setItem('tk-duenio', '1'); } catch(e){}
+      document.documentElement.classList.add('es-duenio');
+      const g = document.getElementById('openSettings'); if (g) g.click();
+    }
+  });
 })();
 </script>
 
