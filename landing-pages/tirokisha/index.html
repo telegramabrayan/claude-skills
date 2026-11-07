@@ -143,13 +143,22 @@
     display:block; font-size:13px; color:var(--ink-soft);
     margin-bottom:5px; font-weight:500;
   }
-  .set-field input[type="text"], .set-field textarea{
+  .set-field input[type="text"], .set-field input[type="password"], .set-field textarea{
     width:100%; padding:9px 12px;
     border:1.5px solid #E2E2E2; border-radius:var(--radius-sm);
     font-family:inherit; font-size:14px; color:#1A1A1A;
     background:#FFFFFF; resize:vertical;
   }
   .set-field input:focus, .set-field textarea:focus{outline:2px solid #7B3FF2; outline-offset:1px;}
+  /* Ventana para entrar al panel: campos grandes y parejos (16px evita el zoom del iPhone) */
+  #pinModal .set-field{margin-bottom:14px;}
+  #pinModal .set-field input{
+    display:block; width:100%; box-sizing:border-box;
+    height:52px; padding:0 16px; font-size:16px;
+    border:1.5px solid #E2E2E2; border-radius:14px; background:#FFFFFF;
+    -webkit-appearance:none; appearance:none;
+  }
+  #pinModal input#pinInput{letter-spacing:.3em;}
 
   /* ===========================================================
      El panel de administración usa colores FIJOS.
@@ -160,6 +169,7 @@
   .settings textarea,
   .settings select,
   .modal input[type="text"],
+  .modal input[type="password"],
   .modal input[type="number"],
   .modal textarea,
   .modal select{
