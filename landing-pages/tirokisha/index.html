@@ -1683,8 +1683,7 @@
 
     <div class="set-group" id="grp-backup">
       <h4>💾 Copia de seguridad</h4>
-      <button class="file-btn" id="exportBtn" style="cursor:pointer;width:100%;margin-bottom:8px;">Descargar para publicar</button>
-      <p class="set-hint" style="margin:0 0 12px;">Se baja como <b>catalogo.json</b>. Este es el que va a Netlify, con ese nombre exacto.</p>
+      <button class="file-btn" id="exportBtn" style="display:none;">Descargar</button>
 
       <div class="io-row">
         <button class="file-btn" id="backupBtn" style="cursor:pointer;">Guardar respaldo</button>
@@ -1693,8 +1692,8 @@
       </div>
       <p class="set-hint">El respaldo lleva la fecha y la hora en el nombre, así nunca se pisan entre sí. Guardalos en Drive.</p>
       <p class="set-hint" id="lastBackup" style="display:none;"></p>
-      <button class="set-reset" id="usePublished" style="margin-top:10px;">Descartar mis cambios y usar el catálogo publicado</button>
-      <div class="stash-note" id="stashNote" style="display:none;">
+      <button class="set-reset" id="usePublished" style="display:none;">Descartar mis cambios y usar el catálogo publicado</button>
+      <div class="stash-note" id="stashNote" style="display:none!important;">
         <b>Este dispositivo tenía cambios viejos sin publicar.</b>
         Como hay una versión publicada más nueva, se muestra esa. Tus cambios viejos quedaron guardados aparte, por si los necesitás.
         <div class="stash-btns">
@@ -1813,12 +1812,11 @@
     </div>
 
     <div class="set-group" id="grp-pin">
-      <h4>🔒 Contraseña del panel</h4>
-      <div class="set-field">
-        <label>PIN para abrir este panel</label>
-        <input type="text" id="inPin" inputmode="numeric" placeholder="dejalo vacío para no usar PIN">
-      </div>
-      <p class="set-hint">Con un PIN, tus clientes no pueden entrar a editar precios. Anotalo en algún lado: si lo olvidás, hay que borrar los datos del navegador.</p>
+      <h4>🔒 Tu cuenta</h4>
+      <input type="hidden" id="inPin">
+      <p class="set-hint" id="syncEstado" style="font-weight:600;">Todo lo que cambies se guarda solo en internet. Tus clientes lo ven al instante, no hace falta subir nada a Netlify.</p>
+      <button class="file-btn" id="cambiarClaveBtn" type="button" style="cursor:pointer;width:100%;margin-bottom:8px;">Cambiar mi contraseña</button>
+      <button class="set-reset" id="cerrarSesionBtn" type="button">Cerrar sesión en este dispositivo</button>
     </div>
 
     <div class="set-group" id="grp-whatsapp">
@@ -1979,12 +1977,16 @@
 
 <div class="modal-bg" id="pinModal">
   <div class="modal">
-    <h3>PIN del panel</h3>
+    <h3>Entrar al panel</h3>
     <div class="set-field">
-      <label>Ingresá tu PIN</label>
-      <input type="password" id="pinInput" inputmode="numeric" autocomplete="off">
+      <label>Usuario</label>
+      <input type="text" id="pinUser" autocomplete="username" autocapitalize="none" spellcheck="false">
     </div>
-    <p class="set-hint" id="pinError" style="color:var(--coral-deep);display:none;">PIN incorrecto.</p>
+    <div class="set-field">
+      <label>Contraseña</label>
+      <input type="password" id="pinInput" inputmode="numeric" autocomplete="current-password">
+    </div>
+    <p class="set-hint" id="pinError" style="color:var(--coral-deep);display:none;">Usuario o contraseña incorrectos.</p>
     <div class="modal-actions">
       <button class="btn-cancel" data-close-modal>Cancelar</button>
       <button class="btn-save" id="pinOkBtn">Entrar</button>
@@ -2070,6 +2072,16 @@
   <span id="footerText">Tirokisha — hecho con cariño para las perritas y gatitas 🐾</span>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ===== Supabase: el catálogo vive en internet, la dueña edita y se ve al instante ===== */
+const SB_URL = 'https://valqqgegdbsihecmrqac.supabase.co';
+const SB_KEY = 'sb_publishable_Z7JzsuD6rneyYOJjZO-T8w_nt6RoIV6';
+const sb = (window.supabase && window.supabase.createClient) ? window.supabase.createClient(SB_URL, SB_KEY) : null;
+const TK_DOMINIO = '@tirokisha.app';
+const claveDe = pin => 'tk-pin-' + pin;
+let TK_SESION = false;
+</script>
 <script>
 /* =========================================================
    PRODUCTOS Y CATEGORÍAS
@@ -2100,28 +2112,105 @@ const DEFAULT_PRODUCTS = [
   { id:10, name:'Arenero cerrado', price:70, cats:['gatos'], color:'#7B3FF2', img:null },
 ];
 
-let CATEGORIES = JSON.parse(localStorage.getItem('tirokisha_cats') || 'null') || DEFAULT_CATEGORIES.map(c=>({...c}));
-let PRODUCTS   = JSON.parse(localStorage.getItem('tirokisha_products') || 'null') || DEFAULT_PRODUCTS.map(p=>({...p}));
+let CATEGORIES = DEFAULT_CATEGORIES.map(c=>({...c}));
+let PRODUCTS   = DEFAULT_PRODUCTS.map(p=>({...p}));
 
 /* Versión publicada que se cargó al abrir (fecha del catalogo.json, en ms).
    Sirve para saber si los cambios guardados en este dispositivo son
    más nuevos o más viejos que lo publicado. */
 let VERSION_CARGADA = 0;
 
-function marcarBase(){
-  if(!localStorage.getItem('tirokisha_base')){
-    localStorage.setItem('tirokisha_base', String(VERSION_CARGADA || Date.now()));
+function marcarBase(){}
+
+/* ---- Guardado en Supabase ----
+   Se guarda solo lo que cambió (comparando con la última foto de lo guardado).
+   Las fotos nuevas (data:...) se suben primero a la carpeta "tirokisha". */
+const SNAP = { prods:new Map(), orden:new Map(), cats:'', ajustes:'' };
+function ajustesPublicos(){ const a = Object.assign({}, settings); delete a.pin; return a; }
+function tomarFoto(){
+  SNAP.prods = new Map(PRODUCTS.map(p=>[String(p.id), JSON.stringify(p)]));
+  SNAP.orden = new Map(PRODUCTS.map((p,i)=>[String(p.id), i]));
+  SNAP.cats = JSON.stringify(CATEGORIES);
+  SNAP.ajustes = JSON.stringify(ajustesPublicos());
+}
+let syncTimer = null, syncCorriendo = false, syncOtraVez = false, syncPendiente = false;
+function estadoSync(txt, mal){
+  const el = document.getElementById('syncEstado');
+  if(el){ el.textContent = txt; el.style.color = mal ? 'var(--coral-deep)' : ''; }
+}
+function programarSync(){
+  if(!TK_SESION || !sb) return;
+  syncPendiente = true;
+  estadoSync('Guardando…');
+  clearTimeout(syncTimer);
+  syncTimer = setTimeout(sincronizar, 700);
+}
+async function subirDataUrl(src){
+  const blob = await (await fetch(src)).blob();
+  const tipo = blob.type || 'image/jpeg';
+  const ext = tipo === 'application/pdf' ? 'pdf' : (tipo.split('/')[1] || 'jpg').replace('jpeg','jpg');
+  const nombre = 'subidas/' + Date.now() + '-' + Math.random().toString(36).slice(2,8) + '.' + ext;
+  const { error } = await sb.storage.from('tirokisha').upload(nombre, blob, { contentType:tipo, upsert:false });
+  if(error) throw error;
+  return sb.storage.from('tirokisha').getPublicUrl(nombre).data.publicUrl;
+}
+async function subirFotos(obj){
+  if(!obj || typeof obj !== 'object') return;
+  for(const k of Object.keys(obj)){
+    const v = obj[k];
+    if(typeof v === 'string' && v.startsWith('data:') && v.length > 200) obj[k] = await subirDataUrl(v);
+    else if(v && typeof v === 'object') await subirFotos(v);
   }
 }
+async function sincronizar(){
+  if(syncCorriendo){ syncOtraVez = true; return; }
+  syncCorriendo = true;
+  try{
+    const cambiados = [], vivos = new Set();
+    for(let i=0; i<PRODUCTS.length; i++){
+      const p = PRODUCTS[i], k = String(p.id);
+      vivos.add(k);
+      if(SNAP.prods.get(k) !== JSON.stringify(p)) await subirFotos(p);
+      if(SNAP.prods.get(k) !== JSON.stringify(p) || SNAP.orden.get(k) !== i) cambiados.push({ id:p.id, datos:p, orden:i });
+    }
+    for(let i=0; i<cambiados.length; i+=300){
+      const { error } = await sb.from('tk_productos').upsert(cambiados.slice(i, i+300));
+      if(error) throw error;
+    }
+    const borrados = [...SNAP.prods.keys()].filter(k=>!vivos.has(k));
+    if(borrados.length){
+      const { error } = await sb.from('tk_productos').delete().in('id', borrados);
+      if(error) throw error;
+    }
+    const conf = [];
+    if(JSON.stringify(CATEGORIES) !== SNAP.cats) conf.push({ clave:'categorias', valor:CATEGORIES });
+    if(JSON.stringify(ajustesPublicos()) !== SNAP.ajustes){
+      await subirFotos(settings);
+      conf.push({ clave:'ajustes', valor:ajustesPublicos() });
+    }
+    if(conf.length){
+      const { error } = await sb.from('tk_config').upsert(conf);
+      if(error) throw error;
+    }
+    tomarFoto();
+    syncPendiente = false;
+    estadoSync('✓ Guardado. Tus clientes ya lo ven.');
+  }catch(e){
+    console.error(e);
+    const sinPermiso = e && (e.code === '42501' || /row-level|permission|JWT/i.test(e.message||''));
+    estadoSync(sinPermiso ? 'No se pudo guardar: volvé a entrar con tu usuario.' : 'No se pudo guardar (¿sin internet?). Reintentando…', true);
+    if(!sinPermiso){ clearTimeout(syncTimer); syncTimer = setTimeout(sincronizar, 5000); }
+  }finally{
+    syncCorriendo = false;
+    if(syncOtraVez){ syncOtraVez = false; sincronizar(); }
+  }
+}
+window.addEventListener('beforeunload', e=>{
+  if(syncPendiente){ e.preventDefault(); e.returnValue = ''; }
+});
 
 function saveCatalog(){
-  marcarBase();
-  try{
-    localStorage.setItem('tirokisha_cats', JSON.stringify(CATEGORIES));
-    localStorage.setItem('tirokisha_products', JSON.stringify(PRODUCTS));
-  }catch(e){
-    alert('No hay espacio para guardar. Probá usando fotos más chicas o borrando algún producto.');
-  }
+  programarSync();
 }
 
 let WHATSAPP_NUMBER = '5491179023405'; // Argentina: 549 + código de área + número, sin el 15
@@ -2980,8 +3069,8 @@ function enlacePedido(o){
    La clave es pública a propósito: solo deja guardar un pedido y leer uno
    por su código (no se puede listar ni borrar nada). Si Supabase no responde,
    se usa el enlace largo #p= de siempre, así el pedido nunca se pierde. */
-const SUPABASE_URL = 'https://ajhsumlhiuqkbnlsogod.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_pGWn7baL1qdksfUvSbWQGg_lVEXfpdr';
+const SUPABASE_URL = SB_URL;
+const SUPABASE_KEY = SB_KEY;
 
 async function llamarSupabase(funcion, datos, msMax){
   const ctrl = new AbortController();
@@ -3004,14 +3093,14 @@ async function enlacePedidoCorto(o){
   const base = baseTienda();
   if(!base) return '';
   try{
-    const codigo = await llamarSupabase('crear_pedido', { datos: o }, 5000);
+    const codigo = await llamarSupabase('tk_crear_pedido', { datos: o }, 5000);
     if(typeof codigo === 'string' && /^[a-z0-9]+$/.test(codigo)) return base + '#k=' + codigo;
   }catch(e){}
   return enlacePedido(o);   // plan B: el enlace largo
 }
 
 async function buscarPedido(codigo){
-  return await llamarSupabase('get_pedido', { codigo }, 10000);
+  return await llamarSupabase('tk_get_pedido', { codigo }, 10000);
 }
 
 function buildWhatsappMessage(o, link){
@@ -3239,7 +3328,7 @@ const DEFAULT_LOGO_SVG = `<svg viewBox="0 0 24 24" fill="none"><path d="M12 14.5
 // Guarda el favicon original (la huellita) para poder volver a él si se borra el logo propio.
 const DEFAULT_FAVICON_HREF = document.getElementById('favicon').getAttribute('href');
 
-let settings = Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem('tirokisha_settings') || '{}'));
+let settings = Object.assign({}, DEFAULTS);
 settings.adv = Object.assign({}, settings.adv);
 
 function shade(hex, pct){
@@ -3320,12 +3409,7 @@ function applySettings(){
 }
 
 function saveSettings(){
-  marcarBase();
-  try{
-    localStorage.setItem('tirokisha_settings', JSON.stringify(settings));
-  }catch(e){
-    alert('Esa imagen es muy pesada para guardarla. Probá con una foto más chica.');
-  }
+  programarSync();
   applySettings();
 }
 
@@ -3466,30 +3550,42 @@ function buildSettingsIndex(){
 }
 buildSettingsIndex();
 
-function verificarPin(){
-  const val = document.getElementById('pinInput').value;
-  if(val === String(settings.pin)){
-    pinOk = true;
-    closeModals();
-    document.getElementById('pinInput').value = '';
-    document.getElementById('pinError').style.display = 'none';
-    abrirPanel();
-  }else{
-    document.getElementById('pinError').style.display = 'block';
+async function verificarPin(){
+  const usuario = document.getElementById('pinUser').value.trim().toLowerCase();
+  const pin = document.getElementById('pinInput').value.trim();
+  const err = document.getElementById('pinError');
+  const btn = document.getElementById('pinOkBtn');
+  err.style.display = 'none';
+  if(!usuario || !pin){ err.textContent = 'Completá el usuario y la contraseña.'; err.style.display = 'block'; return; }
+  if(!sb){ err.textContent = 'Sin conexión. Probá de nuevo en un rato.'; err.style.display = 'block'; return; }
+  btn.disabled = true; btn.textContent = 'Entrando…';
+  const { error } = await sb.auth.signInWithPassword({ email: usuario + TK_DOMINIO, password: claveDe(pin) });
+  btn.disabled = false; btn.textContent = 'Entrar';
+  if(error){
+    err.textContent = /fetch|network/i.test(error.message||'') ? 'Sin conexión. Probá de nuevo.' : 'Usuario o contraseña incorrectos.';
+    err.style.display = 'block';
+    return;
   }
+  TK_SESION = true; pinOk = true;
+  closeModals();
+  document.getElementById('pinInput').value = '';
+  abrirPanel();
 }
 
 document.getElementById('pinOkBtn').addEventListener('click', verificarPin);
+document.getElementById('pinUser').addEventListener('keydown', e=>{
+  if(e.key === 'Enter') document.getElementById('pinInput').focus();
+});
 document.getElementById('pinInput').addEventListener('keydown', e=>{
   if(e.key === 'Enter') verificarPin();
 });
 
 document.getElementById('openSettings').addEventListener('click', ()=>{
-  if(settings.pin && !pinOk){
+  if(!TK_SESION){
     document.getElementById('pinInput').value = '';
     document.getElementById('pinError').style.display = 'none';
     openModal('pinModal');
-    setTimeout(()=>document.getElementById('pinInput').focus(), 60);
+    setTimeout(()=>document.getElementById('pinUser').focus(), 60);
     return;
   }
   abrirPanel();
@@ -4434,10 +4530,7 @@ function apartarCambiosViejos(){
   localStorage.removeItem('tirokisha_base');
 }
 
-function mostrarAvisoApartado(){
-  const el = document.getElementById('stashNote');
-  if(el) el.style.display = localStorage.getItem('tirokisha_apartado') ? 'block' : 'none';
-}
+function mostrarAvisoApartado(){}
 
 document.getElementById('stashRestore').addEventListener('click', ()=>{
   if(!confirm('Vuelven los cambios viejos de este dispositivo y reemplazan lo que ves ahora. ¿Seguís?')) return;
@@ -4472,27 +4565,51 @@ function iniciar(){
   abrirDesdeEnlace();   // si entró por un enlace directo, abrimos esa ficha o el pedido
 }
 
-fetch('catalogo.json', {cache:'no-store'})
-  .then(r => r.ok ? r.json() : Promise.reject())
-  .then(data => {
-    VERSION_CARGADA = Date.parse(data.fecha || '') || 0;
-    if(!hayCambiosLocales()){
-      aplicarPublicado(data);
-      return;
-    }
-    const base = Number(localStorage.getItem('tirokisha_base')) || 0;
-    if(base && base >= VERSION_CARGADA){
-      aplicarLocalSobre(data);          // lo local es igual o más nuevo: manda
-    }else{
-      apartarCambiosViejos();           // lo publicado es más nuevo: manda
-      aplicarPublicado(data);
-    }
-  })
-  .catch(()=>{
-    // No se pudo leer lo publicado (por ejemplo, abriendo el archivo desde la compu).
-    if(hayCambiosLocales()) aplicarLocalSobre(null);
-  })
-  .finally(iniciar);
+async function cargarDeSupabase(){
+  if(!sb) throw new Error('sin supabase');
+  const prods = [];
+  for(let desde=0; ; desde+=1000){
+    const { data, error } = await sb.from('tk_productos').select('datos').order('orden').range(desde, desde+999);
+    if(error) throw error;
+    prods.push(...data.map(r=>r.datos));
+    if(data.length < 1000) break;
+  }
+  const { data:conf, error:e2 } = await sb.from('tk_config').select('clave,valor');
+  if(e2) throw e2;
+  const c = Object.fromEntries(conf.map(r=>[r.clave, r.valor]));
+  if(!prods.length && !c.categorias) throw new Error('vacio');
+  aplicarPublicado({ productos:prods, categorias:c.categorias, ajustes:c.ajustes });
+}
+
+['tirokisha_products','tirokisha_cats','tirokisha_settings','tirokisha_base','tirokisha_apartado'].forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+
+(sb ? sb.auth.getSession().then(({data})=>{ TK_SESION = !!(data && data.session); }).catch(()=>{}) : Promise.resolve())
+  .then(cargarDeSupabase)
+  .catch(()=> fetch('catalogo.json', {cache:'no-store'})
+      .then(r => r.ok ? r.json() : Promise.reject())
+      .then(aplicarPublicado)
+      .catch(()=>{}))
+  .finally(()=>{ tomarFoto(); iniciar(); });
+
+if(sb) sb.auth.onAuthStateChange((_ev, s)=>{ TK_SESION = !!s; });
+
+document.getElementById('cambiarClaveBtn').addEventListener('click', async ()=>{
+  const n1 = (prompt('Escribí tu contraseña nueva (solo números, mínimo 4):') || '').trim();
+  if(!n1) return;
+  if(!/^\d{4,}$/.test(n1)){ alert('Tiene que ser de números y de al menos 4.'); return; }
+  const n2 = (prompt('Escribila otra vez para confirmar:') || '').trim();
+  if(n1 !== n2){ alert('No coinciden. No se cambió nada.'); return; }
+  const { error } = await sb.auth.updateUser({ password: claveDe(n1) });
+  alert(error ? 'No se pudo cambiar. Probá de nuevo.' : 'Listo, tu contraseña nueva es ' + n1 + '. Anotala.');
+});
+
+document.getElementById('cerrarSesionBtn').addEventListener('click', async ()=>{
+  if(syncPendiente && !confirm('Todavía se está guardando un cambio. ¿Cerrar igual?')) return;
+  await sb.auth.signOut();
+  TK_SESION = false; pinOk = false;
+  closeDrawer();
+  alert('Sesión cerrada. Para volver a editar, tocá el engranaje y entrá con tu usuario.');
+});
 </script>
 
 <script id="efectos">
