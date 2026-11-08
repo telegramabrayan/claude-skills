@@ -1527,42 +1527,30 @@
   .qd-btn svg{ width:17px; height:17px; }
   html.tk-admin .qd-btn{ display:flex; }
 
-  /* ===== Ofertas: borde que gira, cartel que late con brillo y precio que destaca ===== */
-  @property --ofr{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
-  .card.oferta{ isolation:isolate; }
-  .card.oferta::before{
-    content:''; position:absolute; inset:-3px; border-radius:inherit; z-index:-2;
-    background:conic-gradient(from var(--ofr), #FF2D75, #FFB300, #FF6A00, #8A006E, #FF2D75);
-    animation:ofr-gira 3.2s linear infinite;
+  /* ===== Ofertas: listón diagonal "OFERTA" con brillo (la tarjeta queda igual que las demás) ===== */
+  .ofr-cinta{ position:absolute; top:0; left:0; width:96px; height:96px; overflow:hidden; z-index:3;
+    pointer-events:none; border-top-left-radius:inherit; }
+  .ofr-cinta span{
+    position:absolute; top:20px; left:-30px; width:130px; transform:rotate(-45deg);
+    padding:5px 0; text-align:center; color:#FFF; font:900 12px/1 'Nunito', sans-serif; letter-spacing:.14em;
+    background:linear-gradient(90deg,#E0245E,#FF5C8A,#E0245E); box-shadow:0 3px 8px rgba(120,0,40,.35);
+    overflow:hidden; animation:ofr-cinta-late 2.6s ease-in-out infinite;
   }
-  .card.oferta::after{
-    content:''; position:absolute; inset:0; border-radius:inherit; z-index:-1;
-    background:#FFFFFF;
-  }
-  .card.oferta{ animation:ofr-halo 2.4s ease-in-out infinite; }
-  .card.oferta .sale-tag{
-    background:linear-gradient(90deg,#FF2D75,#FF6A00); overflow:hidden;
-    animation:ofr-late 1.6s ease-in-out infinite; transform-origin:left bottom;
-    font-size:12.5px; padding:5px 11px;
-  }
-  .card.oferta .sale-tag::after{
-    content:''; position:absolute; top:0; bottom:0; width:40%; left:-60%;
-    background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);
-    animation:ofr-brillo 2.2s ease-in-out infinite;
-  }
-  .card.oferta .card-price{ color:#E0245E; }
-  .card.oferta .card-price .price-old{ animation:ofr-tacha 2.4s ease-in-out infinite; }
-  @keyframes ofr-gira{ to{ --ofr:360deg; } }
-  @keyframes ofr-halo{ 0%,100%{ box-shadow:0 6px 18px rgba(255,45,117,.18); } 50%{ box-shadow:0 8px 30px rgba(255,45,117,.55); } }
-  @keyframes ofr-late{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.12) rotate(-3deg); } }
-  @keyframes ofr-brillo{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
-  @keyframes ofr-tacha{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
-  @media (prefers-reduced-motion: reduce){
-    .card.oferta, .card.oferta::before, .card.oferta .sale-tag, .card.oferta .sale-tag::after,
-    .card.oferta .card-price .price-old{ animation:none; }
-  }
+  .ofr-cinta span::before, .ofr-cinta span::after{ content:''; position:absolute; left:0; right:0; height:1px;
+    background:rgba(255,255,255,.55); }
+  .ofr-cinta span::before{ top:2px; } .ofr-cinta span::after{ bottom:2px; }
+  .ofr-cinta i{ position:absolute; top:0; bottom:0; width:30%; left:-40%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.9),transparent);
+    animation:ofr-cinta-brillo 2.6s ease-in-out infinite; }
+  @keyframes ofr-cinta-brillo{ 0%,35%{ left:-40%; } 75%,100%{ left:120%; } }
+  @keyframes ofr-cinta-late{ 0%,100%{ filter:none; } 50%{ filter:brightness(1.12) saturate(1.15); } }
+  @media (max-width:600px){ .ofr-cinta{ width:82px; height:82px; } .ofr-cinta span{ top:16px; left:-32px; width:116px; font-size:10.5px; } }
+  @media (prefers-reduced-motion: reduce){ .ofr-cinta span, .ofr-cinta i{ animation:none; } }
 
   /* ===== Panel: productos agrupados por categoría ===== */
+  .adm-buscar-wrap{ position:sticky; top:-18px; z-index:5; padding:10px 0 6px; margin:0 0 6px;
+    background:var(--cream); }
+  .adm-buscar-info{ font:700 12.5px 'Nunito', sans-serif; color:#5A5A5A; margin:4px 2px 0; min-height:1em; }
   .adm-buscar{ width:100%; box-sizing:border-box; height:44px; padding:0 14px; margin:0 0 10px; font-size:16px;
     border:1.5px solid #E2E2E2; border-radius:12px; background:#FFF; color:#1A1A1A; -webkit-text-fill-color:#1A1A1A; }
   .adm-cat{ margin-bottom:8px; border:1.5px solid var(--line); border-radius:14px; background:rgba(255,255,255,.55); overflow:hidden; }
@@ -2743,12 +2731,13 @@ function renderGrid(){
         </select>
       </div>` : '';
     return `
-    <div class="card ${out?'out':''} ${(!out && ofertaLabel(p)) ? 'oferta' : ''}">
+    <div class="card ${out?'out':''}">
       <button type="button" class="qd-btn" data-qd="${p.id}" title="Eliminar producto" aria-label="Eliminar producto">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg>
       </button>
       <div class="card-media" data-detail="${p.id}">
         ${mediaHTML(p)}
+        ${(!out && ofertaLabel(p)) ? `<div class="ofr-cinta" aria-hidden="true"><span>OFERTA<i></i></span></div>` : ''}
         ${(!out && productBadges(p).length) ? `<div class="badge-stack">${productBadges(p).map(b=>`<span class="tag-badge ${b.cls}">${b.text}</span>`).join('')}</div>` : ''}
         ${out ? `<div class="out-tag">Sin stock</div>` : ''}
         ${(!out && ofertaLabel(p)) ? `<span class="sale-tag">🔥 ${escaparHtml(ofertaLabel(p))}</span>` : ''}
@@ -3808,8 +3797,9 @@ function admItemHTML(p){
 }
 
 function admGrupos(){
-  const q = norm(ADM_BUSCA.trim());
-  const lista = q ? PRODUCTS.filter(p=>norm(p.name).includes(q)) : PRODUCTS;
+  const palabras = norm(ADM_BUSCA.trim()).split(/\s+/).filter(Boolean);
+  const texto = p => norm([p.name, p.desc, catLabels(p).join(' '), (p.variants||[]).map(v=>v.name).join(' '), p.price].join(' '));
+  const lista = palabras.length ? PRODUCTS.filter(p=>{ const t = texto(p); return palabras.every(w=>t.includes(w)); }) : PRODUCTS;
   const grupos = CATEGORIES.filter(c=>c.id!=='todos').map(c=>({id:c.id, label:c.label, items:[]}));
   const sinCat = {id:'__sin', label:'Sin categoría', items:[]};
   const porId = Object.fromEntries(grupos.map(g=>[g.id,g]));
@@ -3830,11 +3820,18 @@ function renderAdmProducts(){
   const grupos = admGrupos();
   let buscador = document.getElementById('admBuscar');
   if(!buscador){
-    buscador = document.createElement('input');
-    buscador.id = 'admBuscar'; buscador.className = 'adm-buscar'; buscador.type = 'search';
-    buscador.placeholder = '🔎 Buscar producto por nombre…';
-    buscador.addEventListener('input', ()=>{ ADM_BUSCA = buscador.value; renderAdmProducts(); });
-    box.parentNode.insertBefore(buscador, box);
+    const wrap = document.createElement('div');
+    wrap.className = 'adm-buscar-wrap';
+    wrap.innerHTML = '<input id="admBuscar" class="adm-buscar" type="search" enterkeyhint="search" placeholder="🔎 Buscar producto…"><div class="adm-buscar-info" id="admBuscarInfo"></div>';
+    box.parentNode.insertBefore(wrap, box);
+    buscador = document.getElementById('admBuscar');
+    let t = null;
+    buscador.addEventListener('input', ()=>{ clearTimeout(t); t = setTimeout(()=>{ ADM_BUSCA = buscador.value; renderAdmProducts(); }, 150); });
+  }
+  const info = document.getElementById('admBuscarInfo');
+  if(info){
+    const n = grupos.reduce((s,g)=>s+g.items.length, 0);
+    info.textContent = buscando ? (n ? `${n} producto${n===1?'':'s'} encontrado${n===1?'':'s'}` : '') : `${PRODUCTS.length} productos en ${grupos.length} categorías`;
   }
   box.innerHTML = grupos.length ? grupos.map(g=>{
     const abierta = buscando || ADM_ABIERTAS.has(g.id);
