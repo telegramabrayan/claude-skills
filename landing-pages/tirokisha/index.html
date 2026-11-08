@@ -1520,6 +1520,59 @@
   .qe-btn{ display:none; width:100%; margin:0 0 8px; padding:9px 10px; border-radius:999px;
     border:2px dashed #8A006E; background:#FFF; color:#8A006E; font:800 14px 'Nunito', sans-serif; cursor:pointer; }
   html.tk-admin .qe-btn{ display:block; }
+  .card{ position:relative; }
+  .qd-btn{ display:none; position:absolute; top:-7px; right:-7px; z-index:6; width:34px; height:34px; border-radius:50%;
+    border:2px solid #FFF; background:#E0245E; color:#FFF; box-shadow:0 3px 10px rgba(120,0,40,.35);
+    align-items:center; justify-content:center; cursor:pointer; padding:0; }
+  .qd-btn svg{ width:17px; height:17px; }
+  html.tk-admin .qd-btn{ display:flex; }
+
+  /* ===== Ofertas: borde que gira, cartel que late con brillo y precio que destaca ===== */
+  @property --ofr{ syntax:'<angle>'; initial-value:0deg; inherits:false; }
+  .card.oferta{ isolation:isolate; }
+  .card.oferta::before{
+    content:''; position:absolute; inset:-3px; border-radius:inherit; z-index:-2;
+    background:conic-gradient(from var(--ofr), #FF2D75, #FFB300, #FF6A00, #8A006E, #FF2D75);
+    animation:ofr-gira 3.2s linear infinite;
+  }
+  .card.oferta::after{
+    content:''; position:absolute; inset:0; border-radius:inherit; z-index:-1;
+    background:#FFFFFF;
+  }
+  .card.oferta{ animation:ofr-halo 2.4s ease-in-out infinite; }
+  .card.oferta .sale-tag{
+    background:linear-gradient(90deg,#FF2D75,#FF6A00); overflow:hidden;
+    animation:ofr-late 1.6s ease-in-out infinite; transform-origin:left bottom;
+    font-size:12.5px; padding:5px 11px;
+  }
+  .card.oferta .sale-tag::after{
+    content:''; position:absolute; top:0; bottom:0; width:40%; left:-60%;
+    background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);
+    animation:ofr-brillo 2.2s ease-in-out infinite;
+  }
+  .card.oferta .card-price{ color:#E0245E; }
+  .card.oferta .card-price .price-old{ animation:ofr-tacha 2.4s ease-in-out infinite; }
+  @keyframes ofr-gira{ to{ --ofr:360deg; } }
+  @keyframes ofr-halo{ 0%,100%{ box-shadow:0 6px 18px rgba(255,45,117,.18); } 50%{ box-shadow:0 8px 30px rgba(255,45,117,.55); } }
+  @keyframes ofr-late{ 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.12) rotate(-3deg); } }
+  @keyframes ofr-brillo{ 0%{ left:-60%; } 55%,100%{ left:130%; } }
+  @keyframes ofr-tacha{ 0%,100%{ opacity:.55; } 50%{ opacity:1; } }
+  @media (prefers-reduced-motion: reduce){
+    .card.oferta, .card.oferta::before, .card.oferta .sale-tag, .card.oferta .sale-tag::after,
+    .card.oferta .card-price .price-old{ animation:none; }
+  }
+
+  /* ===== Panel: productos agrupados por categoría ===== */
+  .adm-buscar{ width:100%; box-sizing:border-box; height:44px; padding:0 14px; margin:0 0 10px; font-size:16px;
+    border:1.5px solid #E2E2E2; border-radius:12px; background:#FFF; color:#1A1A1A; -webkit-text-fill-color:#1A1A1A; }
+  .adm-cat{ margin-bottom:8px; border:1.5px solid var(--line); border-radius:14px; background:rgba(255,255,255,.55); overflow:hidden; }
+  .adm-cat > summary{ list-style:none; cursor:pointer; display:flex; align-items:center; gap:8px; padding:12px 14px;
+    font:800 14.5px 'Nunito', sans-serif; color:#3B0A35; }
+  .adm-cat > summary::-webkit-details-marker{ display:none; }
+  .adm-cat > summary::after{ content:'›'; margin-left:auto; font-size:20px; transition:transform .2s; }
+  .adm-cat[open] > summary::after{ transform:rotate(90deg); }
+  .adm-cat .adm-cnt{ background:#8A006E; color:#FFF; border-radius:999px; padding:1px 9px; font-size:12px; }
+  .adm-cat-body{ padding:0 8px 4px; }
   #qeModal .modal{ max-height:88vh; overflow:auto; }
   #qeModal .modal-actions{ position:sticky; bottom:-24px; background:inherit; padding:12px 0 6px; margin-bottom:-6px; }
   #qeModal h3{ margin-bottom:4px; }
@@ -2261,13 +2314,13 @@ async function sincronizar(){
       }
       if(SNAP.prods.get(k) !== JSON.stringify(p) || SNAP.orden.get(k) !== i) cambiados.push({ id:p.id, datos:p, orden:i });
     }
-    for(let i=0; i<cambiados.length; i+=300){
-      const { error } = await sb.from('tk_productos').upsert(cambiados.slice(i, i+300));
-      if(error) throw error;
-    }
     const borrados = [...SNAP.prods.keys()].filter(k=>!vivos.has(k));
     if(borrados.length){
       const { error } = await sb.from('tk_productos').delete().in('id', borrados);
+      if(error) throw error;
+    }
+    for(let i=0; i<cambiados.length; i+=300){
+      const { error } = await sb.from('tk_productos').upsert(cambiados.slice(i, i+300));
       if(error) throw error;
     }
     const conf = [];
@@ -2690,7 +2743,10 @@ function renderGrid(){
         </select>
       </div>` : '';
     return `
-    <div class="card ${out?'out':''}">
+    <div class="card ${out?'out':''} ${(!out && ofertaLabel(p)) ? 'oferta' : ''}">
+      <button type="button" class="qd-btn" data-qd="${p.id}" title="Eliminar producto" aria-label="Eliminar producto">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14M10 11v5M14 11v5"/></svg>
+      </button>
       <div class="card-media" data-detail="${p.id}">
         ${mediaHTML(p)}
         ${(!out && productBadges(p).length) ? `<div class="badge-stack">${productBadges(p).map(b=>`<span class="tag-badge ${b.cls}">${b.text}</span>`).join('')}</div>` : ''}
@@ -3733,38 +3789,95 @@ let editingProductId = null;
 let draftImg = null;
 let draftColor = PALETTE[0];
 
-function renderAdmProducts(){
-  const box = document.getElementById('admProducts');
-  if(PRODUCTS.length===0){
-    box.innerHTML = `<p class="set-hint">Todavía no hay productos.</p>`;
-    return;
-  }
-  box.innerHTML = PRODUCTS.map(p=>`
+const ADM_ABIERTAS = new Set();
+let ADM_BUSCA = '';
+
+function admItemHTML(p){
+  return `
     <div class="adm-item">
       <div class="adm-thumb" style="background:${p.img?'transparent':p.color}">
         ${p.img?`<img src="${miniDe(p)}" alt="" loading="lazy" decoding="async" onerror="if(this.src.indexOf('/mini/')>0)this.src='${p.img}'">`:''}
       </div>
       <div class="adm-info">
         <div class="adm-name">${escaparHtml(p.name)}</div>
-        <div class="adm-meta">${priceLabel(p)} · ${catLabels(p).join(', ') || 'sin categoría'}${(p.variants&&p.variants.length)?` · ${p.variants.length} ${p.variantLabel||'opciones'}`:''}${hasMayor(p)?' · por mayor ✓':''}${p.featured?' · ★':''}${p.stock===false?' · SIN STOCK':(pocoStock(p)?' · queda poco':'')}</div>
+        <div class="adm-meta">${priceLabel(p)}${(p.variants&&p.variants.length)?` · ${p.variants.length} ${p.variantLabel||'opciones'}`:''}${hasMayor(p)?' · por mayor ✓':''}${ofertaLabel(p)?' · 🔥 oferta':''}</div>
       </div>
       <button class="adm-act" data-edit="${p.id}">Editar</button>
       <button class="adm-act del" data-del="${p.id}">Borrar</button>
-    </div>
-  `).join('');
-
-  box.querySelectorAll('[data-edit]').forEach(b=>
-    b.addEventListener('click', ()=>openProductModal(Number(b.dataset.edit))));
-  box.querySelectorAll('[data-del]').forEach(b=>
-    b.addEventListener('click', ()=>{
-      const p = PRODUCTS.find(x=>x.id===Number(b.dataset.del));
-      if(!confirm(`¿Borrar "${p.name}"?`)) return;
-      PRODUCTS = PRODUCTS.filter(x=>x.id!==p.id);
-      Object.keys(cart).forEach(k=>{ if(Number(k.split('|')[0])===p.id) delete cart[k]; });
-      saveCatalog(); saveCart();
-      refreshAll();
-    }));
+    </div>`;
 }
+
+function admGrupos(){
+  const q = norm(ADM_BUSCA.trim());
+  const lista = q ? PRODUCTS.filter(p=>norm(p.name).includes(q)) : PRODUCTS;
+  const grupos = CATEGORIES.filter(c=>c.id!=='todos').map(c=>({id:c.id, label:c.label, items:[]}));
+  const sinCat = {id:'__sin', label:'Sin categoría', items:[]};
+  const porId = Object.fromEntries(grupos.map(g=>[g.id,g]));
+  lista.forEach(p=>{
+    const c = catsOf(p).find(id=>porId[id]);   // va en su primera categoría
+    (c ? porId[c] : sinCat).items.push(p);
+  });
+  return grupos.concat(sinCat).filter(g=>g.items.length);
+}
+
+function renderAdmProducts(){
+  const box = document.getElementById('admProducts');
+  if(PRODUCTS.length===0){
+    box.innerHTML = `<p class="set-hint">Todavía no hay productos.</p>`;
+    return;
+  }
+  const buscando = !!ADM_BUSCA.trim();
+  const grupos = admGrupos();
+  let buscador = document.getElementById('admBuscar');
+  if(!buscador){
+    buscador = document.createElement('input');
+    buscador.id = 'admBuscar'; buscador.className = 'adm-buscar'; buscador.type = 'search';
+    buscador.placeholder = '🔎 Buscar producto por nombre…';
+    buscador.addEventListener('input', ()=>{ ADM_BUSCA = buscador.value; renderAdmProducts(); });
+    box.parentNode.insertBefore(buscador, box);
+  }
+  box.innerHTML = grupos.length ? grupos.map(g=>{
+    const abierta = buscando || ADM_ABIERTAS.has(g.id);
+    return `<details class="adm-cat" data-cat="${g.id}" ${abierta?'open':''}>
+      <summary>${escaparHtml(g.label)} <span class="adm-cnt">${g.items.length}</span></summary>
+      <div class="adm-cat-body">${abierta ? g.items.map(admItemHTML).join('') : ''}</div>
+    </details>`;
+  }).join('') : `<p class="set-hint">No hay productos con ese nombre.</p>`;
+
+  box.querySelectorAll('details.adm-cat').forEach(d=>{
+    d.addEventListener('toggle', ()=>{
+      const id = d.dataset.cat;
+      if(d.open){
+        ADM_ABIERTAS.add(id);
+        const body = d.querySelector('.adm-cat-body');
+        if(!body.innerHTML.trim()){
+          const g = admGrupos().find(x=>x.id===id);
+          body.innerHTML = g ? g.items.map(admItemHTML).join('') : '';
+        }
+      }else if(!buscando){
+        ADM_ABIERTAS.delete(id);
+      }
+    });
+  });
+}
+
+function borrarProducto(id){
+  const p = PRODUCTS.find(x=>x.id===Number(id));
+  if(!p) return false;
+  if(!confirm(`¿Eliminar "${p.name}"?\n\nSe borra de la tienda para siempre y tus clientes dejan de verlo.`)) return false;
+  PRODUCTS = PRODUCTS.filter(x=>x.id!==p.id);
+  Object.keys(cart).forEach(k=>{ if(Number(k.split('|')[0])===p.id) delete cart[k]; });
+  saveCatalog(); saveCart();
+  return true;
+}
+
+// Editar / Borrar en la lista del panel (un solo escuchador para todas las filas)
+document.getElementById('admProducts').addEventListener('click', e=>{
+  const ed = e.target.closest('[data-edit]');
+  if(ed){ openProductModal(Number(ed.dataset.edit)); return; }
+  const del = e.target.closest('[data-del]');
+  if(del && borrarProducto(del.dataset.del)) refreshAll();
+});
 
 function renderSwatches(){
   const box = document.getElementById('prodSwatches');
@@ -4960,6 +5073,18 @@ document.getElementById('cerrarSesionBtn').addEventListener('click', async ()=>{
     clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 2600);
   }
   document.addEventListener('click', e => {
+    const d = e.target.closest && e.target.closest('.qd-btn');
+    if (d) {
+      e.preventDefault(); e.stopPropagation();
+      if (!TK_SESION) return;
+      const y = window.scrollY;
+      if (borrarProducto(d.dataset.qd)) {
+        renderGrid(); renderCartCount(); renderDrawer(); renderAdmProducts();
+        window.scrollTo(0, y);
+        toast('🗑️ Producto eliminado.');
+      }
+      return;
+    }
     const b = e.target.closest && e.target.closest('.qe-btn');
     if (!b) return;
     e.preventDefault(); e.stopPropagation();
