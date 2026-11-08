@@ -1517,6 +1517,26 @@
     text-decoration:underline; text-underline-offset:4px; align-self:center; }
   .hero-eyebrow{ border:0 !important; background:none !important; }
   #installApp[hidden]{ display:none !important; }
+  .qe-btn{ display:none; width:100%; margin:0 0 8px; padding:9px 10px; border-radius:999px;
+    border:2px dashed #8A006E; background:#FFF; color:#8A006E; font:800 14px 'Nunito', sans-serif; cursor:pointer; }
+  html.tk-admin .qe-btn{ display:block; }
+  #qeModal .modal{ max-height:88vh; overflow:auto; }
+  #qeModal .modal-actions{ position:sticky; bottom:-24px; background:inherit; padding:12px 0 6px; margin-bottom:-6px; }
+  #qeModal h3{ margin-bottom:4px; }
+  .qe-sub{ color:#5A5A5A; font-size:13px; margin:0 0 14px; }
+  .qe-grid{ display:grid; grid-template-columns:1.2fr 1fr 1fr 34px; gap:8px; align-items:center; }
+  .qe-grid.sin-talle{ grid-template-columns:1fr 1fr; }
+  .qe-grid .qe-h{ font:700 12px 'Nunito', sans-serif; color:#5A5A5A; }
+  .qe-grid input{ width:100%; box-sizing:border-box; height:46px; padding:0 10px; font-size:16px;
+    border:1.5px solid #E2E2E2; border-radius:12px; background:#FFF; color:#1A1A1A; -webkit-text-fill-color:#1A1A1A; }
+  .qe-grid input:focus{ outline:2px solid #7B3FF2; outline-offset:1px; }
+  .qe-del{ width:34px; height:34px; border-radius:50%; border:0; background:#F3E3F0; color:#8A006E; font-size:16px; cursor:pointer; }
+  .qe-addrow{ margin:10px 0 4px; background:none; border:0; color:#8A006E; font:800 14px 'Nunito', sans-serif; cursor:pointer; padding:6px 0; }
+  .qe-err{ color:var(--coral-deep); font-size:13px; margin:8px 0 0; display:none; }
+  .tk-toast{ position:fixed; left:50%; bottom:96px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:#3B0A35; color:#FFF; padding:12px 18px; border-radius:999px; font:700 14px 'Nunito', sans-serif;
+    z-index:9999; transition:.25s; pointer-events:none; max-width:90vw; text-align:center; }
+  .tk-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
   .hero-links{ display:flex; flex-wrap:wrap; align-items:center; column-gap:18px; row-gap:0; flex-basis:100%; }
   .hero-links .btn-pdf{ flex-basis:auto !important; }
   .install-pasos ol{ margin:6px 0 14px; padding-left:22px; color:#1A1A1A; font:600 15px/1.5 'Nunito', sans-serif; }
@@ -1674,8 +1694,8 @@
 
     <div class="set-group" id="grp-productos">
       <h4>🛍️ Productos</h4>
+      <button class="adm-add" id="addProduct" style="margin:0 0 12px;">+ Agregar producto</button>
       <div id="admProducts"></div>
-      <button class="adm-add" id="addProduct">+ Agregar producto</button>
     </div>
 
     <div class="set-group" id="grp-categorias">
@@ -1997,6 +2017,20 @@
     <div class="modal-actions">
       <button class="btn-cancel" data-close-modal>Cancelar</button>
       <button class="btn-save" id="prodSave">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="qeModal">
+  <div class="modal">
+    <h3 id="qeTitulo">Editar precio</h3>
+    <p class="qe-sub">Dejá "Por mayor" vacío si no se vende por mayor.</p>
+    <div id="qeFilas"></div>
+    <button type="button" class="qe-addrow" id="qeAddRow">+ Agregar talle / medida</button>
+    <p class="qe-err" id="qeErr"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" data-close-modal>Cancelar</button>
+      <button class="btn-save" id="qeGuardar">Guardar</button>
     </div>
   </div>
 </div>
@@ -2672,6 +2706,7 @@ function renderGrid(){
         ${(p.desc && norm(p.desc)!==norm(p.name)) ? `<div class="card-desc">${escaparHtml(p.desc)}</div>` : ''}
         ${mode==='mayor' && !out ? `<div class="card-min">Mínimo ${MIN_MAYOR} unidades</div>` : ''}
         ${out ? '' : variantUI}
+        <button type="button" class="qe-btn" data-qe="${p.id}">✏️ Editar precio</button>
         <button class="card-add" data-id="${p.id}" ${out?'disabled':''}>
           ${out ? 'Sin stock' : `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Agregar`}
         </button>
@@ -4817,6 +4852,120 @@ document.getElementById('cerrarSesionBtn').addEventListener('click', async ()=>{
       const g = document.getElementById('openSettings'); if (g) g.click();
     }
   });
+})();
+
+/* ========== Cambio rápido de precio (solo con la sesión de la dueña) ========== */
+(function(){
+  const raiz = document.documentElement;
+  const marcar = () => raiz.classList.toggle('tk-admin', !!TK_SESION);
+  marcar();
+  if (sb) sb.auth.onAuthStateChange(() => setTimeout(marcar, 0));
+  setInterval(marcar, 1500);
+
+  let actual = null, conTalles = false;
+  const filas = document.getElementById('qeFilas');
+  const err = document.getElementById('qeErr');
+  const val = x => (x === '' || x == null) ? '' : String(x);
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+
+  function filaTalle(v){
+    return `<input data-k="name" value="${esc(v.name||'')}" placeholder="Ej: 3">
+      <input data-k="price" type="number" inputmode="numeric" min="0" step="1" value="${val(v.price)}" placeholder="$">
+      <input data-k="priceMayor" type="number" inputmode="numeric" min="0" step="1" value="${val(v.priceMayor)}" placeholder="—">
+      <button type="button" class="qe-del" title="Quitar">✕</button>`;
+  }
+  function pintar(){
+    const p = actual;
+    if (conTalles) {
+      filas.innerHTML = `<div class="qe-grid"><span class="qe-h">${esc(p.variantLabel || 'Talle')}</span><span class="qe-h">Por menor</span><span class="qe-h">Por mayor</span><span></span>
+        ${(p._qe || []).map(filaTalle).join('')}</div>`;
+    } else {
+      filas.innerHTML = `<div class="qe-grid sin-talle"><span class="qe-h">Por menor</span><span class="qe-h">Por mayor</span>
+        <input data-k="price" type="number" inputmode="numeric" min="0" step="1" value="${val(p.price)}">
+        <input data-k="priceMayor" type="number" inputmode="numeric" min="0" step="1" value="${val(p.priceMayor)}" placeholder="—"></div>`;
+    }
+    filas.querySelectorAll('.qe-del').forEach((b, i) => b.addEventListener('click', () => { leer(); actual._qe.splice(i, 1); pintar(); }));
+  }
+  function leer(){
+    if (!conTalles) return;
+    const ins = [...filas.querySelectorAll('input')];
+    const out = [];
+    for (let i = 0; i < ins.length; i += 3) {
+      const viejo = actual._qe[i/3] || {};
+      out.push(Object.assign({}, viejo, { name: ins[i].value.trim(), price: ins[i+1].value.trim(), priceMayor: ins[i+2].value.trim() }));
+    }
+    actual._qe = out;
+  }
+  function abrir(id){
+    const p = PRODUCTS.find(x => String(x.id) === String(id));
+    if (!p) return;
+    actual = { id: p.id, variantLabel: p.variantLabel, price: p.price, priceMayor: p.priceMayor,
+      _qe: (p.variants || []).map(v => Object.assign({}, v)) };
+    conTalles = actual._qe.length > 0;
+    document.getElementById('qeTitulo').textContent = p.name;
+    document.getElementById('qeAddRow').textContent = conTalles ? '+ Agregar talle / medida' : '+ Usar talles / medidas';
+    err.style.display = 'none';
+    pintar();
+    openModal('qeModal');
+  }
+  document.getElementById('qeAddRow').addEventListener('click', () => {
+    leer();
+    if (!conTalles) { conTalles = true; actual._qe = []; }
+    actual._qe.push({ name:'', price: actual.price ?? '', priceMayor: actual.priceMayor ?? '' });
+    document.getElementById('qeAddRow').textContent = '+ Agregar talle / medida';
+    pintar();
+    const ins = filas.querySelectorAll('input[data-k="name"]'); if (ins.length) ins[ins.length-1].focus();
+  });
+  const num = s => { const t = String(s).replace(/[$.\s]/g,'').replace(',', '.'); return t === '' ? '' : Number(t); };
+  document.getElementById('qeGuardar').addEventListener('click', () => {
+    const p = PRODUCTS.find(x => x.id === actual.id);
+    if (!p) return;
+    const fallo = m => { err.textContent = m; err.style.display = 'block'; };
+    if (conTalles) {
+      leer();
+      const vs = actual._qe.filter(v => v.name || v.price !== '' || v.priceMayor !== '');
+      for (const v of vs) {
+        if (!v.name) return fallo('Falta el nombre de un talle.');
+        const a = num(v.price), b = num(v.priceMayor);
+        if (a === '' || !(a >= 0)) return fallo('Falta el precio por menor del talle ' + v.name + '.');
+        if (b !== '' && !(b >= 0)) return fallo('El precio por mayor del talle ' + v.name + ' no es un número.');
+        v.price = a; v.priceMayor = b;
+      }
+      if (new Set(vs.map(v => v.name.toLowerCase())).size !== vs.length) return fallo('Hay dos talles con el mismo nombre.');
+      p.variants = vs;
+      if (vs.length) {
+        if (!p.variantLabel) p.variantLabel = 'Talle';
+        p.price = Math.min(...vs.map(v => v.price));
+        const may = vs.map(v => v.priceMayor).filter(x => x !== '');
+        p.priceMayor = may.length ? Math.min(...may) : '';
+      }
+    } else {
+      const a = num(filas.querySelector('[data-k="price"]').value), b = num(filas.querySelector('[data-k="priceMayor"]').value);
+      if (a === '' || !(a >= 0)) return fallo('Poné el precio por menor.');
+      if (b !== '' && !(b >= 0)) return fallo('El precio por mayor no es un número.');
+      p.price = a; p.priceMayor = b;
+    }
+    closeModals();
+    saveCatalog();
+    const y = window.scrollY;
+    renderGrid(); renderAdmProducts();
+    window.scrollTo(0, y);
+    toast('✓ Precio guardado. Ya lo ven tus clientes.');
+  });
+  let tt = null;
+  function toast(t){
+    let el = document.querySelector('.tk-toast');
+    if (!el) { el = document.createElement('div'); el.className = 'tk-toast'; document.body.appendChild(el); }
+    el.textContent = t; el.classList.add('show');
+    clearTimeout(tt); tt = setTimeout(() => el.classList.remove('show'), 2600);
+  }
+  document.addEventListener('click', e => {
+    const b = e.target.closest && e.target.closest('.qe-btn');
+    if (!b) return;
+    e.preventDefault(); e.stopPropagation();
+    if (!TK_SESION) return;
+    abrir(b.dataset.qe);
+  }, true);
 })();
 </script>
 
