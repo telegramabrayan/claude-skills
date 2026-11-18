@@ -2258,9 +2258,34 @@ function marcarBase(){}
    Se guarda solo lo que cambió (comparando con la última foto de lo guardado).
    Las fotos nuevas (data:...) se suben primero a la carpeta "tirokisha". */
 const SNAP = { prods:new Map(), orden:new Map(), cats:'', ajustes:'' };
-function ajustesPublicos(){ const a = Object.assign({}, settings); delete a.pin; return a; }
+function ajustesPublicos(){ const a = Object.assign({}, settings); delete a.pin; delete a.distribuidoras; return a; }
+/* Producto tal como se publica: sin datos privados de la dueña (distribuidora). */
+function limpio(p){ const c = Object.assign({}, p); delete c.dist; return c; }
+/* Datos privados (solo los lee la cuenta de la dueña): distribuidoras y a qué producto va cada una. */
+let TK_PRIV_CARGADO = false;
+function privJSON(){
+  return JSON.stringify({ lista: settings.distribuidoras || [],
+    asignacion: Object.fromEntries(PRODUCTS.filter(p=>p.dist).map(p=>[String(p.id), p.dist])) });
+}
+async function cargarPrivado(){
+  if(!sb || !TK_SESION) return;
+  const { data, error } = await sb.from('tk_privado').select('valor').eq('clave','distribuidoras').maybeSingle();
+  if(error) throw error;
+  const v = (data && data.valor) || {};
+  settings.distribuidoras = Array.isArray(v.lista) ? v.lista : [];
+  const asig = v.asignacion || {};
+  PRODUCTS.forEach(p=>{ if(asig[String(p.id)]) p.dist = asig[String(p.id)]; else delete p.dist; });
+  TK_PRIV_CARGADO = true;
+  SNAP.priv = privJSON();
+}
+function olvidarPrivado(){
+  PRODUCTS.forEach(p=>{ delete p.dist; });
+  settings.distribuidoras = [];
+  TK_PRIV_CARGADO = false;
+}
 function tomarFoto(){
-  SNAP.prods = new Map(PRODUCTS.map(p=>[String(p.id), JSON.stringify(p)]));
+  SNAP.prods = new Map(PRODUCTS.map(p=>[String(p.id), JSON.stringify(limpio(p))]));
+  if(TK_PRIV_CARGADO) SNAP.priv = privJSON();
   SNAP.orden = new Map(PRODUCTS.map((p,i)=>[String(p.id), i]));
   SNAP.cats = JSON.stringify(CATEGORIES);
   SNAP.ajustes = JSON.stringify(ajustesPublicos());
@@ -2316,12 +2341,12 @@ async function sincronizar(){
     for(let i=0; i<PRODUCTS.length; i++){
       const p = PRODUCTS[i], k = String(p.id);
       vivos.add(k);
-      if(SNAP.prods.get(k) !== JSON.stringify(p)){
+      if(SNAP.prods.get(k) !== JSON.stringify(limpio(p))){
         if(typeof p.img === 'string' && p.img.startsWith('data:')) p.mini = await achicar(p.img, 400);
         await subirFotos(p);
         if(p.mini && p.mini.startsWith('http')) p.miniDe = p.img;
       }
-      if(SNAP.prods.get(k) !== JSON.stringify(p) || SNAP.orden.get(k) !== i) cambiados.push({ id:p.id, datos:p, orden:i });
+      if(SNAP.prods.get(k) !== JSON.stringify(limpio(p)) || SNAP.orden.get(k) !== i) cambiados.push({ id:p.id, datos:limpio(p), orden:i });
     }
     const borrados = [...SNAP.prods.keys()].filter(k=>!vivos.has(k));
     if(borrados.length){
@@ -2330,6 +2355,10 @@ async function sincronizar(){
     }
     for(let i=0; i<cambiados.length; i+=300){
       const { error } = await sb.from('tk_productos').upsert(cambiados.slice(i, i+300));
+      if(error) throw error;
+    }
+    if(TK_PRIV_CARGADO && privJSON() !== SNAP.priv){
+      const { error } = await sb.from('tk_privado').upsert({ clave:'distribuidoras', valor: JSON.parse(privJSON()) });
       if(error) throw error;
     }
     const conf = [];
@@ -3737,6 +3766,8 @@ async function verificarPin(){
   TK_SESION = true; pinOk = true;
   closeModals();
   document.getElementById('pinInput').value = '';
+  try{ await cargarPrivado(); }catch(e){ console.error(e); }
+  renderGrid(); renderAdmProducts();
   abrirPanel();
 }
 
@@ -3801,14 +3832,9 @@ let draftColor = PALETTE[0];
 
 /* ---- Distribuidoras: punto de color por producto ---- */
 const DIST_COLORES = ['🟢','🔵','🟣','🟠','🟡','🔴','🟤','⚫','⚪','🟩','🟦','🟪','🟧','🟨','🟥'];
-const DIST_DEFAULT = [
-  { id:'sarmiento', nombre:'Sarmiento', color:'🟢' },
-  { id:'emvi',      nombre:'EMVI', color:'🔵' },
-  { id:'lista0912', nombre:'Lista 20260912', color:'🟣' },
-  { id:'propio',    nombre:'Catálogo original', color:'🟠' }
-];
+const DIST_DEFAULT = [];
 function distLista(){
-  if(!Array.isArray(settings.distribuidoras) || !settings.distribuidoras.length) settings.distribuidoras = DIST_DEFAULT.map(d=>({...d}));
+  if(!Array.isArray(settings.distribuidoras)) settings.distribuidoras = [];
   return settings.distribuidoras;
 }
 function distDe(p){ return p && p.dist ? distLista().find(d=>d.id===p.dist) || null : null; }
@@ -4802,6 +4828,7 @@ function aplicarPublicado(data){
   if(data.ajustes){
     settings = Object.assign({}, DEFAULTS, data.ajustes);
     settings.adv = Object.assign({}, settings.adv);
+    delete settings.distribuidoras;
   }
 }
 
@@ -4876,7 +4903,7 @@ async function cargarDeSupabase(){
   for(let desde=0; ; desde+=1000){
     const { data, error } = await sb.from('tk_productos').select('datos').order('orden').range(desde, desde+999);
     if(error) throw error;
-    prods.push(...data.map(r=>r.datos));
+    prods.push(...data.map(r=>{ const d = r.datos; delete d.dist; return d; }));
     if(data.length < 1000) break;
   }
   const { data:conf, error:e2 } = await sb.from('tk_config').select('clave,valor');
@@ -4894,7 +4921,7 @@ async function cargarDeSupabase(){
       .then(r => r.ok ? r.json() : Promise.reject())
       .then(aplicarPublicado)
       .catch(()=>{}))
-  .finally(()=>{ tomarFoto(); iniciar(); });
+  .finally(async ()=>{ try{ await cargarPrivado(); }catch(e){} tomarFoto(); iniciar(); });
 
 if(sb) sb.auth.onAuthStateChange((_ev, s)=>{ TK_SESION = !!s; });
 
@@ -4911,6 +4938,7 @@ document.getElementById('cambiarClaveBtn').addEventListener('click', async ()=>{
 document.getElementById('cerrarSesionBtn').addEventListener('click', async ()=>{
   if(syncPendiente && !confirm('Todavía se está guardando un cambio. ¿Cerrar igual?')) return;
   await sb.auth.signOut();
+  olvidarPrivado(); renderGrid(); renderAdmProducts();
   TK_SESION = false; pinOk = false;
   closeDrawer();
   alert('Sesión cerrada. Para volver a editar, tocá el engranaje y entrá con tu usuario.');
