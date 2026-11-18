@@ -1520,6 +1520,16 @@
   .qe-btn{ display:none; width:100%; margin:0 0 8px; padding:9px 10px; border-radius:999px;
     border:2px dashed #8A006E; background:#FFF; color:#8A006E; font:800 14px 'Nunito', sans-serif; cursor:pointer; }
   html.tk-admin .qe-btn{ display:block; }
+  .dist-punto{ display:none; margin-right:5px; font-size:.95em; }
+  html.tk-admin .dist-punto{ display:inline; }
+  .dist-fila{ display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .dist-color{ width:44px; height:44px; flex-shrink:0; font-size:22px; border-radius:12px; border:1.5px solid #E2E2E2; background:#FFF; cursor:pointer; }
+  .dist-fila input{ flex:1; min-width:0; height:44px; padding:0 12px; font-size:16px; border:1.5px solid #E2E2E2; border-radius:12px; background:#FFF; color:#1A1A1A; -webkit-text-fill-color:#1A1A1A; }
+  .dist-cnt{ font:700 12px 'Nunito', sans-serif; color:#5A5A5A; white-space:nowrap; }
+  .dist-ver, .dist-del{ background:none; border:0; font:700 13px 'Nunito', sans-serif; cursor:pointer; padding:6px 4px; }
+  .dist-ver{ color:#8A006E; } .dist-del{ color:var(--coral-deep); }
+  .dist-paleta{ display:flex; flex-wrap:wrap; gap:6px; margin:-2px 0 10px 52px; }
+  .dist-paleta button{ font-size:22px; width:40px; height:40px; border-radius:10px; border:1.5px solid #E2E2E2; background:#FFF; cursor:pointer; }
   .card{ position:relative; }
   .qd-btn{ display:none; position:absolute; top:-7px; right:-7px; z-index:6; width:34px; height:34px; border-radius:50%;
     border:2px solid #FFF; background:#E0245E; color:#FFF; box-shadow:0 3px 10px rgba(120,0,40,.35);
@@ -1737,6 +1747,13 @@
       <h4>🛍️ Productos</h4>
       <button class="adm-add" id="addProduct" style="margin:0 0 12px;">+ Agregar producto</button>
       <div id="admProducts"></div>
+    </div>
+
+    <div class="set-group" id="grp-distribuidoras">
+      <h4>🏷️ Distribuidoras</h4>
+      <p class="set-hint" style="margin:0 0 10px;">El punto de color aparece en cada producto (solo lo ves vos con tu usuario). Tocá el punto para cambiar el color. Tocá "ver" para buscar sus productos.</p>
+      <div id="distLista"></div>
+      <button class="adm-add" id="distAgregar" type="button" style="margin-top:6px;">+ Agregar distribuidora</button>
     </div>
 
     <div class="set-group" id="grp-categorias">
@@ -2023,6 +2040,10 @@
       <label>Texto de oferta personalizado (opcional)</label>
       <input type="text" id="prodOfertaTexto" placeholder="Ej: 2x1, Liquidación, Último talle">
       <p class="set-hint" style="margin:5px 0 0;">Si lo dejás vacío, se muestra el % de descuento calculado.</p>
+    </div>
+    <div class="set-field">
+      <label>Distribuidora (dónde lo comprás)</label>
+      <select id="prodDist"></select>
     </div>
     <div class="set-field" id="prodPriceMayorField">
       <label>Precio por mayor (opcional)</label>
@@ -2746,7 +2767,7 @@ function renderGrid(){
       </div>
       <div class="card-body">
         ${(activeCat==='todos' && catLabels(p).length) ? `<span class="card-cat">${escaparHtml(catLabels(p).join(' · '))}</span>` : ''}
-        <div class="card-name">${escaparHtml(p.name)}</div>
+        <div class="card-name">${distPunto(p)}${escaparHtml(p.name)}</div>
         <div class="card-price" data-price-for="${p.id}">${priceLabel(p)}${precioViejo(p) ? `<span class="price-old">${plata(precioViejo(p))}</span>` : ''}</div>
         ${(p.desc && norm(p.desc)!==norm(p.name)) ? `<div class="card-desc">${escaparHtml(p.desc)}</div>` : ''}
         ${mode==='mayor' && !out ? `<div class="card-min">Mínimo ${MIN_MAYOR} unidades</div>` : ''}
@@ -3778,6 +3799,74 @@ let editingProductId = null;
 let draftImg = null;
 let draftColor = PALETTE[0];
 
+/* ---- Distribuidoras: punto de color por producto ---- */
+const DIST_COLORES = ['🟢','🔵','🟣','🟠','🟡','🔴','🟤','⚫','⚪','🟩','🟦','🟪','🟧','🟨','🟥'];
+const DIST_DEFAULT = [
+  { id:'sarmiento', nombre:'Sarmiento', color:'🟢' },
+  { id:'emvi',      nombre:'EMVI', color:'🔵' },
+  { id:'lista0912', nombre:'Lista 20260912', color:'🟣' },
+  { id:'propio',    nombre:'Catálogo original', color:'🟠' }
+];
+function distLista(){
+  if(!Array.isArray(settings.distribuidoras) || !settings.distribuidoras.length) settings.distribuidoras = DIST_DEFAULT.map(d=>({...d}));
+  return settings.distribuidoras;
+}
+function distDe(p){ return p && p.dist ? distLista().find(d=>d.id===p.dist) || null : null; }
+function distPunto(p, conNombre){
+  const d = distDe(p); if(!d) return '';
+  return `<span class="dist-punto" title="${escaparHtml(d.nombre)}">${d.color}${conNombre ? ' ' + escaparHtml(d.nombre) + (p.desc ? ' · ' : '') : ''}</span>`;
+}
+function llenarSelectDist(sel){
+  const s = document.getElementById('prodDist'); if(!s) return;
+  s.innerHTML = '<option value="">— Sin asignar —</option>' + distLista().map(d=>`<option value="${d.id}" ${d.id===sel?'selected':''}>${d.color} ${escaparHtml(d.nombre)}</option>`).join('');
+}
+let distPaletaAbierta = null;
+function renderDist(){
+  const box = document.getElementById('distLista'); if(!box) return;
+  const cuenta = {}; PRODUCTS.forEach(p=>{ if(p.dist) cuenta[p.dist] = (cuenta[p.dist]||0) + 1; });
+  const sinAsignar = PRODUCTS.filter(p=>!distDe(p)).length;
+  box.innerHTML = distLista().map((d,i)=>`
+    <div class="dist-fila">
+      <button type="button" class="dist-color" data-dcolor="${i}" title="Cambiar color">${d.color}</button>
+      <input type="text" value="${escaparHtml(d.nombre)}" data-dnombre="${i}" placeholder="Nombre de la distribuidora">
+      <span class="dist-cnt">${cuenta[d.id]||0}</span>
+      <button type="button" class="dist-ver" data-dver="${i}">ver</button>
+      <button type="button" class="dist-del" data-ddel="${i}" title="Quitar">✕</button>
+    </div>
+    ${distPaletaAbierta===i ? `<div class="dist-paleta">${DIST_COLORES.map(c=>`<button type="button" data-dpick="${c}">${c}</button>`).join('')}</div>` : ''}`).join('')
+    + (sinAsignar ? `<p class="set-hint">${sinAsignar} producto${sinAsignar===1?'':'s'} sin distribuidora asignada.</p>` : '');
+}
+document.getElementById('distLista').addEventListener('click', e=>{
+  const L = distLista();
+  const c = e.target.closest('[data-dcolor]');
+  if(c){ const i = Number(c.dataset.dcolor); distPaletaAbierta = distPaletaAbierta===i ? null : i; renderDist(); return; }
+  const k = e.target.closest('[data-dpick]');
+  if(k && distPaletaAbierta!=null){ L[distPaletaAbierta].color = k.dataset.dpick; distPaletaAbierta = null; saveSettings(); renderDist(); renderGrid(); renderAdmProducts(); return; }
+  const v = e.target.closest('[data-dver]');
+  if(v){ const b = document.getElementById('admBuscar'); if(b){ b.value = L[Number(v.dataset.dver)].nombre; ADM_BUSCA = b.value; renderAdmProducts(); document.getElementById('grp-productos').scrollIntoView({behavior:'smooth'}); } return; }
+  const x = e.target.closest('[data-ddel]');
+  if(x){
+    const d = L[Number(x.dataset.ddel)];
+    const n = PRODUCTS.filter(p=>p.dist===d.id).length;
+    if(!confirm(`¿Quitar "${d.nombre}"?` + (n ? `\n\n${n} productos quedan sin distribuidora.` : ''))) return;
+    PRODUCTS.forEach(p=>{ if(p.dist===d.id) delete p.dist; });
+    L.splice(Number(x.dataset.ddel), 1);
+    saveSettings(); saveCatalog(); renderDist(); renderGrid(); renderAdmProducts();
+  }
+});
+document.getElementById('distLista').addEventListener('change', e=>{
+  const n = e.target.closest('[data-dnombre]'); if(!n) return;
+  const nombre = n.value.trim(); if(!nombre){ renderDist(); return; }
+  distLista()[Number(n.dataset.dnombre)].nombre = nombre; saveSettings(); renderGrid(); renderAdmProducts();
+});
+document.getElementById('distAgregar').addEventListener('click', ()=>{
+  const nombre = (prompt('Nombre de la distribuidora:') || '').trim(); if(!nombre) return;
+  const L = distLista();
+  const usados = new Set(L.map(d=>d.color));
+  L.push({ id: 'd' + Date.now().toString(36), nombre, color: DIST_COLORES.find(c=>!usados.has(c)) || '⚪' });
+  saveSettings(); renderDist();
+});
+
 const ADM_ABIERTAS = new Set();
 let ADM_BUSCA = '';
 
@@ -3788,7 +3877,7 @@ function admItemHTML(p){
         ${p.img?`<img src="${miniDe(p)}" alt="" loading="lazy" decoding="async" onerror="if(this.src.indexOf('/mini/')>0)this.src='${p.img}'">`:''}
       </div>
       <div class="adm-info">
-        <div class="adm-name">${escaparHtml(p.name)}</div>
+        <div class="adm-name">${distDe(p) ? distDe(p).color + ' ' : ''}${escaparHtml(p.name)}</div>
         <div class="adm-meta">${priceLabel(p)}${(p.variants&&p.variants.length)?` · ${p.variants.length} ${p.variantLabel||'opciones'}`:''}${hasMayor(p)?' · por mayor ✓':''}${ofertaLabel(p)?' · 🔥 oferta':''}</div>
       </div>
       <button class="adm-act" data-edit="${p.id}">Editar</button>
@@ -3798,7 +3887,7 @@ function admItemHTML(p){
 
 function admGrupos(){
   const palabras = norm(ADM_BUSCA.trim()).split(/\s+/).filter(Boolean);
-  const texto = p => norm([p.name, p.desc, catLabels(p).join(' '), (p.variants||[]).map(v=>v.name).join(' '), p.price].join(' '));
+  const texto = p => norm([p.name, p.desc, (distDe(p)||{}).nombre, catLabels(p).join(' '), (p.variants||[]).map(v=>v.name).join(' '), p.price].join(' '));
   const lista = palabras.length ? PRODUCTS.filter(p=>{ const t = texto(p); return palabras.every(w=>t.includes(w)); }) : PRODUCTS;
   const grupos = CATEGORIES.filter(c=>c.id!=='todos').map(c=>({id:c.id, label:c.label, items:[]}));
   const sinCat = {id:'__sin', label:'Sin categoría', items:[]};
@@ -3811,6 +3900,7 @@ function admGrupos(){
 }
 
 function renderAdmProducts(){
+  renderDist();
   const box = document.getElementById('admProducts');
   if(PRODUCTS.length===0){
     box.innerHTML = `<p class="set-hint">Todavía no hay productos.</p>`;
@@ -3989,6 +4079,7 @@ function openProductModal(id){
   document.getElementById('prodPriceMayor').value = p ? (p.priceMayor ?? '') : '';
   document.getElementById('prodPriceOld').value = p ? (p.priceOld ?? '') : '';
   document.getElementById('prodOfertaTexto').value = p ? (p.ofertaTexto || '') : '';
+  llenarSelectDist(p ? (p.dist || '') : '');
   document.getElementById('prodLowStock').checked = p ? !!p.lowStock : false;
   draftImgs = p ? (p.imgs && p.imgs.length ? p.imgs.slice() : (p.img ? [p.img] : [])) : [];
   draftImg = draftImgs[0] || null;
@@ -4152,7 +4243,8 @@ document.getElementById('prodSave').addEventListener('click', ()=>{
     featured: document.getElementById('prodFeatured').checked,
     nuevo: document.getElementById('prodNuevo').checked,
     masVendido: document.getElementById('prodMasVendido').checked,
-    ofertaTexto: document.getElementById('prodOfertaTexto').value.trim()
+    ofertaTexto: document.getElementById('prodOfertaTexto').value.trim(),
+    dist: document.getElementById('prodDist').value
   };
 
   if(editingProductId){
@@ -4306,8 +4398,9 @@ function openDetail(id){
   }
 
   document.getElementById('detailName').textContent = p.name;
-  document.getElementById('detailDesc').textContent = p.desc || '';
-  document.getElementById('detailDesc').style.display = p.desc ? 'block' : 'none';
+  const dd = document.getElementById('detailDesc');
+  dd.innerHTML = distPunto(p, true) + escaparHtml(p.desc || '');
+  dd.style.display = (p.desc || (TK_SESION && distDe(p))) ? 'block' : 'none';
 
   const opts = (p.variants||[]).filter(v=>unitPrice(p, v.name)!=null);
   const wrap = document.getElementById('detailVariantWrap');
